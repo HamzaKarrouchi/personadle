@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personadle - All Out Attack</title>
-
-  <!-- Styles & Icon -->
-  <link rel="stylesheet" href="../css/style.css?v=3" />
+  <title>Personadle - Silhouette Mode</title>
+  <link rel="stylesheet" href="../css/style.css?v=2" />
   <link rel="icon" type="image/gif" href="../img/persona_64x64.gif" />
 </head>
 
@@ -18,18 +16,19 @@
     </a>
   </header>
 
+  <!-- Boutons filtres -->
+  <div class="filter-buttons">
+ <button class="filter-btn filter-p1 active" data-opus="P1">P1</button>
+<button class="filter-btn filter-p2 active" data-opus="P2">P2</button>
+    <button class="filter-btn filter-p3 active" data-opus="P3">P3</button>
+    <button class="filter-btn filter-p4 active" data-opus="P4">P4</button>
+    <button class="filter-btn filter-p5 active" data-opus="P5">P5</button>
+    <button class="filter-btn filter-p5x active" data-opus="P5X">P5X</button>
+  </div>
 
-  <!-- À insérer en haut à gauche de la page All-Out Attack -->
-<div class="filter-buttons">
-  <button class="filter-btn filter-p3 active" data-opus="P3">P3</button>
-  <button class="filter-btn filter-p5 active" data-opus="P5">P5</button>
-   <button class="filter-btn filter-p5x active" data-opus="P5X">P5X</button>
-</div>
-
-
-   <!-- Zone principale d'affichage des emojis et du titre -->
+  <!-- Zone principale -->
   <div class="emoji-hint-zone" style="position: relative;">
-    <!-- Bouton pour afficher les règles (en haut à droite) -->
+    <!-- Bouton Rules -->
     <div style="position: absolute; top: -40px; right: -80px;">
       <div class="link-wrapper rules-link-wrapper" id="rulesButton" role="button" tabindex="0">
         <div class="img-wrapper">
@@ -38,63 +37,80 @@
         </div>
         <div class="shape-wrapper">
           <div class="shape red-fill jelly">
-            <svg viewBox="0 0 108.1 47" preserveAspectRatio="none">
-              <polygon fill="#FF0000" points="20,5 105,0 90,32 10,45"/>
-            </svg>
+            <svg viewBox="0 0 108.1 47"><polygon fill="#FF0000" points="20,5 105,0 90,32 10,45"/></svg>
           </div>
           <div class="shape cyan-fill jelly">
-            <svg viewBox="0 0 108.1 47" preserveAspectRatio="none">
-              <polygon fill="#00FFFF" points="0,10 100,5 80,40 5,35"/>
-            </svg>
+            <svg viewBox="0 0 108.1 47"><polygon fill="#00FFFF" points="0,10 100,5 80,40 5,35"/></svg>
           </div>
         </div>
       </div>
     </div>
-    <!-- Contenu central -->
-     <div style = "color: white;">
-    <h1>Guess today’s Persona character!</h1>
-    <p>Type any character to start.</p>
+
+    <!-- Titre central -->
+    <div style="color: white;">
+      <h1>Guess today’s Persona character from their silhouette!</h1>
+      <p>Type any name to start 👤</p>
     </div>
   </div>
 
-  
-  <!-- Modal Règles -->
-  <div id="rulesModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>All-Out Attack Mode Rules</h2>
-      <p id="rulesText">
-        <strong>🎯 Goal:</strong><br>
-        Guess the Persona character based on their All-Out Attack animation.
-        <hr class="separator" />
-        <strong>💥 Gameplay:</strong>
-        <ul>
-          <li>You start with a <strong>blurry All-Out Attack GIF</strong>.</li>
-          <li><strong>Each incorrect guess reduces the blur</strong>.</li>
-          <li>Try to guess with the fewest attempts possible!</li>
-        </ul>
-        <hr class="separator" />
-        <strong>🎮 Included games:</strong>
-        <ul>
-          <li>Only characters from <strong>Persona 3 Reload</strong> , <strong>Persona 5 / Royal</strong> and <strong>Persona 5 : The Phantom X</strong> are used.</li>
-        </ul>
-        <hr class="separator" />
-        <strong>📉 Give Up option:</strong>
-        <ul>
-          <li>After <strong>5 incorrect guesses</strong>, the <em>Give Up</em> button activates.</li>
-        </ul>
-        <hr class="separator" />
-        <em>Let your eyes adjust, focus your instincts, and go for the critical hit!</em>
+<!-- Modal règles -->
+<div id="rulesModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>🕶️ Silhouette Mode — How to Play</h2>
+    <p id="rulesText">
+      <strong>🎯 Goal:</strong><br>
+      A shadowy figure stands before you...<br>
+      Can you identify the Persona character just from their <strong>black silhouette</strong>?
+      <br><br>
+
+      <hr class="separator" />
+
+      <strong>👤 How it works:</strong>
+      <ul>
+        <li>🔍 The game starts with a <strong>heavily zoomed-in silhouette</strong> of a character.</li>
+        <li>❌ Every wrong guess <strong>zooms the image out</strong>, revealing more of the outline.</li>
+        <li>✅ Find the right name, and the character’s full portrait is revealed!</li>
+      </ul>
+
+      <hr class="separator" />
+
+      <strong>💡 Tips:</strong>
+      <ul>
+        <li>🧍 Pay attention to the silhouette’s <strong>pose, hairstyle, weapon, or accessories</strong>.</li>
+        <li>👓 Some characters have distinct stances or iconic features — spot them!</li>
+        <li>🎮 Use your knowledge from Persona 3, 4, and 5 (plus spin-offs).</li>
+      </ul>
+
+      <hr class="separator" />
+
+      <strong>📉 Give Up Mechanic:</strong>
+      <ul>
+        <li>🆘 The <strong>Give Up</strong> button unlocks after <strong>3 failed attempts</strong>.</li>
+        <li>🙈 You’ll see the answer — but it counts as a loss!</li>
+      </ul>
+
+      <hr class="separator" />
+
+      <strong>🎮 Games Included:</strong>
+      <p>
+        Characters come from <strong>Persona 1 , </strong><strong>Persona 2 ( IS & EP ) , </strong><strong>Persona 3</strong>, <strong>Persona 4</strong>,  <strong>Persona 5</strong> and <strong>Persona 5 The Phantom X</strong>  including related spin-offs. Use the filter buttons to narrow it down.
       </p>
-    </div>
-  </div>
 
-  <!-- Zone GIF -->
-  <div class="aoa-gif-zone">
-    <img id="aoaGif" alt="All-Out Attack" />
+      <hr class="separator" />
+      <em>🧠 Observe the shadows, trust your instincts, and become the ultimate silhouette detective!</em>
+    </p>
   </div>
+</div>
 
-  <!-- Give Up -->
+  <!-- Image silhouette -->
+ <div class="silhouette-box">
+    <img id="silhouetteImage" src="" alt="Silhouette">
+  </div>
+</div>
+
+
+  <!-- Bouton Give Up -->
   <div class="giveup-block" style="display: flex; justify-content: center; margin-top: 20px; gap: 12px;">
     <div class="link-wrapper" id="giveUpButton">
       <div class="img-wrapper">
@@ -110,13 +126,13 @@
         </div>
       </div>
     </div>
-    <span id="giveUpCounter" class="counter">(0 / 5)</span>
+    <span id="giveUpCounter" class="counter">(0 / 3)</span>
   </div>
 
-  <!-- Zone d’input + boutons -->
+  <!-- Input + boutons -->
   <section class="input-wrapper" style="margin-top: 30px; display: flex; justify-content: center;">
     <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center;">
-
+      
       <!-- Replay -->
       <div class="link-wrapper" id="resetButton">
         <div class="img-wrapper">
@@ -134,16 +150,22 @@
       </div>
 
       <!-- Input -->
-      <input
-        type="text"
-        id="textbar"
-        placeholder="Enter character name..."
-        aria-label="Guess character name"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-      />
+     
+  <!-- Input (corrigé comme All-Out Attack) -->
+<input
+  type="text"
+  id="textbar"
+  placeholder="Enter character name..."
+  aria-label="Guess character name"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  style="padding: 10px; border-radius: 6px; border: 2px solid #aaa; font-size: 16px; min-width: 240px;"
+/>
+
+
+
 
       <!-- Submit -->
       <div class="link-wrapper" id="guessButton">
@@ -164,8 +186,6 @@
     </div>
   </section>
 
-  
-
   <!-- Victoire -->
   <div id="victoryBox" class="victory-box" style="display: none;">
     <img id="victoryImage" src="" alt="Victory Character">
@@ -175,50 +195,47 @@
   <!-- Résultats -->
   <div id="wrongGuessList"></div>
 
-  <!-- Script -->
-  <script type="module" src="./modeAllOutAttack.js?v=3"></script>
+  <!-- Script du jeu -->
+  <script type="module" src="./modeSilhouette.js?v=2"></script>
 
-  <!-- Bouton Mode Sombre -->
-<div class="darkmode-toggle">
-  <label class="switch">
-    <input type="checkbox" id="darkModeToggle">
-    <span class="slider round"></span>
-  </label>
-  <span class="label-text">Dark Mode</span>
-</div>
+  <!-- Dark Mode -->
+  <div class="darkmode-toggle">
+    <label class="switch">
+      <input type="checkbox" id="darkModeToggle">
+      <span class="slider round"></span>
+    </label>
+    <span class="label-text">Dark Mode</span>
+  </div>
 
-<!-- Script intégré -->
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.getElementById("darkModeToggle");
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode === "enabled") {
-      document.body.classList.add("darkmode");
-      toggle.checked = true;
-    }
-
-    toggle.addEventListener("change", () => {
-      if (toggle.checked) {
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggle = document.getElementById("darkModeToggle");
+      const savedMode = localStorage.getItem("darkMode");
+      if (savedMode === "enabled") {
         document.body.classList.add("darkmode");
-        localStorage.setItem("darkMode", "enabled");
-      } else {
-        document.body.classList.remove("darkmode");
-        localStorage.setItem("darkMode", "disabled");
+        toggle.checked = true;
       }
+      toggle.addEventListener("change", () => {
+        if (toggle.checked) {
+          document.body.classList.add("darkmode");
+          localStorage.setItem("darkMode", "enabled");
+        } else {
+          document.body.classList.remove("darkmode");
+          localStorage.setItem("darkMode", "disabled");
+        }
+      });
     });
-  });
-</script>
+  </script>
 
-<!-- 🔁 Mode Navigation -->
+ <!-- 🔁 Mode Navigation -->
 <div id="modeNavigationContainer" style="display: none; margin-top: 40px; margin-bottom: 40px; justify-content: space-between; align-items: center;">
   <div id="prevModeButton" class="nav-button prev-mode" style="visibility: hidden;">
-    ← Emoji Mode
+    ← All-Out Attack
   </div>
   <div id="nextModeButton" class="nav-button next-mode">
-    Shadows Mode →
+    Personae Mode →
   </div>
 </div>
-
 <script>
   // Son de hover pour tous les boutons link-wrapper
   document.addEventListener("DOMContentLoaded", () => {
