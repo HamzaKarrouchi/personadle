@@ -1,0 +1,61 @@
+/*AOA*/
+.blur-level-0 { filter: blur(14px); }
+.blur-level-1 { filter: blur(12px); }
+.blur-level-2 { filter: blur(10px); }
+.blur-level-3 { filter: blur(8px); }
+.blur-level-4 { filter: blur(6px); }
+.blur-level-5 { filter: blur(3px); }
+.blur-level-6 { filter: blur(0px); transition: filter 0.4s ease; }
+/*AOA*/
+#aoaGif[src*="loading.gif"] {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/*AOA*/
+.aoa-gif-zone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 700px;
+  border-radius: 15px;
+
+  /* 🎨 Effet Persona stable */
+  background: rgba(0, 0, 0, 0.65);
+  border: 3px solid rgba(255, 0, 0, 0.7);
+  box-shadow:
+    inset 0 0 20px rgba(255, 0, 0, 0.3),
+    0 0 25px rgba(255, 0, 0, 0.25);
+
+  /* 🧱 Fix pour le flicker */
+  will-change: transform;
+  backface-visibility: hidden;
+  isolation: isolate;
+  contain: paint;
+  transition: none !important;
+}
+
+/*AOA*/
+#aoaGif {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  margin: 40px auto;
+  border-radius: 16px;
+
+  /* 🔒 Stabilisation GPU */
+  will-change: opacity, filter;
+  backface-visibility: hidden;
+  image-rendering: auto;
+
+  /* 🎯 Lueur fixe autour du GIF */
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.25);
+}
+/*AOA*/
+body.darkmode .aoa-gif-zone {
+  background: rgba(40, 40, 40, 0.85);
+  border-color: #ff6a6a;
+}

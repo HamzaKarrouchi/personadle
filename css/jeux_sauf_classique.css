@@ -1,0 +1,223 @@
+
+/*JEUX SAUF CLASSIQUE*/
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+/*JEUX SAUF CLASSIQUE*/
+.emoji-hint-zone {
+  background: linear-gradient(to bottom right, #1875d1bd, #1d92dac2);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 30px auto;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.emoji-hint-zone h2 {
+  font-size: 1.3rem;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.emoji-hint-zone p {
+  font-size: 0.95rem;
+  color: #d0e6ff;
+  margin-top: 10px;
+}
+
+
+/*JEUX SAUF CLASSIQUE*/
+.victory-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 3px solid #4caf50;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #e6fbe6;
+  max-width: 500px;
+  margin: 30px auto 10px auto;
+  box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+}
+/*JEUX SAUF CLASSIQUE*/
+.victory-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 3px solid #4caf50;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #e6fbe6;
+  max-width: 500px;
+  margin: 30px auto 10px auto;
+  box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.victory-box img {
+  width: 50px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+/* ===== VICTORY BOX IMAGE PLUS GRANDE ===== */
+/*JEUX SAUF CLASSIQUE*/
+.victory-box img {
+  width: 200px;
+  height: auto;
+  border-radius: 14px;
+  margin-bottom: 15px;
+}
+
+/* ===== LISTE D’ERREURS EN BAS ===== */
+/*JEUX SAUF CLASSIQUE*/
+#wrongGuessList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 30px;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.wrong-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ffdddd;
+  border: 3px solid #ff3c3c;
+  border-radius: 12px;
+  padding: 10px;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+  min-width: 110px;
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.wrong-mini img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.wrong-mini p {
+  font-size: 14px;
+  font-weight: bold;
+  color: #a10000;
+  margin: 0;
+  text-align: center;
+}
+
+/* Animation shake */
+/*JEUX SAUF CLASSIQUE*/
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.shake {
+  animation: shake 0.5s;
+}
+/*JEUX SAUF CLASSIQUE*/
+.wrong-guess {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px auto;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background-color: #330000;
+  color: white;
+  font-weight: bold;
+  max-width: 300px;
+  animation: shake 0.4s ease-in-out;
+}
+/*JEUX SAUF CLASSIQUE*/
+.wrong-guess img {
+  height: 48px;
+  border-radius: 8px;
+}
+/*JEUX SAUF CLASSIQUE*/
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+/*JEUX SAUF CLASSIQUE*/
+.silhouette-box .victory-box img {
+  display: none;
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.silhouette-box .victory-box {
+  margin-top: 20px;
+  background-color: #e6fbe6;
+  border: 3px solid #4caf50;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+  animation: fadeInVictory 0.3s ease-in-out;
+}
+/*JEUX SAUF CLASSIQUE*/
+.victory-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 25px auto;
+  padding: 20px 25px;
+  max-width: 600px;
+  border-radius: 16px;
+  background-color: #e7e7e7;
+  border: 3px solid #000000;
+  box-shadow: 0 0 18px #147501bb;
+  font-family: 'Arial Black', Impact, sans-serif;
+  text-align: center;
+  animation: pulseWin 0.5s ease-in-out;
+}
+/*JEUX SAUF CLASSIQUE*/
+body.darkmode .victory-box {
+  background-color: #2f2f45;
+  color: #f0f0f0;
+  border: 3px solid #45bd00;
+  box-shadow: 0 0 22px rgba(69, 189, 0, 0.6);
+}
+
+/*JEUX SAUF CLASSIQUE*/
+.victory-box img {
+  width: 305px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+/*JEUX SAUF CLASSIQUE*/
+@keyframes pulseWin {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

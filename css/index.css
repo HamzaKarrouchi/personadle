@@ -1,0 +1,581 @@
+/* ========== Gamemode Buttons ========== */
+/*INDEX*/
+.gamemode-button {
+  /* Style for gamemode buttons */
+  width: 100%; /* Full width */
+  max-width: 500px; /* Set max width */
+  height: auto; /* Maintain aspect ratio */
+  border: none; /* Remove border */
+  padding: 0; /* Remove padding */
+  background: none; /* Transparent background */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effects */
+  display: block; /* Center the button */
+  margin: 20px auto; /* Add margin */
+}
+
+/*INDEX*/
+.gamemode-button img {
+  /* Style for images inside gamemode buttons */
+  width: 100%; /* Full width */
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Block-level element */
+  border-radius: 15px; /* Round the corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Add shadow */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effects */
+}
+
+/*INDEX*/
+/* Hover effects for specific gamemode buttons */
+#classicButton:hover img {
+  transform: scale(1.03); /* Slightly scale up */
+  box-shadow: 0 6px 14px rgb(32, 131, 245); /* Change shadow color */
+}
+
+/*INDEX*/
+#EmojiButton:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgb(240, 198, 12);
+}
+
+/*INDEX*/
+#AllOutAttackButton:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgb(255, 52, 52);
+}
+
+/*INDEX*/
+#shadowsButton:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgb(41, 99, 138);
+}
+
+/*INDEX*/
+#PersonaeButton:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgb(199, 169, 0);
+}
+
+/*INDEX*/
+#MusicButton:hover img {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgb(180, 22, 154);
+}
+
+/* ========== Gamemode Title ========== */
+/*INDEX*/
+.gamemode-title {
+  /* Style for gamemode titles */
+  text-align: center; /* Center the text */
+  color: white; /* Set text color */
+  font-family: 'Times New Roman', Times, serif; /* Use serif font */
+  font-size: 36px; /* Set font size */
+  border: 4px solid rgb(202, 202, 202); /* Add border */
+  padding: 15px 30px; /* Add padding */
+  border-radius: 12px; /* Round the corners */
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  box-shadow: 0 0 15px rgba(8, 8, 8, 0.7); /* Add shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effects */
+  display: block; /* Block-level element */
+  width: fit-content; /* Adjust width to content */
+  margin: 30px auto; /* Center and add margin */
+}
+
+/*INDEX ?*/
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+
+/*INDEX ?*/
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: max-content;
+  max-width: 280px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  text-align: left;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  border-radius: 6px;
+  padding: 8px 10px;
+  position: absolute;
+  z-index: 100;
+  bottom: 125%; /* Au-dessus du texte */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/*INDEX ?*/
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+/*INDEX ?*/
+.tooltip .tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%; /* Flèche en dessous */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+/*INDEX*/
+.legal-modal {
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.8);
+  padding-top: 60px;
+}
+/*INDEX*/
+.legal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 10px;
+  color: #000;
+}
+/*INDEX*/
+.legal-content h2, .legal-content h3 {
+  margin-top: 20px;
+}
+/*INDEX*/
+#socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+/*INDEX*/
+#socialLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+/*INDEX*/
+#socialLinks a img {
+  width: 24px;
+  height: 24px;
+  filter: invert(0%) sepia(100%) saturate(0%) hue-rotate(0deg);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+/*INDEX*/
+#socialLinks a:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+  transform: translateY(-2px);
+}
+/*INDEX*/
+#socialLinks a:hover img {
+  transform: scale(1.2);
+  filter: hue-rotate(180deg);
+}
+
+/*INDEX*/
+body.darkmode #socialLinks a {
+  background-color: #222;
+  border-color: #555;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
+}
+/*INDEX*/
+body.darkmode #socialLinks a img {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg);
+}
+/*INDEX*/
+body.darkmode #socialLinks a:hover {
+  background-color: #333;
+  border-color: #888;
+}
+/*INDEX*/
+.daily-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #111;
+  color: white;
+  padding: 10px 20px;
+  border: 2px solid #ff0040;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000;
+  transition: background 0.3s, color 0.3s;
+}
+/*INDEX*/
+body:not(.darkmode) .daily-btn {
+  background-color: #f0f0f0;
+  color: #111;
+  border: 2px solid #cc0033;
+}
+/*INDEX*/
+.daily-modal {
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+/*INDEX*/
+.daily-modal-content {
+  margin: 10% auto;
+  padding: 20px;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 12px;
+  text-align: center;
+  border: 3px solid;
+  transition: all 0.3s;
+}
+
+/* 🌑 Mode sombre */
+/*INDEX*/
+body.darkmode .daily-modal-content {
+  background-color: #1c1c1c;
+  color: white;
+  border-color: #ff0040;
+}
+
+/* ☀️ Mode clair */
+/*INDEX*/
+body:not(.darkmode) .daily-modal-content {
+  background-color: #ffffff;
+  color: #111;
+  border-color: #cc0033;
+}
+/*INDEX*/
+.daily-modal .close {
+  float: right;
+  font-size: 28px;
+  cursor: pointer;
+  color: inherit;
+}
+/*INDEX*/
+#dailyCountdown {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #00cc66;
+}
+/*INDEX*/
+.modal.hidden {
+  display: none;
+}
+/* === Input Pseudo === */
+/*INDEX*/
+#pseudoInput {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  background: #f0f0f0;
+  color: #000;
+}
+/*INDEX*/
+body.darkmode #pseudoInput {
+  background: #333;
+  color: white;
+}
+
+/* === Avatar Preview === */
+/*INDEX*/
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #51ff00;
+  margin-bottom: 10px;
+}
+
+/* === Avatar Grid === */
+/*INDEX*/
+#avatarGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+/*INDEX*/
+#avatarGrid img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+/*INDEX*/
+#avatarGrid img:hover {
+  transform: scale(1.1);
+  border: 2px solid #ff3366;
+}
+/*INDEX*/
+#avatarGrid img.selected {
+  border: 3px solid #51ff00;
+}
+
+/* === Canvas === */
+/*INDEX*/
+#avatarCanvas {
+  background-color: #eee;
+  border: 2px solid #51ff00;
+  display: block;
+  margin: 10px auto;
+  max-width: 100%;
+}
+/*INDEX*/
+body.darkmode #avatarCanvas {
+  background-color: #222;
+}
+
+/* === Zoom / Valider boutons === */
+/*INDEX*/
+.crop-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+/*INDEX*/
+.crop-controls button {
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #ddd;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+/*INDEX*/
+.crop-controls button:hover {
+  background-color: #bbb;
+}
+/*INDEX*/
+body.darkmode .crop-controls button {
+  background-color: #444;
+  color: white;
+}
+/*INDEX*/
+body.darkmode .crop-controls button:hover {
+  background-color: #666;
+}
+
+/* === Bouton “Mon Profil” === */
+/*INDEX*/
+.profile-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  background-color: #f7322b;
+  color: black;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+/*INDEX*/
+.profile-btn:hover {
+  background-color: #e46262;
+}
+/*INDEX*/
+#profileDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* === Avatar “aucun” === */
+/*INDEX*/
+.avatar-none {
+  width: 80px;
+  text-align: center;
+  background: #eee;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 80px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #000;
+}
+
+/*INDEX*/
+.avatar-none:hover {
+  background: #ccc;
+}
+
+/*INDEX*/
+body.darkmode .avatar-none {
+  background: #444;
+  border: 2px solid #888;
+  color: white;
+}
+
+/*INDEX*/
+body.darkmode .avatar-none:hover {
+  background: #666;
+}
+
+/* === Avatar dans l'en-tête === */
+/*INDEX*/
+.profile-avatar {
+  width: 172px;
+  height: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid black;
+}
+
+/*INDEX*/
+body.darkmode .profile-avatar {
+  border-color: white;
+}
+
+/* === Couleur adaptative du label Border Color === */
+/*INDEX*/
+.border-color-label {
+  font-weight: bold;
+  color: black;
+}
+/*INDEX*/
+body.darkmode .border-color-label {
+  color: white;
+}
+
+/* Style du bouton PDF */
+/*INDEX*/
+.pdf-container {
+    margin-top: 15px;
+    text-align: right; /* Place le bouton à droite */
+}
+/*INDEX*/
+.see-more-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #d92323; /* Rouge Persona */
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: sans-serif;
+    border-radius: 4px;
+    transition: background 0.3s, transform 0.2s;
+    box-shadow: 2px 2px 0px #000; /* Petite ombre noire style comics */
+}
+/*INDEX*/
+.see-more-btn:hover {
+    background-color: #b01010;
+    transform: translateY(-2px); /* Petit effet de saut */
+}
+
+
+/* === PROFILE SHARE CARD === */
+/*INDEX*/
+.share-card {
+  width: 400px;
+  background: linear-gradient(180deg, #0f0f2b, #1a1a40);
+  border-radius: 20px;
+  color: white;
+  text-align: center;
+  padding: 25px 15px;
+  font-family: "Poppins", sans-serif;
+  position: relative;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+}
+/*INDEX*/
+.share-card .share-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #4b6cff;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+/*INDEX*/
+.share-card h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #fff;
+}
+/*INDEX*/
+.share-card .share-stats {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 15px 0;
+}
+/*INDEX*/
+.share-card .stat {
+  text-align: center;
+}
+/*INDEX*/
+.share-card .stat span {
+  display: block;
+  font-size: 14px;
+  opacity: 0.8;
+}
+/*INDEX*/
+.share-card .stat strong {
+  font-size: 20px;
+  color: #ffd84f;
+}
+/*INDEX*/
+.share-card .share-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+/*INDEX*/
+.share-card .share-badges img {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s;
+}
+/*INDEX*/
+.share-card .share-badges img:hover {
+  transform: scale(1.15);
+}
+/*INDEX*/
+.share-card .footer {
+  position: absolute;
+  bottom: 6px;
+  width: 100%;
+  font-size: 11px;
+  color: #bbb;
+}
+/* INDEX */
+.title-wrapper {
+  /* Center the title wrapper */
+  text-align: center;
+}

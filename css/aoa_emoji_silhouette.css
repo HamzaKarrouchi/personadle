@@ -1,0 +1,27 @@
+/*JEUX AOA EMOJI SILHOUTTE*/
+.victory-box img {
+  width: 150px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+/*JEUX AOA EMOJI SILHOUTTE*/
+.win-message {
+  text-align: center;
+  font-size: 1.4rem;
+  color: #2e7d32;
+  font-weight: bold;
+}
+/*JEUX AOA EMOJI SILHOUTTE*/
+.win-message {
+  text-align: center;
+  font-size: 1.4rem;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/*JEUX AOA EMOJI SILHOUTTE*/
+@keyframes fadeInVictory {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}

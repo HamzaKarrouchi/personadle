@@ -1,0 +1,34 @@
+/*JEUX AOA SILHOUTTE*/
+.realname {
+  font-size: 14px;
+  color: #555;
+  font-style: italic;
+  line-height: 1.1;
+}
+/*AOA SILHOUETTE*/
+.victory-message {
+  margin-top: 12px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #66ff66;
+  text-align: center;
+}
+/*AOA SILHOUETTE*/
+.silhouette-box .victory-message {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2e7d32;
+}
+/*AOA SILHOUETTE*/
+.victory-message {
+  color: rgb(255, 255, 255);
+  font-size: 1.1rem;
+  line-height: 1.4;
+  text-shadow: 1px 1px 0 #000, 2px 2px 0 #857679;
+}
+
+/*AOA SILHOUETTE*/
+body.darkmode .victory-message {
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #000, 2px 2px 3px #888;
+}

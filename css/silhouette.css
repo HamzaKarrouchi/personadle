@@ -1,0 +1,72 @@
+/* ===== Silhouette Mode Zone ===== */
+/*SILHOUETTE*/
+.silhouette-box {
+  width: 100%;
+  max-width: 600px;
+  height: 600px;
+  margin: 40px auto 20px auto;
+  background: #f0f0f0; /* couleur claire pour bien voir la silhouette noire */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 4px solid #333;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease-in-out;
+}
+/*SILHOUETTE*/
+.darkmode .silhouette-box {
+  background: #1f1f2f; /* gris-bleu foncé, visible sur silhouette noire */
+  border-color: #ccc;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.1);
+}
+
+/* ✅ Nouveau wrapper pour gérer le zoom sans effet de flash */
+/*SILHOUETTE*/
+.zoom-wrapper {
+  transform: scale(1.8); /* zoom par défaut */
+  transition: transform 0.4s ease;
+  display: inline-block;
+}
+
+/* ✅ On retire le transform de l’image */
+/*SILHOUETTE*/
+#silhouetteImage {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  filter: brightness(0); /* silhouette noire */
+  margin-bottom: 20px;
+  visibility: hidden; /* cachée tant qu’elle n’est pas chargée */
+  transition: filter 0.3s ease, visibility 0s;
+}
+/* Centrer la boîte de victoire dans la silhouette */
+/*SILHOUETTE*/
+.silhouette-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+/*SILHOUETTE*/
+#silhouetteImage {
+  animation: popInSilhouette 0.4s ease;
+}
+
+/*SILHOUETTE*/
+@keyframes popInSilhouette {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+} 
+/*SILHOUETTE*/
+#silhouetteImage {
+  visibility: hidden;
+}
