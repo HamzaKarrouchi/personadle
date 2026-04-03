@@ -11,7 +11,7 @@ Le joueur identifie des personnages, personas ou musiques via 6 modes de jeu dis
 
 - **Site** : <https://personadle.net>
 - **Dépôt** : <https://github.com/HamzaKarrouchi/personadle>
-- **Version actuelle** : 1.2.x (frontend stabilisé, backend en cours)
+- **Version actuelle** : 2.0 (backend PHP+MariaDB, navigation repensée, page profil dédiée)
 - **Licence** : MIT
 
 ### Contributeurs
@@ -36,7 +36,7 @@ Le joueur identifie des personnages, personas ou musiques via 6 modes de jeu dis
 
 > **Règle importante** : le frontend reste en vanilla JS pour l'instant. On n'introduit un framework (React, Vue, Svelte…) que si une fonctionnalité le nécessite vraiment et après décision explicite.
 
-### Backend (v1.2 — à construire)
+### Backend (v2.0 — à construire)
 
 - **Langage** : PHP avec PDO (Prepared Statements obligatoires — protection injection SQL)
 - **BDD** : PostgreSQL **ou** MySQL/MariaDB (à confirmer selon hébergement Hostinger)
@@ -103,14 +103,14 @@ personadle/
 └── PersonaDLE_Update_Documentation/
     ├── PersonaDLE 1.0/
     ├── PersonaDLE 1.1/
-    └── PersonaDLE 1.2/               ← Documenter TOUTES les modifications ici
+    └── PersonaDLE 2.0/               ← Documenter TOUTES les modifications ici
 ```
 
 ---
 
-## 4. Objectif de la v1.2 — Vue d'ensemble
+## 4. Objectif de la v2.0 — Vue d'ensemble
 
-La v1.2 est une **mise à jour majeure de stabilisation et d'infrastructure**. L'objectif principal est :
+La v2.0 est une **mise à jour majeure de stabilisation et d'infrastructure**. L'objectif principal est :
 
 > **Construire le backend complet, de la création de la BDD à son intégration en jeu, tout en maintenant la stabilité du frontend existant.**
 
@@ -270,8 +270,8 @@ Après chaque partie, afficher une stat communautaire type Wordle :
 
 ### Langues cibles
 
-- **v1.2** : `EN` (base) · `FR` · `ES` · `DE`
-- **Post-v1.2** : `JP` — repoussé, nécessite une relecture native sérieuse
+- **v2.0** : `EN` (base) · `FR` · `ES` · `DE`
+- **Post-v2.0** : `JP` — repoussé, nécessite une relecture native sérieuse
 
 ### Langue de base : EN
 
@@ -286,7 +286,7 @@ Les autres langues en dérivent. En cas de clé manquante : fallback `en` → cl
 | `lang/fr.json` | ✅ Complet (353 clés) |
 | `lang/es.json` | 🔜 À créer |
 | `lang/de.json` | 🔜 À créer |
-| `lang/jp.json` | ⏳ Post-v1.2 |
+| `lang/jp.json` | ⏳ Post-v2.0 |
 
 - Clés hiérarchiques : `ui.submit`, `modes.classic.hint`, `badges.ace_detective.name`…
 - Variables dynamiques : syntaxe `{{variable}}` — ex: `"Found in {{count}} attempt(s)"`
@@ -322,8 +322,8 @@ export const characterQuotes = {
 
 Règles :
 
-- v1.2 : toutes les quotes restent en EN — `quotes.js` est structuré mais vide hors EN
-- Post-v1.2 : sourcer les traductions FR **officielles** depuis les localisations des jeux (pas de traduction libre)
+- v2.0 : toutes les quotes restent en EN — `quotes.js` est structuré mais vide hors EN
+- Post-v2.0 : sourcer les traductions FR **officielles** depuis les localisations des jeux (pas de traduction libre)
 - Ne jamais inventer ou paraphraser une quote — source officielle Atlus uniquement
 - `getQuote(name, lang)` retourne `quotes[name][lang] ?? quotes[name]['en']`
 
@@ -389,11 +389,11 @@ Chaque page doit fonctionner correctement sur :
 
 ## 9. Documentation des mises à jour
 
-> **Règle absolue** : tout ajout, correction ou modification notable **doit être documenté** dans `PersonaDLE_Update_Documentation/PersonaDLE 1.2/`.
+> **Règle absolue** : tout ajout, correction ou modification notable **doit être documenté** dans `PersonaDLE_Update_Documentation/PersonaDLE 2.0/`.
 
 ### Format à respecter (même style que v1.0 et v1.1)
 
-Fichier principal : `PersonaDLE_Update_Documentation/PersonaDLE 1.2/PersonaDLE_Update.md`
+Fichier principal : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.md`
 
 Structure d'une entrée :
 
@@ -408,7 +408,7 @@ Description concise de ce qui a été ajouté/modifié/corrigé.
 - Code snippet si la logique est non triviale
 ```
 
-Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 1.2/note_ajout.md`
+Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_ajout.md`
 
 - Notes informelles, rappels, TODO liés à la version
 
@@ -441,7 +441,7 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 1.2/note_
 
 ---
 
-## 12. Ce qu'il reste à construire (roadmap v1.2)
+## 12. Ce qu'il reste à construire (roadmap v2.0)
 
 ### Backend & BDD
 
@@ -476,7 +476,7 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 1.2/note_
 - [x] Détection automatique langue navigateur au premier chargement
 - [ ] `lang/es.json` et `lang/de.json` — à créer
 - [ ] Messages JS dynamiques traduits (victoire, abandon, indices) dans chaque `modeX.js`
-- [ ] `database/quotes.js` structuré (EN uniquement pour v1.2)
+- [ ] `database/quotes.js` structuré (EN uniquement pour v2.0)
 
 ### Frontend & Qualité
 
@@ -517,3 +517,25 @@ npm run i18n:check
 ---
 
 *Ce document doit rester à jour. Toute décision d'architecture majeure prise en cours de développement doit y être ajoutée.*
+
+---
+
+## 15. Comportement attendu de Claude Code — Rôle de Mentor
+
+> Règle explicitement demandée par Hamza (session avril 2026).
+
+Claude Code doit se comporter comme un **mentor technique**, pas uniquement comme un exécutant.
+
+### Ce que cela implique :
+
+- **Critiquer les choix si nécessaire** : si une décision technique a des problèmes évidents (performance, maintenabilité, sécurité, UX), les signaler avant de coder, même si l'utilisateur ne l'a pas demandé.
+- **Proposer une alternative si elle est clairement meilleure** : ne pas imposer, mais expliquer pourquoi l'alternative est préférable et laisser l'utilisateur décider.
+- **Poser des questions avant de coder** sur les tâches importantes : s'assurer de comprendre l'intention réelle, pas juste la demande de surface.
+- **Dire "je ne suis pas sûr que ce soit la bonne approche" quand c'est le cas**, plutôt que d'exécuter aveuglément.
+- **Expliquer les décisions non évidentes** prises pendant le développement (ex : pourquoi un pattern plutôt qu'un autre).
+
+### Ce que cela ne signifie PAS :
+
+- Ne pas remettre en cause chaque ligne ou chaque choix cosmétique.
+- Ne pas surcharger les réponses d'avertissements inutiles.
+- Ne pas bloquer le travail — si l'utilisateur confirme sa décision après avoir entendu la critique, l'exécuter sans résistance.
