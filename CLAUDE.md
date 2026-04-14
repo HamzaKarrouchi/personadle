@@ -36,14 +36,16 @@ Le joueur identifie des personnages, personas ou musiques via 6 modes de jeu dis
 
 > **Règle importante** : le frontend reste en vanilla JS pour l'instant. On n'introduit un framework (React, Vue, Svelte…) que si une fonctionnalité le nécessite vraiment et après décision explicite.
 
-### Backend (v2.0 — à construire)
+### Backend (v2.0 — implémenté en local, déploiement Hostinger à venir)
 
-- **Langage** : PHP avec PDO (Prepared Statements obligatoires — protection injection SQL)
-- **BDD** : PostgreSQL **ou** MySQL/MariaDB (à confirmer selon hébergement Hostinger)
-- **Hébergement** : Hostinger (à configurer — VPS ou shared hosting)
-- **API** : REST (endpoints JSON)
-- **Authentification** : Email + mot de passe (hashé avec `password_hash()` / bcrypt côté PHP)
-- **Sécurité** : PDO + requêtes préparées, hashage bcrypt, HTTPS, tokens CSRF
+- **Langage** : PHP 8.3 avec PDO (Prepared Statements obligatoires — protection injection SQL)
+- **BDD** : MySQL 8.0 en local (développement) · MariaDB 10.6+ chez Hostinger (production) — schémas compatibles
+- **Hébergement** : Hostinger (déploiement à planifier)
+- **API** : REST (endpoints JSON, structure `api/`)
+- **Authentification** : Email + mot de passe (hashé bcrypt via `password_hash()`), sessions PHP httpOnly (pas JWT — sessions PHP suffisantes, plus simples à révoquer)
+- **Sécurité** : PDO + requêtes préparées, bcrypt, HTTPS en prod, CORS exact-origin (pas de wildcard quand `credentials: 'include'`)
+- **Offline-first** : `savePendingSession()` tente l'API, fallback localStorage si offline, sync au retour en ligne
+- **Bridge global** : `window._personadleApi` — évite les imports circulaires entre `gameCore.js` et `api.js`
 
 ---
 
@@ -57,8 +59,10 @@ personadle/
 ├── package.json / vitest.config.js   ← Config tests
 │
 ├── js/                               ← Utilitaires partagés
-│   ├── gameCore.js                   ← 47 fonctions communes (date, confetti, filtres…)
-│   └── filterMenu.js                 ← Panneau de filtres collapsible
+│   ├── gameCore.js                   ← Fonctions communes (date, confetti, filtres, buildGameSession…)
+│   ├── filterMenu.js                 ← Panneau de filtres collapsible
+│   ├── api.js                        ← Client REST (api.auth.*, api.stats.*, api.user.*) + window._personadleApi
+│   └── auth.js                       ← UI connexion/inscription, initAuth(), migration localStorage→cloud
 │
 ├── css/                              ← Styles globaux
 │   ├── global.css                    ← Commun à toutes les pages
@@ -93,9 +97,20 @@ personadle/
 │
 ├── assets/                           ← Boutons, sons, icônes partagés
 ├── img/                              ← Graphismes UI (logo, previews, avatars)
-├── tests/                            ← Tests unitaires (47 tests — tous passants)
+├── api/                              ← Backend PHP REST
+│   ├── bootstrap.php                 ← CORS, PDO singleton, helpers JSON, requireAuth()
+│   ├── config.php                    ← Identifiants BDD (gitignored — voir config.example.php)
+│   ├── config.example.php            ← Template à copier pour local + Hostinger
+│   ├── auth/                         ← register.php, login.php, logout.php, me.php
+│   ├── sessions.php                  ← POST /api/sessions (enregistrer une partie)
+│   └── user/                         ← index.php (GET/PATCH/DELETE), stats.php, migrate.php
+│
+├── tests/                            ← Tests unitaires (120 tests — tous passants)
+│   ├── gameCore.test.js              ← 102 tests (logique de jeu, dates, streaks…)
+│   └── backend.test.js               ← 18 tests (buildGameSession, savePendingSession, auth UI)
+│
 ├── sql/                              ← Schéma BDD et documentation
-│   ├── bdd.sql                       ← Schéma SQL complet (PostgreSQL)
+│   ├── bdd_mysql.sql                 ← Schéma MySQL 8.0 / MariaDB 10.6+ complet (16 tables)
 │   └── explication.md                ← Explication de chaque table avec exemples
 ├── scripts/                          ← Scripts utilitaires dev
 │   └── check-i18n.js                 ← Détection des clés manquantes dans les fichiers lang/
@@ -118,7 +133,7 @@ La v2.0 est une **mise à jour majeure de stabilisation et d'infrastructure**. L
 
 1. **Stabilité du jeu** — ne rien casser de ce qui marche
 2. **Backend & BDD** — architecture solide, sécurisée, scalable
-3. **Système de traduction** — i18n EN (base) + FR + ES + DE
+3. **Système de traduction** — i18n EN (base) + FR + ES + DE + IT
 4. **Responsive complet** — mobile, tablette, desktop
 5. **Documentation & commentaires** — tout ajout documenté
 
@@ -186,9 +201,11 @@ deletion_requests        → user_id, requested_at, processed_at (RGPD)
 
 ### 5.7 Badges & fonds d'écran débloquables
 
-- Si les badges passent en backend → les fonds d'écran suivent la même logique
-- Sinon, on garde la logique localStorage actuelle avec sync au compte
-- Les conditions de débloquage restent vérifiées côté serveur pour éviter la triche
+> **Décision actuelle (avril 2026)** : badges et wallpapers passent en backend ensemble.
+
+- **Badges → backend** : les conditions de déblocage seront vérifiées côté serveur (anti-triche), les `badges_unlocked` sont déjà dans le schéma
+- **Wallpapers → backend** : gérés exactement comme les badges (condition + unlock côté serveur), avec une table `wallpapers_unlocked` à ajouter au schéma
+- En attendant la migration complète : logique localStorage conservée, sync via `migrate.php` au moment de l'inscription
 
 ### 5.8 Musique de profil
 
@@ -270,7 +287,7 @@ Après chaque partie, afficher une stat communautaire type Wordle :
 
 ### Langues cibles
 
-- **v2.0** : `EN` (base) · `FR` · `ES` · `DE`
+- **v2.0** : `EN` (base) · `FR` · `ES` · `DE` · `IT`
 - **Post-v2.0** : `JP` — repoussé, nécessite une relecture native sérieuse
 
 ### Langue de base : EN
@@ -282,10 +299,11 @@ Les autres langues en dérivent. En cas de clé manquante : fallback `en` → cl
 
 | Fichier | Statut |
 | --- | --- |
-| `lang/en.json` | ✅ Complet — source de vérité (353 clés) |
-| `lang/fr.json` | ✅ Complet (353 clés) |
-| `lang/es.json` | 🔜 À créer |
-| `lang/de.json` | 🔜 À créer |
+| `lang/en.json` | ✅ Complet — source de vérité (452 clés) |
+| `lang/fr.json` | ✅ Complet (452 clés) |
+| `lang/es.json` | ✅ Complet (452 clés) |
+| `lang/de.json` | ✅ Complet (452 clés) |
+| `lang/it.json` | ✅ Complet (452 clés) |
 | `lang/jp.json` | ⏳ Post-v2.0 |
 
 - Clés hiérarchiques : `ui.submit`, `modes.classic.hint`, `badges.ace_detective.name`…
@@ -417,9 +435,12 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 ## 10. Tests
 
 - Framework : **Vitest** (`npm test` ou `npm run test:watch`)
-- Fichier existant : `tests/gameCore.test.js` (47 tests, tous passants)
+- `tests/gameCore.test.js` — 102 tests (logique de jeu, dates, streaks, filtres, normalisation…)
+- `tests/backend.test.js` — 18 tests (buildGameSession, savePendingSession offline/online, migration payload, auth UI DOM)
+- **Total : 120 tests, tous passants**
 - À chaque nouvel utilitaire dans `gameCore.js` → ajouter les tests correspondants
-- Pour le backend PHP, prévoir des tests d'endpoints (PHPUnit ou tests manuels Postman/curl)
+- `savePendingSession` est async (fire-and-forget côté appelant) — les callers sont des event handlers non-async, c'est voulu
+- Pour le backend PHP : tests manuels via curl ou Postman (voir les exemples dans `setup.sh`)
 - Si les tests existants deviennent incompatibles avec un changement d'architecture → les adapter, ne pas les supprimer
 
 ---
@@ -445,38 +466,50 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 
 ### Backend & BDD
 
-- [ ] Schéma BDD déployé (PostgreSQL ou MySQL selon Hostinger)
-- [ ] API REST PHP — auth, profil, stats, leaderboard, amis, social link
-- [ ] Système de comptes (inscription, connexion, sessions PHP/JWT)
-- [ ] Migration localStorage → BDD (import JSON existant)
-- [ ] Sync automatique de la progression (offline-first)
+- [x] Schéma BDD MySQL 8.0 / MariaDB 10.6+ — 16 tables (`sql/bdd_mysql.sql`)
+- [x] API REST PHP — auth (register, login, logout, me)
+- [x] API REST PHP — sessions (`POST /api/sessions` avec calcul streaks)
+- [x] API REST PHP — user (GET/PATCH/DELETE `/api/user/:id`, stats, migrate)
+- [x] Système de comptes (inscription, connexion, sessions PHP httpOnly)
+- [x] Migration localStorage → BDD (`api/user/migrate.php`, idempotent)
+- [x] Sync automatique offline-first (`savePendingSession` → API ou fallback localStorage)
+- [x] RGPD — soft delete + anonymisation immédiate + log `deletion_requests`
+- [ ] Déploiement BDD MariaDB chez Hostinger
 - [ ] Script cron `daily_targets` (génération personnage du jour côté serveur)
 - [ ] Script cron `leaderboard_cache` (recalcul périodique classements)
-- [ ] RGPD — endpoint suppression compte + job hard delete J+30
+- [ ] RGPD — job hard delete J+30 (côté serveur, cron)
 
 ### Social & Profil
 
-- [ ] Leaderboard (global + par mode, hebdo/mensuel/permanent)
-- [ ] Système d'amis (code ami, demande, accept/refus, liste)
-- [ ] Social Link — XP, rangs 1-10, interactions
+- [x] Leaderboard — page HTML + CSS + JS (filtres mode/période/métrique, pagination, filter note)
+- [x] API `/api/leaderboard` — requêtes directes user_stats + game_sessions, `my_rank` dans réponse
+- [x] Système d'amis — page HTML + CSS + JS (liste, demandes, recherche, add by code)
+- [x] API `/api/friends` — GET/POST/PATCH/DELETE, online dots, `last_seen_at`
+- [ ] Social Link — XP, rangs 1-10, interactions mutuelles
 - [ ] True Confidant Badge — génération dynamique au rang 10
 - [ ] Titres/rangs joueur — déblocage automatique + équipement
 - [ ] Page de profil publique (dynamique ou image statique)
-- [ ] Musique de profil (lecture sur page profil)
 - [ ] Stats globales post-partie ("X% of players found this character today")
+- [ ] Badges → backend (conditions vérifiées côté serveur, unlock via API)
+- [ ] Wallpapers → backend (même logique que badges, table `wallpapers_unlocked`)
+- [ ] Comparaison stats amis côte à côte (sur la page Friends)
+- [ ] Défis entre amis — envoyer/relever un défi quotidien
 
 ### i18n
 
-- [x] `lang/en.json` — 353+ clés, source de vérité
+- [x] `lang/en.json` — 452 clés, source de vérité
 - [x] `lang/fr.json` — traduction complète synchronisée
+- [x] `lang/es.json` — traduction complète synchronisée
+- [x] `lang/de.json` — traduction complète synchronisée
+- [x] `lang/it.json` — traduction complète synchronisée (ajout hors scope initial)
 - [x] `scripts/check-i18n.js` + `npm run i18n:check`
 - [x] `js/i18n.js` — `setLang()`, `t()`, `initLang()`, fallback EN, `window.i18n`
 - [x] `data-i18n` intégré : `index.html` (profil complet, news, footer, titre) + 6 modes (titre + placeholder)
 - [x] Sélecteur de langue : bouton `🌐 EN ▼` + dropdown animé + illustration décorative (bas-droite page)
 - [x] Détection automatique langue navigateur au premier chargement
-- [ ] `lang/es.json` et `lang/de.json` — à créer
-- [ ] Messages JS dynamiques traduits (victoire, abandon, indices) dans chaque `modeX.js`
-- [ ] `database/quotes.js` structuré (EN uniquement pour v2.0)
+- [x] Boutons localisés (Hint, Give-Up, Replay, Submit) — assets WebP par langue, `updateLangButtons()` câblé dans `setLang()`
+- [x] `database/quotes.js` structuré (EN uniquement pour v2.0)
+- [x] Messages d'erreur JS traduits (`alert()` dans AllOutAttack)
 
 ### Frontend & Qualité
 
@@ -495,6 +528,12 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 | Dark mode + inversion couleurs logos opus | Fond coloré semi-transparent par jeu (pas de `filter: invert`) |
 | GIFs All-Out Attack → saturation mémoire | Cache LRU max 20 + preload 5 suivants |
 | Grille Classic déborde < 1024px | `overflow-x: auto` + nouveau breakpoint 901–1024px |
+| `rank` est un mot réservé MySQL 8.0 (window function) | Toujours entourer de backticks : `` `rank` `` dans CREATE TABLE, INSERT, CHECK, VIEW |
+| Apache 403 après chmod | `chmod o+x /home/pchamza` — www-data doit pouvoir traverser le home |
+| Apache 404 malgré AllowOverride dans la conf | Apache résout le symlink → AllowOverride doit être sur le **vrai chemin** ET le chemin symlinké (deux blocs `<Directory>` dans la conf) |
+| CORS avec `credentials: 'include'` | Wildcard `*` interdit — utiliser une whitelist d'origines exactes + `Access-Control-Allow-Credentials: true` |
+| Import circulaire `gameCore.js` ↔ `api.js` | Bridge `window._personadleApi` — même pattern que `window.i18n` |
+| `savePendingSession` async mais callers non-async | Fire-and-forget voulu — les callers sont des event handlers, le jeu ne doit pas attendre la fin de l'appel réseau |
 
 ---
 
@@ -510,8 +549,13 @@ npm run test:watch
 # Vérifier les clés i18n manquantes
 npm run i18n:check
 
+# Installer le backend en local (première fois seulement)
+# Crée la BDD MySQL, l'utilisateur, importe le schéma, configure Apache
+bash setup.sh
+
 # Pas de build — ouvrir directement index.html dans un navigateur
 # ou via Live Server (VSCode)
+# En local avec backend : http://localhost/personadle/
 ```
 
 ---
@@ -539,3 +583,12 @@ Claude Code doit se comporter comme un **mentor technique**, pas uniquement comm
 - Ne pas remettre en cause chaque ligne ou chaque choix cosmétique.
 - Ne pas surcharger les réponses d'avertissements inutiles.
 - Ne pas bloquer le travail — si l'utilisateur confirme sa décision après avoir entendu la critique, l'exécuter sans résistance.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `python3 -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"` to keep the graph current
