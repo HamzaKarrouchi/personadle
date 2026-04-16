@@ -485,7 +485,10 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 - [x] API `/api/leaderboard` — requêtes directes user_stats + game_sessions, `my_rank` dans réponse
 - [x] Système d'amis — page HTML + CSS + JS (liste, demandes, recherche, add by code)
 - [x] API `/api/friends` — GET/POST/PATCH/DELETE, online dots, `last_seen_at`
-- [ ] Social Link — XP, rangs 1-10, interactions mutuelles
+- [x] Social Link — XP, rangs 1-10, interactions mutuelles, flamme, jauge, toast rang-up
+- [x] API `/api/social-links` — get/by-friend, interact (anti-spam, mutuel ×2, procédure SQL)
+- [x] Défis entre amis — envoyer/relever un défi quotidien (API messages, bandeau jeu, bouton post-victoire)
+- [x] API `/api/messages` — CRUD, défis par mode/jour, XP Social Link auto (challenge +15, beaten +35)
 - [ ] True Confidant Badge — génération dynamique au rang 10
 - [ ] Titres/rangs joueur — déblocage automatique + équipement
 - [ ] Page de profil publique (dynamique ou image statique)
@@ -493,7 +496,6 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 - [ ] Badges → backend (conditions vérifiées côté serveur, unlock via API)
 - [ ] Wallpapers → backend (même logique que badges, table `wallpapers_unlocked`)
 - [ ] Comparaison stats amis côte à côte (sur la page Friends)
-- [ ] Défis entre amis — envoyer/relever un défi quotidien
 
 ### i18n
 
