@@ -103,7 +103,16 @@ personadle/
 ├── profile/                          ← Système de profil utilisateur
 │   ├── profile.js                    ← Gestion profil, avatar (canvas crop), export JSON
 │   ├── profileStats.js               ← Suivi stats (streaks, wins, playtime…)
+│   ├── profile-page.css              ← Styles communs aux pages profil
 │   ├── badges/                       ← Système de badges (20+ badges, 4 catégories)
+│   ├── friends/                      ← Système d'amis (HTML + CSS + JS)
+│   │   ├── friends.html
+│   │   ├── friends.css
+│   │   └── friends.js
+│   ├── leaderboard/                  ← Classements (HTML + CSS + JS)
+│   │   ├── leaderboard.html
+│   │   ├── leaderboard.css
+│   │   └── leaderboard.js
 │   └── Wallpaper/                    ← 37 fonds d'écran Persona-thémés
 │
 ├── assets/                           ← Boutons, sons, icônes partagés
@@ -120,8 +129,8 @@ personadle/
 │   ├── leaderboard/                  ← index.php (classements mode/période, my_rank)
 │   └── migrations/                   ← 001_add_challenge_filters.sql (et futures migrations BDD)
 │
-├── tests/                            ← Tests unitaires (120 tests — tous passants)
-│   ├── gameCore.test.js              ← 102 tests (logique de jeu, dates, streaks…)
+├── tests/                            ← Tests unitaires (164 tests — tous passants)
+│   ├── gameCore.test.js              ← 146 tests (logique de jeu, dates, streaks, normalisation…)
 │   └── backend.test.js               ← 18 tests (buildGameSession, savePendingSession, auth UI)
 │
 ├── sql/                              ← Schéma BDD et documentation
