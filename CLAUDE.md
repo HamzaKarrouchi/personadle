@@ -16,12 +16,12 @@ Le joueur identifie des personnages, personas ou musiques via 6 modes de jeu dis
 
 ### Contributeurs
 
-| Pseudo | Rôle |
-| --- | --- |
-| Hamza Karrouchi | Fondateur & Lead Dev (logique de jeu, animations, profil) |
-| Léo (L2GENDAIRE) | Data & Design (BDD personnages, portraits, mises en page) |
-| Damien (Corbover) | Front-End (architecture CSS, responsive) |
-| Dzulian | Consultant créatif (précision P1/P2, expertise classic trilogy) |
+| Pseudo            | Rôle                                                            |
+| ----------------- | --------------------------------------------------------------- |
+| Hamza Karrouchi   | Fondateur & Lead Dev (logique de jeu, animations, profil)       |
+| Léo (L2GENDAIRE)  | Data & Design (BDD personnages, portraits, mises en page)       |
+| Damien (Corbover) | Front-End (architecture CSS, responsive)                        |
+| Dzulian           | Consultant créatif (précision P1/P2, expertise classic trilogy) |
 
 ---
 
@@ -248,29 +248,29 @@ Mécanisme inspiré directement des jeux Persona : une relation entre deux amis 
 
 #### Actions qui génèrent de l'XP
 
-| Action | XP solo | XP mutuel |
-| --- | --- | --- |
-| Partager sa streak à un ami | 15 | 30 |
-| Partager son score du jour | 10 | 20 |
-| Visiter le profil d'un ami | 5 | 10 |
-| Jouer le même jour (détecté auto) | 20 | 20 (toujours mutuel) |
-| Comparer ses stats avec un ami | 10 | 20 |
-| Envoyer/relever un défi | 15 | 35 |
+| Action                            | XP solo | XP mutuel            |
+| --------------------------------- | ------- | -------------------- |
+| Partager sa streak à un ami       | 15      | 30                   |
+| Partager son score du jour        | 10      | 20                   |
+| Visiter le profil d'un ami        | 5       | 10                   |
+| Jouer le même jour (détecté auto) | 20      | 20 (toujours mutuel) |
+| Comparer ses stats avec un ami    | 10      | 20                   |
+| Envoyer/relever un défi           | 15      | 35                   |
 
 #### Rangs (Persona-themed)
 
-| Rang | Nom EN | XP cumulés requis |
-| --- | --- | --- |
-| 1 | Stranger | 0 |
-| 2 | Acquaintance | 100 |
-| 3 | Companion | 250 |
-| 4 | Ally | 450 |
-| 5 | Confidant | 700 |
-| 6 | Trusted Ally | 1 000 |
-| 7 | True Ally | 1 350 |
-| 8 | Bond | 1 750 |
-| 9 | Unbreakable Bond | 2 200 |
-| 10 | True Confidant | 2 700 |
+| Rang | Nom EN           | XP cumulés requis |
+| ---- | ---------------- | ----------------- |
+| 1    | Stranger         | 0                 |
+| 2    | Acquaintance     | 100               |
+| 3    | Companion        | 250               |
+| 4    | Ally             | 450               |
+| 5    | Confidant        | 700               |
+| 6    | Trusted Ally     | 1 000             |
+| 7    | True Ally        | 1 350             |
+| 8    | Bond             | 1 750             |
+| 9    | Unbreakable Bond | 2 200             |
+| 10   | True Confidant   | 2 700             |
 
 #### Récompense rang 10 — True Confidant
 
@@ -319,14 +319,14 @@ Les autres langues en dérivent. En cas de clé manquante : fallback `en` → cl
 
 ### Architecture
 
-| Fichier | Statut |
-| --- | --- |
+| Fichier        | Statut                                   |
+| -------------- | ---------------------------------------- |
 | `lang/en.json` | ✅ Complet — source de vérité (760 clés) |
-| `lang/fr.json` | ✅ Complet (760 clés) |
-| `lang/es.json` | ✅ Complet (760 clés) |
-| `lang/de.json` | ✅ Complet (760 clés) |
-| `lang/it.json` | ✅ Complet (760 clés) |
-| `lang/jp.json` | ⏳ Post-v2.0 |
+| `lang/fr.json` | ✅ Complet (760 clés)                    |
+| `lang/es.json` | ✅ Complet (760 clés)                    |
+| `lang/de.json` | ✅ Complet (760 clés)                    |
+| `lang/it.json` | ✅ Complet (760 clés)                    |
+| `lang/jp.json` | ⏳ Post-v2.0                             |
 
 - Clés hiérarchiques : `ui.submit`, `modes.classic.hint`, `badges.ace_detective.name`…
 - Variables dynamiques : syntaxe `{{variable}}` — ex: `"Found in {{count}} attempt(s)"`
@@ -352,12 +352,12 @@ Architecture retenue : fichier séparé `database/quotes.js` + fallback EN
 export const characterQuotes = {
   "Ryuji Sakamoto": {
     en: "You're a Phantom Thief now too, right?",
-    fr: null,  // pas encore traduit → fallback EN
+    fr: null, // pas encore traduit → fallback EN
     es: null,
-    de: null
-  }
+    de: null,
+  },
   // ...
-}
+};
 ```
 
 Règles :
@@ -380,9 +380,15 @@ Chaque page doit fonctionner correctement sur :
 ### Breakpoints standards à utiliser
 
 ```css
-@media (max-width: 480px)  { /* mobile */         }
-@media (max-width: 768px)  { /* tablette */       }
-@media (max-width: 1024px) { /* petit desktop */  }
+@media (max-width: 480px) {
+  /* mobile */
+}
+@media (max-width: 768px) {
+  /* tablette */
+}
+@media (max-width: 1024px) {
+  /* petit desktop */
+}
 ```
 
 ### Règles CSS
@@ -438,11 +444,12 @@ Fichier principal : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_U
 Structure d'une entrée :
 
 ```markdown
-## 🏷️ Titre de la fonctionnalité *(vX.X.X)*
+## 🏷️ Titre de la fonctionnalité _(vX.X.X)_
 
 Description concise de ce qui a été ajouté/modifié/corrigé.
 
 ### Détails techniques (si pertinent)
+
 - Ce qui a changé
 - Pourquoi (bug, amélioration, nouvelle feature)
 - Code snippet si la logique est non triviale
@@ -469,45 +476,45 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 
 ## 11. Fonctionnalités en place (ne pas recoder)
 
-| Fonctionnalité | Fichier clé | Statut |
-| --- | --- | --- |
-| Reset quotidien Paris (DST-safe) | `js/gameCore.js` | ✅ Stable |
-| Système de filtres opus | `js/filterMenu.js` | ✅ Stable |
-| Autocomplete avec portraits | chaque `mode*.js` | ✅ Stable |
-| Cache LRU GIFs | `allOutAttackMode/modeAllOutAttack.js` | ✅ Stable |
-| Profil + avatar (canvas crop) | `profile/profile.js` | ✅ Stable |
-| Badges + codes événement | `profile/badges/badgesManager.js` | ✅ Stable |
-| Stats + streaks | `profile/profileStats.js` | ✅ Stable |
-| Dark mode / Colorblind | `js/gameCore.js` | ✅ Stable |
-| Son victoire / boutons | `assets/sound_effect/` | ✅ Stable |
-| Export/Import profil JSON | `profile/profile.js` | ✅ Stable |
-| Leaderboard (mode/période/métrique + scope Global/Friends) | `profile/leaderboard.js` | ✅ Stable |
-| Système d'amis (liste, demandes, recherche) | `profile/friends.js` | ✅ Stable |
-| Social Link (XP, rangs 1-10, jauge, toast) | `js/social-link.js` | ✅ Stable |
-| Social Link rank-up animation Persona-style | `js/social-link.js` + `css/global.css` | ✅ Stable |
-| Effet True Confidant rang 10 (halo + animation) | `css/rank10-effect.css` + `js/social-link.js` | ✅ Stable |
-| Comparaison stats amis (overlay radar) | `js/stats-compare.js` + `css/stats-compare.css` | ✅ Stable |
-| Défis entre amis (envoi, filtres, résolution) | `js/challenge-result.js` | ✅ Stable |
-| Bandeau défi actif en jeu | `js/challenge-banner.js` | ✅ Stable |
-| Give-up résout le défi actif (perte) | tous les `mode*.js` | ✅ Stable |
-| Notifications hors-jeu (résultats défis) | `js/notifications.js` | ✅ Stable |
-| Animation TV Persona 4 (demandes d'amis, CSS pur) | `js/tv-friend-anim.js` + `css/tv-friend-anim.css` | ✅ Stable |
-| Sélecteur style animation (🃏 Calling Card \| 📺 P4 TV \| 🔫 P3 Evoker) | `js/settings-modal.js` | ✅ Stable |
-| Animation Evoker Persona 3 — demandes d'amis | `js/p3-evoker-anim.js` + `css/p3-evoker-anim.css` | ✅ Stable |
-| Cloud sync source-of-truth — backend = vérité absolue | `js/cloud-sync.js` | ✅ Stable |
-| Streak recovery (menu Jack Frost, cooldown 2 mois) | `js/streak-recovery.js` + `api/user/recover-streak.php` | ✅ Stable |
-| Dirty-state Save button (apparaît uniquement si modif profil) | `profile/profile-page.js` + `profile/profile-page.css` | ✅ Stable |
-| Auth sans rechargement (login/logout events) | `js/auth.js` → `personadle:auth-login` / `personadle:auth-logout` | ✅ Stable |
-| Catalogue badges BDD (60 badges, `GET /api/badges`) | `api/badges/index.php` + migration 007 | ✅ Stable |
-| Catalogue wallpapers BDD (7 wallpapers, `GET /api/wallpapers`) | `api/wallpapers/index.php` + migration 007 | ✅ Stable |
-| Titres affichés correctement (fix slugs BDD) | migration 006 + `api/titles/index.php` | ✅ Stable |
-| Social Link rank-up notifié aux 2 joueurs | `js/notifications.js` + table `social_link_rankup_notifs` (migration 009) | ✅ Stable |
-| Musique de profil (sélecteur + lecture profil perso/public) | `profile/profile-page.js` | ✅ Stable |
-| Animation cadeaux admin (divine gift) | `js/divine-gift.js` + `css/divine-gift.css` | ✅ Stable |
-| Page de profil partageable — export image | `js/calling-card.js`, `html2canvas`, 8 thèmes + 25 wallpapers | ✅ Stable |
-| Panneau admin complet | `admin/` + `api/admin/` | ✅ Stable |
-| Gestion codes événement admin (CRUD + stats) | `api/admin/event_codes.php` + table `event_codes` (migration 011) | ✅ Stable |
-| Modération comptes (ban + verrou pseudo) | `api/admin/user.php` + `is_banned`/`pseudo_locked` (migration 011) | ✅ Stable |
+| Fonctionnalité                                                          | Fichier clé                                                               | Statut    |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------- |
+| Reset quotidien Paris (DST-safe)                                        | `js/gameCore.js`                                                          | ✅ Stable |
+| Système de filtres opus                                                 | `js/filterMenu.js`                                                        | ✅ Stable |
+| Autocomplete avec portraits                                             | chaque `mode*.js`                                                         | ✅ Stable |
+| Cache LRU GIFs                                                          | `allOutAttackMode/modeAllOutAttack.js`                                    | ✅ Stable |
+| Profil + avatar (canvas crop)                                           | `profile/profile.js`                                                      | ✅ Stable |
+| Badges + codes événement                                                | `profile/badges/badgesManager.js`                                         | ✅ Stable |
+| Stats + streaks                                                         | `profile/profileStats.js`                                                 | ✅ Stable |
+| Dark mode / Colorblind                                                  | `js/gameCore.js`                                                          | ✅ Stable |
+| Son victoire / boutons                                                  | `assets/sound_effect/`                                                    | ✅ Stable |
+| Export/Import profil JSON                                               | `profile/profile.js`                                                      | ✅ Stable |
+| Leaderboard (mode/période/métrique + scope Global/Friends)              | `profile/leaderboard.js`                                                  | ✅ Stable |
+| Système d'amis (liste, demandes, recherche)                             | `profile/friends.js`                                                      | ✅ Stable |
+| Social Link (XP, rangs 1-10, jauge, toast)                              | `js/social-link.js`                                                       | ✅ Stable |
+| Social Link rank-up animation Persona-style                             | `js/social-link.js` + `css/global.css`                                    | ✅ Stable |
+| Effet True Confidant rang 10 (halo + animation)                         | `css/rank10-effect.css` + `js/social-link.js`                             | ✅ Stable |
+| Comparaison stats amis (overlay radar)                                  | `js/stats-compare.js` + `css/stats-compare.css`                           | ✅ Stable |
+| Défis entre amis (envoi, filtres, résolution)                           | `js/challenge-result.js`                                                  | ✅ Stable |
+| Bandeau défi actif en jeu                                               | `js/challenge-banner.js`                                                  | ✅ Stable |
+| Give-up résout le défi actif (perte)                                    | tous les `mode*.js`                                                       | ✅ Stable |
+| Notifications hors-jeu (résultats défis)                                | `js/notifications.js`                                                     | ✅ Stable |
+| Animation TV Persona 4 (demandes d'amis, CSS pur)                       | `js/tv-friend-anim.js` + `css/tv-friend-anim.css`                         | ✅ Stable |
+| Sélecteur style animation (🃏 Calling Card \| 📺 P4 TV \| 🔫 P3 Evoker) | `js/settings-modal.js`                                                    | ✅ Stable |
+| Animation Evoker Persona 3 — demandes d'amis                            | `js/p3-evoker-anim.js` + `css/p3-evoker-anim.css`                         | ✅ Stable |
+| Cloud sync source-of-truth — backend = vérité absolue                   | `js/cloud-sync.js`                                                        | ✅ Stable |
+| Streak recovery (menu Jack Frost, cooldown 2 mois)                      | `js/streak-recovery.js` + `api/user/recover-streak.php`                   | ✅ Stable |
+| Dirty-state Save button (apparaît uniquement si modif profil)           | `profile/profile-page.js` + `profile/profile-page.css`                    | ✅ Stable |
+| Auth sans rechargement (login/logout events)                            | `js/auth.js` → `personadle:auth-login` / `personadle:auth-logout`         | ✅ Stable |
+| Catalogue badges BDD (60 badges, `GET /api/badges`)                     | `api/badges/index.php` + migration 007                                    | ✅ Stable |
+| Catalogue wallpapers BDD (7 wallpapers, `GET /api/wallpapers`)          | `api/wallpapers/index.php` + migration 007                                | ✅ Stable |
+| Titres affichés correctement (fix slugs BDD)                            | migration 006 + `api/titles/index.php`                                    | ✅ Stable |
+| Social Link rank-up notifié aux 2 joueurs                               | `js/notifications.js` + table `social_link_rankup_notifs` (migration 009) | ✅ Stable |
+| Musique de profil (sélecteur + lecture profil perso/public)             | `profile/profile-page.js`                                                 | ✅ Stable |
+| Animation cadeaux admin (divine gift)                                   | `js/divine-gift.js` + `css/divine-gift.css`                               | ✅ Stable |
+| Page de profil partageable — export image                               | `js/calling-card.js`, `html2canvas`, 8 thèmes + 25 wallpapers             | ✅ Stable |
+| Panneau admin complet                                                   | `admin/` + `api/admin/`                                                   | ✅ Stable |
+| Gestion codes événement admin (CRUD + stats)                            | `api/admin/event_codes.php` + table `event_codes` (migration 011)         | ✅ Stable |
+| Modération comptes (ban + verrou pseudo)                                | `api/admin/user.php` + `is_banned`/`pseudo_locked` (migration 011)        | ✅ Stable |
 
 ---
 
@@ -585,44 +592,44 @@ Fichier de notes rapides : `PersonaDLE_Update_Documentation/PersonaDLE 2.0/note_
 
 ## 13. Pièges connus & décisions techniques passées
 
-| Problème | Solution retenue |
-| --- | --- |
-| Listeners autocomplete empilés à chaque filtre | Mutation en place (`personas.length = 0; personas.push(...)`) + init unique |
-| Focus listener rechargement intempestif (Emoji) | Supprimé — `visibilitychange` seul, avec vérification de date |
-| DST Paris mal géré | `Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris' })` |
-| Dark mode + inversion couleurs logos opus | Fond coloré semi-transparent par jeu (pas de `filter: invert`) |
-| GIFs All-Out Attack → saturation mémoire | Cache LRU max 20 + preload 5 suivants |
-| Grille Classic déborde < 1024px | `overflow-x: auto` + nouveau breakpoint 901–1024px |
-| `rank` est un mot réservé MySQL 8.0 (window function) | Toujours entourer de backticks : `` `rank` `` dans CREATE TABLE, INSERT, CHECK, VIEW |
-| Apache 403 après chmod | `chmod o+x /home/pchamza` — www-data doit pouvoir traverser le home |
-| Apache 404 malgré AllowOverride dans la conf | Apache résout le symlink → AllowOverride doit être sur le **vrai chemin** ET le chemin symlinké (deux blocs `<Directory>` dans la conf) |
-| CORS avec `credentials: 'include'` | Wildcard `*` interdit — utiliser une whitelist d'origines exactes + `Access-Control-Allow-Credentials: true` |
-| Import circulaire `gameCore.js` ↔ `api.js` | Bridge `window._personadleApi` — même pattern que `window.i18n` |
-| `savePendingSession` async mais callers non-async | Fire-and-forget voulu — les callers sont des event handlers, le jeu ne doit pas attendre la fin de l'appel réseau |
-| `_migrate()` dans `filterMenu.js` expand incorrect des filtres de défi | Vérifier si des enfants sont déjà présents avant d'expand : `children.some(c => saved.includes(c))` — sans ça, `["P5","P5R"]` devient tous les sous-codes P5 |
-| `checkChallengeCompletion()` non appelé sur give-up | Doit être hors du bloc `if (!force)` avec `isWin = !force` — sinon le give-up ne résout jamais le défi actif |
-| `FILTER_STORAGE_KEYS` dupliqué entre `gameCore.js` et `friends.js` | Exporté depuis `gameCore.js` uniquement — importer partout ailleurs, ne jamais redéfinir |
-| `GET /api/user/:id` retournait 403 pour les profils tiers | Retourne maintenant un profil public restreint (pseudo, friend_code, avatar, border) pour tout utilisateur authentifié |
-| `syncPending` abandonnait la queue sur premier 409 | 409 = session déjà enregistrée côté serveur → `continue` silencieux, pas `return` ; les autres erreurs s'accumulent dans `remaining[]` |
-| `t(key) ?? fallback` retourne la clé brute au lieu du fallback | `window.i18n.t(key)` retourne la clé (string truthy) quand elle n'existe pas — `??` ne se déclenche jamais. Pattern correct : `const r = window.i18n?.t?.(key); return (r != null && r !== key) ? r : fallback;` |
-| DB schema drift — colonnes `has_migrated` / `theme_id` absentes en local | Migrations 002+ non appliquées en local → PHP crashait sur SELECT. Fix : retirer ces colonnes des requêtes PHP ; `formatUser()` gère déjà le fallback `?? false` |
-| `modeSilhouette.js` envoyait `"Shadow"` comme mode | Le backend valide en minuscule (`silhouette`). Fix : `const modeName = "silhouette"` + normalisation dans `syncPending` via alias map |
-| `api/user/.htaccess` nécessite une entrée explicite par endpoint | Chaque fichier PHP dans `api/user/` doit avoir sa propre `RewriteRule` — `/compare` manquant → 404. Toujours vérifier `.htaccess` quand on crée un nouveau endpoint |
-| XP Social Link ne doit jamais être déclenché au click d'un bouton de jauge | L'XP est un effet secondaire d'une vraie action (visite profil = appel `gainSocialLinkXp` au load, compare = endpoint `/api/user/compare`). Les boutons de la jauge naviguent/déclenchent l'action, ils ne font pas d'appel XP direct |
-| PDO MySQL — param nommé répété dans une même requête | MySQL PDO ne supporte pas `:param` utilisé plusieurs fois dans un seul `prepare()`. Utiliser des `?` positionnels et `execute([$val, $val, $val])` |
-| `t(key)` dans un module local retourne la clé brute | Même piège que global : `val !== key ? val : ''` — puis `t('k') \|\| 'fallback'` fonctionne car `'' \|\| 'fallback'` = `'fallback'` |
-| `isolation: isolate` sur `.tv-body` clippait le burst avatar | Un enfant positionné avec `translateY(-88px)` dans un élément `isolation: isolate` peut être coupé. Fix : sortir `.tv-burst-wrap` du corps de la TV → enfant direct de `.tv-wrap` (position: relative), z-index:20 |
-| `animation-fill-mode: forwards` obligatoire pour les overlays "attente de choix" | Sans `forwards`, l'animation revient à l'état initial après sa fin — l'overlay disparaît. Toujours utiliser `forwards` + idle pulse class ajoutée après la fin de l'anim (setTimeout) pour indiquer l'attente |
-| Race condition badge BDD → UI | `syncBadgesWithBackend()` est async fire-and-forget — `renderBadgesModal()` était déjà appelé avant que le fetch termine. Fix : appeler explicitement `renderBadgesPreview()` + `renderBadgesModal()` DANS le callback du fetch, après l'ajout des nouveaux badges |
-| `.htaccess` `api/user/` — nouveau endpoint = nouvelle RewriteRule | Chaque fichier PHP ajouté dans `api/user/` (ex: `recover-streak.php`) doit avoir sa propre ligne `RewriteRule ^recover-streak$ recover-streak.php [L,QSA]` — sinon 404 |
-| `LEAVE proc_name` non reconnu sur MariaDB CLI | MariaDB n'accepte pas le nom de la procédure comme label implicite. Fix : labelliser le bloc `proc_body: BEGIN … END` et utiliser `LEAVE proc_body`. Également : PhpMyAdmin ne gère pas `DELIMITER` — utiliser le CLI avec `--delimiter=$$` ou SSH MariaDB direct |
-| Procédure stockée — import Hostinger | Ne pas importer via PhpMyAdmin (erreur DELIMITER). Méthode correcte : SSH → `mysql -u user -p db --delimiter='$$' < fichier.sql` ou coller directement dans le CLI MariaDB avec `DELIMITER $$` activé |
-| Animation défi rejouée après changement de compte | `_crInitDone` dans localStorage n'a pas de préfixe user_id — persiste entre comptes. Fix : `localStorage.removeItem('_crInitDone')` dans `js/auth.js` avant le dispatch `personadle:auth-login` (login ET register) |
-| `default_avatar.png` 404 depuis `index.html` | `../img/default_avatar.png` fonctionne depuis les sous-dossiers modes mais résout vers `/img/` depuis la racine. Fix : `_imgBase()` dans `js/challenge-result.js` — même pattern que `streak-recovery.js` |
-| `window.onclick` — les modales se court-circuitent | Assigner `window.onclick = fn` écrase silencieusement le handler précédent. Toujours utiliser `window.addEventListener('click', fn)` pour plusieurs modales sur la même page |
-| `api/admin/.htaccess` — nouveau fichier PHP = nouvelle RewriteRule | Contrairement à `api/` (auto-routing par fichier), `api/admin/` a ses propres règles explicites. Chaque nouveau `*.php` dans `api/admin/` doit avoir sa ligne `RewriteRule ^mon_fichier$ mon_fichier.php [L,QSA]` — sinon 404 immédiat |
-| `ALTER TABLE … ADD COLUMN IF NOT EXISTS` — syntaxe MariaDB uniquement | MySQL 8.0 local ne supporte pas `IF NOT EXISTS` sur `ADD COLUMN` (extension MariaDB). Pour les migrations locales MySQL, utiliser `ADD COLUMN` sans condition ; idempotence garantie par le numéro de migration |
-| `api/badges/index.php` redeem ne déverrouillait pas le badge | Le endpoint enregistrait la redemption dans `event_codes_redeemed` mais n'insérait jamais dans `badges_unlocked` — le badge restait bloqué côté serveur. Fix : `INSERT IGNORE INTO badges_unlocked` après validation |
+| Problème                                                                         | Solution retenue                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Listeners autocomplete empilés à chaque filtre                                   | Mutation en place (`personas.length = 0; personas.push(...)`) + init unique                                                                                                                                                                                        |
+| Focus listener rechargement intempestif (Emoji)                                  | Supprimé — `visibilitychange` seul, avec vérification de date                                                                                                                                                                                                      |
+| DST Paris mal géré                                                               | `Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris' })`                                                                                                                                                                                                       |
+| Dark mode + inversion couleurs logos opus                                        | Fond coloré semi-transparent par jeu (pas de `filter: invert`)                                                                                                                                                                                                     |
+| GIFs All-Out Attack → saturation mémoire                                         | Cache LRU max 20 + preload 5 suivants                                                                                                                                                                                                                              |
+| Grille Classic déborde < 1024px                                                  | `overflow-x: auto` + nouveau breakpoint 901–1024px                                                                                                                                                                                                                 |
+| `rank` est un mot réservé MySQL 8.0 (window function)                            | Toujours entourer de backticks : `` `rank` `` dans CREATE TABLE, INSERT, CHECK, VIEW                                                                                                                                                                               |
+| Apache 403 après chmod                                                           | `chmod o+x /home/pchamza` — www-data doit pouvoir traverser le home                                                                                                                                                                                                |
+| Apache 404 malgré AllowOverride dans la conf                                     | Apache résout le symlink → AllowOverride doit être sur le **vrai chemin** ET le chemin symlinké (deux blocs `<Directory>` dans la conf)                                                                                                                            |
+| CORS avec `credentials: 'include'`                                               | Wildcard `*` interdit — utiliser une whitelist d'origines exactes + `Access-Control-Allow-Credentials: true`                                                                                                                                                       |
+| Import circulaire `gameCore.js` ↔ `api.js`                                       | Bridge `window._personadleApi` — même pattern que `window.i18n`                                                                                                                                                                                                    |
+| `savePendingSession` async mais callers non-async                                | Fire-and-forget voulu — les callers sont des event handlers, le jeu ne doit pas attendre la fin de l'appel réseau                                                                                                                                                  |
+| `_migrate()` dans `filterMenu.js` expand incorrect des filtres de défi           | Vérifier si des enfants sont déjà présents avant d'expand : `children.some(c => saved.includes(c))` — sans ça, `["P5","P5R"]` devient tous les sous-codes P5                                                                                                       |
+| `checkChallengeCompletion()` non appelé sur give-up                              | Doit être hors du bloc `if (!force)` avec `isWin = !force` — sinon le give-up ne résout jamais le défi actif                                                                                                                                                       |
+| `FILTER_STORAGE_KEYS` dupliqué entre `gameCore.js` et `friends.js`               | Exporté depuis `gameCore.js` uniquement — importer partout ailleurs, ne jamais redéfinir                                                                                                                                                                           |
+| `GET /api/user/:id` retournait 403 pour les profils tiers                        | Retourne maintenant un profil public restreint (pseudo, friend_code, avatar, border) pour tout utilisateur authentifié                                                                                                                                             |
+| `syncPending` abandonnait la queue sur premier 409                               | 409 = session déjà enregistrée côté serveur → `continue` silencieux, pas `return` ; les autres erreurs s'accumulent dans `remaining[]`                                                                                                                             |
+| `t(key) ?? fallback` retourne la clé brute au lieu du fallback                   | `window.i18n.t(key)` retourne la clé (string truthy) quand elle n'existe pas — `??` ne se déclenche jamais. Pattern correct : `const r = window.i18n?.t?.(key); return (r != null && r !== key) ? r : fallback;`                                                   |
+| DB schema drift — colonnes `has_migrated` / `theme_id` absentes en local         | Migrations 002+ non appliquées en local → PHP crashait sur SELECT. Fix : retirer ces colonnes des requêtes PHP ; `formatUser()` gère déjà le fallback `?? false`                                                                                                   |
+| `modeSilhouette.js` envoyait `"Shadow"` comme mode                               | Le backend valide en minuscule (`silhouette`). Fix : `const modeName = "silhouette"` + normalisation dans `syncPending` via alias map                                                                                                                              |
+| `api/user/.htaccess` nécessite une entrée explicite par endpoint                 | Chaque fichier PHP dans `api/user/` doit avoir sa propre `RewriteRule` — `/compare` manquant → 404. Toujours vérifier `.htaccess` quand on crée un nouveau endpoint                                                                                                |
+| XP Social Link ne doit jamais être déclenché au click d'un bouton de jauge       | L'XP est un effet secondaire d'une vraie action (visite profil = appel `gainSocialLinkXp` au load, compare = endpoint `/api/user/compare`). Les boutons de la jauge naviguent/déclenchent l'action, ils ne font pas d'appel XP direct                              |
+| PDO MySQL — param nommé répété dans une même requête                             | MySQL PDO ne supporte pas `:param` utilisé plusieurs fois dans un seul `prepare()`. Utiliser des `?` positionnels et `execute([$val, $val, $val])`                                                                                                                 |
+| `t(key)` dans un module local retourne la clé brute                              | Même piège que global : `val !== key ? val : ''` — puis `t('k') \|\| 'fallback'` fonctionne car `'' \|\| 'fallback'` = `'fallback'`                                                                                                                                |
+| `isolation: isolate` sur `.tv-body` clippait le burst avatar                     | Un enfant positionné avec `translateY(-88px)` dans un élément `isolation: isolate` peut être coupé. Fix : sortir `.tv-burst-wrap` du corps de la TV → enfant direct de `.tv-wrap` (position: relative), z-index:20                                                 |
+| `animation-fill-mode: forwards` obligatoire pour les overlays "attente de choix" | Sans `forwards`, l'animation revient à l'état initial après sa fin — l'overlay disparaît. Toujours utiliser `forwards` + idle pulse class ajoutée après la fin de l'anim (setTimeout) pour indiquer l'attente                                                      |
+| Race condition badge BDD → UI                                                    | `syncBadgesWithBackend()` est async fire-and-forget — `renderBadgesModal()` était déjà appelé avant que le fetch termine. Fix : appeler explicitement `renderBadgesPreview()` + `renderBadgesModal()` DANS le callback du fetch, après l'ajout des nouveaux badges |
+| `.htaccess` `api/user/` — nouveau endpoint = nouvelle RewriteRule                | Chaque fichier PHP ajouté dans `api/user/` (ex: `recover-streak.php`) doit avoir sa propre ligne `RewriteRule ^recover-streak$ recover-streak.php [L,QSA]` — sinon 404                                                                                             |
+| `LEAVE proc_name` non reconnu sur MariaDB CLI                                    | MariaDB n'accepte pas le nom de la procédure comme label implicite. Fix : labelliser le bloc `proc_body: BEGIN … END` et utiliser `LEAVE proc_body`. Également : PhpMyAdmin ne gère pas `DELIMITER` — utiliser le CLI avec `--delimiter=$$` ou SSH MariaDB direct  |
+| Procédure stockée — import Hostinger                                             | Ne pas importer via PhpMyAdmin (erreur DELIMITER). Méthode correcte : SSH → `mysql -u user -p db --delimiter='$$' < fichier.sql` ou coller directement dans le CLI MariaDB avec `DELIMITER $$` activé                                                              |
+| Animation défi rejouée après changement de compte                                | `_crInitDone` dans localStorage n'a pas de préfixe user_id — persiste entre comptes. Fix : `localStorage.removeItem('_crInitDone')` dans `js/auth.js` avant le dispatch `personadle:auth-login` (login ET register)                                                |
+| `default_avatar.png` 404 depuis `index.html`                                     | `../img/default_avatar.png` fonctionne depuis les sous-dossiers modes mais résout vers `/img/` depuis la racine. Fix : `_imgBase()` dans `js/challenge-result.js` — même pattern que `streak-recovery.js`                                                          |
+| `window.onclick` — les modales se court-circuitent                               | Assigner `window.onclick = fn` écrase silencieusement le handler précédent. Toujours utiliser `window.addEventListener('click', fn)` pour plusieurs modales sur la même page                                                                                       |
+| `api/admin/.htaccess` — nouveau fichier PHP = nouvelle RewriteRule               | Contrairement à `api/` (auto-routing par fichier), `api/admin/` a ses propres règles explicites. Chaque nouveau `*.php` dans `api/admin/` doit avoir sa ligne `RewriteRule ^mon_fichier$ mon_fichier.php [L,QSA]` — sinon 404 immédiat                             |
+| `ALTER TABLE … ADD COLUMN IF NOT EXISTS` — syntaxe MariaDB uniquement            | MySQL 8.0 local ne supporte pas `IF NOT EXISTS` sur `ADD COLUMN` (extension MariaDB). Pour les migrations locales MySQL, utiliser `ADD COLUMN` sans condition ; idempotence garantie par le numéro de migration                                                    |
+| `api/badges/index.php` redeem ne déverrouillait pas le badge                     | Le endpoint enregistrait la redemption dans `event_codes_redeemed` mais n'insérait jamais dans `badges_unlocked` — le badge restait bloqué côté serveur. Fix : `INSERT IGNORE INTO badges_unlocked` après validation                                               |
 
 ---
 
@@ -649,7 +656,7 @@ bash setup.sh
 
 ---
 
-*Ce document doit rester à jour. Toute décision d'architecture majeure prise en cours de développement doit y être ajoutée.*
+_Ce document doit rester à jour. Toute décision d'architecture majeure prise en cours de développement doit y être ajoutée._
 
 ---
 
@@ -678,6 +685,7 @@ Claude Code doit se comporter comme un **mentor technique**, pas uniquement comm
 This project has a graphify knowledge graph at graphify-out/.
 
 Rules:
+
 - Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
 - If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
 - After modifying code files in this session, run `python3 -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"` to keep the graph current
