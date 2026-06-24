@@ -119,7 +119,10 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | `window.onclick` écrase handlers | Toujours `window.addEventListener('click', fn)` |
 | `LEAVE proc_name` non reconnu MariaDB | Labelliser `proc_body: BEGIN…END` → `LEAVE proc_body` |
 | Procédure stockée import Hostinger | SSH + `mysql --delimiter='$$' < fichier.sql` — jamais phpMyAdmin |
-| Streak cooldown Jack Frost | Le cooldown de 60j est géré **côté client uniquement** — vulnérabilité connue |
+| Streak cooldown Jack Frost | Cooldown 60j **enforced côté serveur** (`users.streak_recovered_at`) ; le gate client n'est qu'un confort UX |
+| Récupération de streak | `performRecovery()` (`js/streak-recovery.js`) **attend** la réponse backend et ne consomme le crédit qu'en cas de succès — ne jamais repasser en fire-and-forget (sinon revert silencieux au prochain `pullProfileFromCloud`) |
+| Validation `previous_streak` | Plafonnée au nb de jours **distincts** joués (`COUNT(DISTINCT played_date)`), pas au `streak_record` par mode (streak client = globale) |
+| Streak client en UTC | **Toujours** `parisDateKey()` pour la frontière de journée dans `profileStats.js` — jamais `toISOString()` |
 | DST Paris mal géré | `Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris' })` |
 | `ALTER TABLE … ADD COLUMN IF NOT EXISTS` | Syntaxe MariaDB uniquement — MySQL 8.0 : `ADD COLUMN` sans condition |
 | `isolation: isolate` clippe le burst avatar | Sortir `.tv-burst-wrap` du corps TV → enfant direct de `.tv-wrap`, z-index:20 |
