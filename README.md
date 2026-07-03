@@ -411,30 +411,20 @@ Track your journey with comprehensive stats:
 
 ## 🗺️ Roadmap
 
-| Feature                         | Status       | Contributor    |
-| ------------------------------- | ------------ | -------------- |
-| All 6 Game Modes                | ✅ Done      | Hamza & Léo    |
-| Badge System (60+ badges)       | ✅ Done      | Hamza          |
-| Profile Sharing & Wallpapers    | ✅ Done      | Hamza          |
-| Sound Effects                   | ✅ Done      | Hamza          |
-| Local Profiles & Stats          | ✅ Done      | Hamza          |
-| Colorblind Mode                 | ✅ Done      | Hamza          |
-| Daily Reset System              | ✅ Done      | Hamza          |
-| Filter Persistence              | ✅ Done      | Hamza          |
-| Persona-style SVG UI            | ✅ Done      | Hamza          |
-| Full Responsive Layout          | ✅ Done      | Damien & Hamza |
-| PHP Backend + MariaDB           | ✅ Done      | Hamza          |
-| Cloud Sync (offline-first)      | ✅ Done      | Hamza          |
-| Friends System + Social Link    | ✅ Done      | Hamza          |
-| Leaderboard (mode/period)       | ✅ Done      | Hamza          |
-| Daily Challenges                | ✅ Done      | Hamza          |
-| Multi-language (EN/FR/ES/DE/IT) | ✅ Done      | Hamza          |
-| Profile Music                   | ✅ Done      | Hamza          |
-| Profile Card Export (PNG)       | ✅ Done      | Hamza          |
-| Admin Panel                     | ✅ Done      | Hamza          |
-| 252 Unit Tests                  | ✅ Done      | Hamza          |
-| Mobile App (PWA)                | 🔜 Planned   | -              |
-| Japanese (JP) translation       | 🔜 Post-v2.0 | -              |
+Grosses briques déjà livrées — backend PHP/MariaDB, amis + Social Link, leaderboard, défis
+quotidiens, i18n 5 langues, panel admin, 363 tests automatisés (Vitest + PHPUnit + Playwright).
+
+| Feature                            | Status       |
+| ----------------------------------- | ------------ |
+| All 6 Game Modes + Full Backend     | ✅ Done      |
+| Friends, Social Link & Leaderboard  | ✅ Done      |
+| Multi-language (EN/FR/ES/DE/IT)     | ✅ Done      |
+| Mobile App (PWA)                    | 🔜 Planned   |
+| Japanese (JP) translation           | 🔜 Post-v2.0 |
+
+> 📋 **La roadmap complète et à jour (prochaines étapes priorisées, décisions en attente,
+> historique détaillé par domaine) vit dans [`ROADMAP.md`](ROADMAP.md)** — document vivant,
+> mis à jour en continu, pas dupliqué ici.
 
 ---
 
