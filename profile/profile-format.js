@@ -23,3 +23,21 @@ export function formatSongTime(s) {
     .padStart(2, "0");
   return `${m}:${sec}`;
 }
+
+/**
+ * Normalise un chemin d'avatar pour fonctionner depuis profile/.
+ * Convertit les anciens chemins ./img/... en ../img/...
+ * Les data URLs (base64) passent sans modification.
+ *
+ * @param {string|null} avatarPath - Chemin stocké dans localStorage
+ * @returns {string} Chemin résolu depuis profile/
+ */
+export function normalizeAvatarPath(avatarPath) {
+  if (!avatarPath) return "../img/default_avatar.png";
+  // Data URL base64 — toujours valide, aucun ajustement nécessaire
+  if (avatarPath.startsWith("data:")) return avatarPath;
+  // Chemins déjà absolus ou root-relatifs
+  if (avatarPath.startsWith("/") || avatarPath.startsWith("http")) return avatarPath;
+  // Anciens chemins stockés depuis index.html (./img/...) → corriger pour profile/
+  return avatarPath.replace(/^\.\/img\//, "../img/");
+}
