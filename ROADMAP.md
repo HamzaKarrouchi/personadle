@@ -77,8 +77,6 @@ Nouveau jeu — cas A (roster inédit)
 </tr>
 </table>
 
-> 🖼️ Images en attente — voir `docs/roadmap/README.md` pour les déposer.
-
 ### 🟠 Qualité / robustesse
 
 - [ ] **Responsive + a11y** des nouvelles modales (avatar, musique, couleurs) : focus trap + Escape + test mobile.

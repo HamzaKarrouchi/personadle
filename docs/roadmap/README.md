@@ -8,8 +8,8 @@ fonctionnent sans autre modification) :
 
 | Fichier                    | Contenu                                  | Statut     |
 | -------------------------- | ----------------------------------------- | ---------- |
-| `persona-4-revival.jpg`    | Key art / logo Persona 4 Revival          | ⏳ En attente |
-| `persona-6.jpg`            | Key art / teaser Persona 6                | ⏳ En attente |
+| `persona-4-revival.jpg`    | Cast art Persona 4                        | ✅ Fourni  |
+| `persona-6.jpg`            | Logo/teaser Persona 6                     | ✅ Fourni  |
 
 > Préférer une image officielle (site éditeur, capture de trailer, presse) plutôt qu'une
 > capture d'écran de recherche Google — plus stable dans le temps, moins de risque de
