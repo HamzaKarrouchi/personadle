@@ -6,6 +6,7 @@ import {
 } from "../js/social-link.js";
 import { getStreakTier, formatSongTime } from "./profile-format.js";
 import { formatPlayTime } from "./formatPlayTime.js";
+import { resolveTheme, applyThemeVars } from "./theme.js";
 
 /**
  * profile/profile-view.js — Mode consultation du profil d'un autre joueur
@@ -30,62 +31,18 @@ const uidParam = params.get("uid")?.trim() ?? "";
 
 if (viewParam || uidParam) {
   // ─────────────────────────────────────────────────────────────────────────────
-  // THÈMES — identiques à profile-page.js
+  // THÈMES — partagés avec profile-page.js via profile/theme.js
   // ─────────────────────────────────────────────────────────────────────────────
-
-  const PROFILE_THEMES = {
-    all_out: { accent: "#E63946", hover: "#C1121F", light: "#FF9999", rgb: "230, 57, 70" },
-    velvet_room: { accent: "#1B3A8A", hover: "#162E72", light: "#60A5FA", rgb: "27, 58, 138" },
-    dark_hour: { accent: "#00B4D8", hover: "#0077B6", light: "#48CAE4", rgb: "0, 180, 216" },
-    pink_ribbon: { accent: "#E8739A", hover: "#D0507A", light: "#F9A8D4", rgb: "232, 115, 154" },
-    midnight_channel: { accent: "#EAB308", hover: "#CA8A04", light: "#FEF08A", rgb: "234, 179, 8" },
-    demon_palace: { accent: "#9333EA", hover: "#7E22CE", light: "#D8B4FE", rgb: "147, 51, 234" },
-    eternal_punishment: {
-      accent: "#4F46E5",
-      hover: "#4338CA",
-      light: "#A5B4FC",
-      rgb: "79, 70, 229",
-    },
-    golden_labyrinth: {
-      accent: "#F97316",
-      hover: "#EA6C12",
-      light: "#FDBA74",
-      rgb: "249, 115, 22",
-    },
-  };
-
-  function _hexToRgb(hex) {
-    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return m ? `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}` : "0, 0, 0";
-  }
-  function _adjustHex(hex, delta) {
-    const n = parseInt(hex.replace("#", ""), 16);
-    const r = Math.min(255, Math.max(0, (n >> 16) + delta));
-    const g = Math.min(255, Math.max(0, ((n >> 8) & 0xff) + delta));
-    const b = Math.min(255, Math.max(0, (n & 0xff) + delta));
-    return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
-  }
 
   function applyViewTheme(wallpaperId) {
     if (!wallpaperId) return;
-    const root = document.documentElement;
-
     if (wallpaperId.startsWith("custom:")) {
       const hex = wallpaperId.slice(7);
       if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
-      root.style.setProperty("--accent", hex);
-      root.style.setProperty("--accent-hover", _adjustHex(hex, -35));
-      root.style.setProperty("--accent-light", _adjustHex(hex, 45));
-      root.style.setProperty("--accent-rgb", _hexToRgb(hex));
+      applyThemeVars(resolveTheme("custom", hex));
       return;
     }
-
-    const theme = PROFILE_THEMES[wallpaperId];
-    if (!theme) return;
-    root.style.setProperty("--accent", theme.accent);
-    root.style.setProperty("--accent-hover", theme.hover);
-    root.style.setProperty("--accent-light", theme.light);
-    root.style.setProperty("--accent-rgb", theme.rgb);
+    applyThemeVars(resolveTheme(wallpaperId));
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

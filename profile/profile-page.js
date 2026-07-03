@@ -39,10 +39,11 @@ import { pullProfileFromCloud, pushLangToCloud } from "../js/cloud-sync.js";
 import { formatPlayTime } from "./formatPlayTime.js";
 import { AVATAR_GROUPS } from "./avatars_data.js";
 import { getStreakTier, formatSongTime } from "./profile-format.js";
+import { THEME_COLORS, hexToRgb, adjustHex, resolveTheme, applyThemeVars } from "./theme.js";
 
-// Ré-exportées pour compatibilité avec le code existant qui importe ces deux
-// fonctions depuis profile-page.js plutôt que depuis profile-format.js.
-export { getStreakTier, formatSongTime };
+// Ré-exportées pour compatibilité avec le code existant qui importe ces
+// fonctions depuis profile-page.js plutôt que depuis profile-format.js/theme.js.
+export { getStreakTier, formatSongTime, hexToRgb, adjustHex };
 
 // Exposer les songs pour d'autres modules (notifications.js, social-link.js…)
 window._profileSongs = ALL_SONGS;
@@ -52,106 +53,31 @@ window._profileSongs = ALL_SONGS;
 // ─────────────────────────────────────────────────────────
 
 /**
- * Définitions des thèmes de couleur de l'interface.
- * Les valeurs sont appliquées via les CSS variables --accent, --accent-hover,
- * --accent-light et --accent-rgb sur document.documentElement.
+ * Définitions des thèmes de couleur de l'interface (labels UI + couleurs).
+ * Les couleurs viennent de THEME_COLORS (partagé avec profile-view.js) pour
+ * n'avoir qu'une seule source de vérité — seuls les labels sont propres au picker.
  */
-const THEMES = [
-  // ── Persona 5 ──────────────────────────────────────────
-  {
-    id: "all_out",
-    accent: "#E63946",
-    hover: "#C1121F",
-    light: "#FF9999",
-    rgb: "230, 57, 70",
-    label: "All-Out Attack",
-  },
-  // ── Velvet Room (bleu nuit d'Igor) ─────────────────────
-  {
-    id: "velvet_room",
-    accent: "#1B3A8A",
-    hover: "#162E72",
-    light: "#60A5FA",
-    rgb: "27, 58, 138",
-    label: "Velvet Room",
-  },
-  // ── Persona 3 (Dark Hour / Tartarus) ───────────────────
-  {
-    id: "dark_hour",
-    accent: "#00B4D8",
-    hover: "#0077B6",
-    light: "#48CAE4",
-    rgb: "0, 180, 216",
-    label: "Dark Hour",
-  },
-  // ── Persona 3 Portable (FeMC, rose doux) ───────────────
-  {
-    id: "pink_ribbon",
-    accent: "#E8739A",
-    hover: "#D0507A",
-    light: "#F9A8D4",
-    rgb: "232, 115, 154",
-    label: "Pink Ribbon",
-  },
-  // ── Persona 4 (Midnight Channel, or TV World) ──────────
-  {
-    id: "midnight_channel",
-    accent: "#EAB308",
-    hover: "#CA8A04",
-    light: "#FEF08A",
-    rgb: "234, 179, 8",
-    label: "Midnight Channel",
-  },
-  // ── Persona 1 (violet mystique, Demon Palace) ──────────
-  {
-    id: "demon_palace",
-    accent: "#9333EA",
-    hover: "#7E22CE",
-    light: "#D8B4FE",
-    rgb: "147, 51, 234",
-    label: "Demon Palace",
-  },
-  // ── Persona 2 EP (Eternal Punishment, indigo) ──────────
-  {
-    id: "eternal_punishment",
-    accent: "#4F46E5",
-    hover: "#4338CA",
-    light: "#A5B4FC",
-    rgb: "79, 70, 229",
-    label: "Eternal Punishment",
-  },
-  // ── Persona Q (labyrinthe doré, orange vif) ────────────
-  {
-    id: "golden_labyrinth",
-    accent: "#F97316",
-    hover: "#EA6C12",
-    light: "#FDBA74",
-    rgb: "249, 115, 22",
-    label: "Golden Labyrinth",
-  },
-  // ── Couleur libre ──────────────────────────────────────
-  { id: "custom", accent: null, hover: null, light: null, rgb: null, label: null },
+const THEME_LABELS = [
+  { id: "all_out", label: "All-Out Attack" }, // Persona 5
+  { id: "velvet_room", label: "Velvet Room" }, // bleu nuit d'Igor
+  { id: "dark_hour", label: "Dark Hour" }, // Persona 3 (Tartarus)
+  { id: "pink_ribbon", label: "Pink Ribbon" }, // Persona 3 Portable (FeMC)
+  { id: "midnight_channel", label: "Midnight Channel" }, // Persona 4 (TV World)
+  { id: "demon_palace", label: "Demon Palace" }, // Persona 1 (violet mystique)
+  { id: "eternal_punishment", label: "Eternal Punishment" }, // Persona 2 EP (indigo)
+  { id: "golden_labyrinth", label: "Golden Labyrinth" }, // Persona Q (orange vif)
+  { id: "custom", label: null }, // Couleur libre
 ];
+const THEMES = THEME_LABELS.map(({ id, label }) => ({
+  id,
+  label,
+  ...(THEME_COLORS[id] || { accent: null, hover: null, light: null, rgb: null }),
+}));
 
 /** Traduit une clé i18n avec un vrai fallback string (window.i18n.t renvoie la clé brute si absente). */
 function tf(key, fallback) {
   const v = window.i18n?.t?.(key);
   return v != null && v !== key ? v : fallback;
-}
-
-/** Convertit un hex en "r, g, b" pour rgba(). */
-export function hexToRgb(hex) {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return m ? `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}` : "0, 0, 0";
-}
-
-/** Éclaircit ou assombrit une couleur hex d'un delta (-255 → 255). */
-export function adjustHex(hex, delta) {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const r = Math.min(255, Math.max(0, (n >> 16) + delta));
-  const g = Math.min(255, Math.max(0, ((n >> 8) & 0xff) + delta));
-  const b = Math.min(255, Math.max(0, (n & 0xff) + delta));
-  return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
 }
 
 /**
@@ -160,27 +86,8 @@ export function adjustHex(hex, delta) {
  * @param {string} [customColor] - Couleur hex si themeId === 'custom'
  */
 function applyTheme(themeId, customColor) {
-  const root = document.documentElement;
-  const theme = THEMES.find((t) => t.id === themeId);
-  if (!theme) return;
-
-  let accent, hover, light, rgb;
-
-  if (themeId === "custom" && customColor) {
-    accent = customColor;
-    hover = adjustHex(customColor, -35);
-    light = adjustHex(customColor, 45);
-    rgb = hexToRgb(customColor);
-  } else if (theme.accent) {
-    ({ accent, hover, light, rgb } = theme);
-  } else {
-    return; // custom sans couleur définie
-  }
-
-  root.style.setProperty("--accent", accent);
-  root.style.setProperty("--accent-hover", hover);
-  root.style.setProperty("--accent-light", light);
-  root.style.setProperty("--accent-rgb", rgb);
+  if (!THEMES.some((t) => t.id === themeId)) return;
+  applyThemeVars(resolveTheme(themeId, customColor));
 }
 
 /**
