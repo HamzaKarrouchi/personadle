@@ -15,7 +15,7 @@
   <a href="LICENSE.txt"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License"></a>
   <img src="https://img.shields.io/badge/Version-2.0-brightgreen?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Made%20with-Vanilla%20JS-yellow?style=for-the-badge&logo=javascript" alt="Made with JavaScript">
-  <img src="https://img.shields.io/badge/Tests-252%20passing-brightgreen?style=for-the-badge&logo=vitest" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-363%20passing-brightgreen?style=for-the-badge&logo=vitest" alt="Tests">
   <img src="https://img.shields.io/badge/Backend-PHP%208.3%20%2B%20MariaDB-8892BF?style=for-the-badge&logo=php" alt="PHP Backend">
   <img src="https://img.shields.io/badge/i18n-EN%20%7C%20FR%20%7C%20ES%20%7C%20DE%20%7C%20IT-blueviolet?style=for-the-badge" alt="Languages">
 </p>
@@ -425,6 +425,37 @@ quotidiens, i18n 5 langues, panel admin, 363 tests automatisés (Vitest + PHPUni
 > 📋 **La roadmap complète et à jour (prochaines étapes priorisées, décisions en attente,
 > historique détaillé par domaine) vit dans [`ROADMAP.md`](ROADMAP.md)** — document vivant,
 > mis à jour en continu, pas dupliqué ici.
+
+<br>
+
+<div align="center">
+
+### 🔮 On the Horizon
+
+<sub>New Atlus releases mean new content pipelines — here's what's on our radar.</sub>
+
+<br><br>
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./docs/roadmap/persona-4-revival.jpg" alt="Persona 4 Revival" width="380"><br><br>
+      <img src="https://img.shields.io/badge/Persona%204%20Revival-🔄%20Remaster-6bbf59?style=for-the-badge" alt="Persona 4 Revival — Remaster">
+      <br><br>
+      <sub>Character art refresh planned for P4/P4G once official assets release.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./docs/roadmap/persona-6.jpg" alt="Persona 6" width="380"><br><br>
+      <img src="https://img.shields.io/badge/Persona%206-🆕%20New%20Roster-c0193a?style=for-the-badge" alt="Persona 6 — New Roster">
+      <br><br>
+      <sub>Full new character roster to add once the cast is officially revealed.</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>📋 Full content pipeline checklist in <a href="ROADMAP.md">ROADMAP.md</a></sub>
+
+</div>
 
 ---
 
