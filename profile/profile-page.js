@@ -129,13 +129,13 @@ const THEMES = [
 ];
 
 /** Convertit un hex en "r, g, b" pour rgba(). */
-function hexToRgb(hex) {
+export function hexToRgb(hex) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return m ? `${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}` : "0, 0, 0";
 }
 
 /** Éclaircit ou assombrit une couleur hex d'un delta (-255 → 255). */
-function adjustHex(hex, delta) {
+export function adjustHex(hex, delta) {
   const n = parseInt(hex.replace("#", ""), 16);
   const r = Math.min(255, Math.max(0, (n >> 16) + delta));
   const g = Math.min(255, Math.max(0, ((n >> 8) & 0xff) + delta));
@@ -319,7 +319,7 @@ const confirmCrop = document.getElementById("confirmCrop");
  * @param {string|null} avatarPath - Chemin stocké dans localStorage
  * @returns {string} Chemin résolu depuis profile/
  */
-function normalizeAvatarPath(avatarPath) {
+export function normalizeAvatarPath(avatarPath) {
   if (!avatarPath) return "../img/default_avatar.png";
   // Data URL base64 — toujours valide, aucun ajustement nécessaire
   if (avatarPath.startsWith("data:")) return avatarPath;
@@ -614,7 +614,7 @@ function _applyCloudToUI() {
  * Retourne le tier visuel du streak (0-5).
  * 0 = aucun, 1 = 1-2j, 2 = 3-6j, 3 = 7-13j, 4 = 14-29j, 5 = 30j+
  */
-function getStreakTier(streak) {
+export function getStreakTier(streak) {
   if (streak >= 30) return 5;
   if (streak >= 14) return 4;
   if (streak >= 7) return 3;
@@ -2133,7 +2133,7 @@ function getSortedSongGroups() {
 }
 
 /** Formate un nombre de secondes en "m:ss". */
-function formatSongTime(s) {
+export function formatSongTime(s) {
   if (!isFinite(s) || s < 0) return "0:00";
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60)

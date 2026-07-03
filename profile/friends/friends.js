@@ -32,7 +32,7 @@ import { FILTER_STORAGE_KEYS } from "../../js/gameCore.js";
 // ─────────────────────────────────────────────────────────
 
 /** Échappe les caractères spéciaux HTML. */
-function esc(str) {
+export function esc(str) {
   return String(str ?? "").replace(
     /[&<>"']/g,
     (c) =>
@@ -48,7 +48,7 @@ function esc(str) {
 
 /** URL de l'avatar — normalise les chemins relatifs, fallback si absent.
  *  Ce fichier est servi depuis profile/friends/ (2 niveaux) — img/ est à ../../img/. */
-function avatarSrc(avatarData) {
+export function avatarSrc(avatarData) {
   if (!avatarData) return "../../img/default_avatar.png";
   if (avatarData.startsWith("data:")) return avatarData;
   // Paths stored in DB are relative to profile/ (../img/...) → adjust for friends/ depth
@@ -88,24 +88,26 @@ function tf(key, fallback) {
 }
 
 /** Returns true if lastSeen ISO string is within the last 30 minutes. */
-function isOnline(lastSeen) {
+export function isOnline(lastSeen) {
   if (!lastSeen) return false;
   return Date.now() - new Date(lastSeen).getTime() < ONLINE_THRESHOLD_MS;
 }
 
 /** Returns a human-readable "X ago" string, or null if no date. */
-function formatLastSeen(isoDate) {
+export function formatLastSeen(isoDate) {
   if (!isoDate) return null;
   const diff = Date.now() - new Date(isoDate).getTime();
   const sec = Math.floor(diff / 1000);
-  if (sec < 60) return t("friends.last_seen_just_now") || "just now";
+  // tf() (pas t() + `||`) : t(key) renvoie la clé brute — truthy — quand i18n
+  // n'est pas encore prêt, donc `||` ne retombe jamais sur le fallback anglais.
+  if (sec < 60) return tf("friends.last_seen_just_now", "just now");
   const min = Math.floor(sec / 60);
-  if (min < 60) return (t("friends.last_seen_minutes") || "{{n}}m ago").replace("{{n}}", min);
+  if (min < 60) return tf("friends.last_seen_minutes", "{{n}}m ago").replace("{{n}}", min);
   const hr = Math.floor(min / 60);
-  if (hr < 24) return (t("friends.last_seen_hours") || "{{n}}h ago").replace("{{n}}", hr);
+  if (hr < 24) return tf("friends.last_seen_hours", "{{n}}h ago").replace("{{n}}", hr);
   const days = Math.floor(hr / 24);
-  if (days < 7) return (t("friends.last_seen_days") || "{{n}}d ago").replace("{{n}}", days);
-  return t("friends.last_seen_long_ago") || "a while ago";
+  if (days < 7) return tf("friends.last_seen_days", "{{n}}d ago").replace("{{n}}", days);
+  return tf("friends.last_seen_long_ago", "a while ago");
 }
 
 // ─────────────────────────────────────────────────────────

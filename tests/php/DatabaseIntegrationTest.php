@@ -195,4 +195,32 @@ final class DatabaseIntegrationTest extends TestCase
         self::$pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$uid]);
         $this->assertSame(0, $count(), 'ON DELETE CASCADE doit purger user_stats');
     }
+
+    /**
+     * Complète testDeletingUserCascadesToStats() : le hard delete admin
+     * (DELETE /api/admin/users/:id) doit purger TOUTES les tables liées, pas
+     * seulement user_stats — sinon des lignes orphelines subsistent (badges_unlocked,
+     * profiles) après suppression "définitive" d'un compte.
+     */
+    public function testDeletingUserCascadesToProfileAndBadges(): void
+    {
+        $uid = $this->makeUser();
+        self::$pdo->prepare('INSERT INTO profiles (user_id) VALUES (?)')->execute([$uid]);
+        self::$pdo->prepare(
+            "INSERT INTO badges_unlocked (user_id, badge_id) VALUES (?, 'true_hacker')"
+        )->execute([$uid]);
+
+        $profileCount = fn() => (int) self::$pdo
+            ->query("SELECT COUNT(*) FROM profiles WHERE user_id = $uid")->fetchColumn();
+        $badgeCount = fn() => (int) self::$pdo
+            ->query("SELECT COUNT(*) FROM badges_unlocked WHERE user_id = $uid")->fetchColumn();
+
+        $this->assertSame(1, $profileCount());
+        $this->assertSame(1, $badgeCount());
+
+        self::$pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$uid]);
+
+        $this->assertSame(0, $profileCount(), 'ON DELETE CASCADE doit purger profiles');
+        $this->assertSame(0, $badgeCount(), 'ON DELETE CASCADE doit purger badges_unlocked');
+    }
 }
