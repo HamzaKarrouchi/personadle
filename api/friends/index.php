@@ -159,6 +159,8 @@ if ($method === 'GET') {
 // Body: { "friend_code": "XK4R2M9P" }
 // ═══════════════════════════════════════════════════════════════════════════════
 if ($method === 'POST') {
+    rateLimit('friends-add:' . $authId, 10, 15 * 60);
+
     $data       = getJsonBody();
     $friendCode = strtoupper(trim($data['friend_code'] ?? ''));
 

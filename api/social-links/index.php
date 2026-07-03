@@ -127,6 +127,8 @@ if ($method === 'POST' && $slIdx !== false
     && isset($parts[$slIdx + 2])
     && ($parts[$slIdx + 3] ?? '') === 'interact'
 ) {
+    rateLimit('sl-interact:' . $authId, 30, 15 * 60);
+
     $friendId = (int) ($parts[$slIdx + 2] ?? 0);
     if ($friendId <= 0) jsonError('Invalid friend id', 400);
     if ($friendId === $authId) jsonError('Cannot interact with yourself', 400);
