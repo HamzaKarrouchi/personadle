@@ -45,6 +45,14 @@ import {
   renderUnlockableWallpaperGallery,
   initUnlockableWallpapers,
 } from "./wallpapers-ui.js";
+import {
+  renderTitlesSection,
+  initTitlesSection,
+  _bindTitlesModal,
+  getEquippedTitle,
+  resetTitlesUnlockedState,
+  refreshTitlesAfterCloudSync,
+} from "./titles-ui.js";
 
 // Ré-exportées pour compatibilité avec le code existant qui importe ces
 // fonctions depuis profile-page.js plutôt que depuis profile-format.js/theme.js.
@@ -520,12 +528,7 @@ function _applyCloudToUI() {
   renderUnlockableWallpaperGallery(profile);
 
   // ── Titres ────────────────────────────────────────────────
-  _refreshTitlesUnlockState();
-  _resolveEquippedTitle();
-  renderTitlesSection?.();
-
-  // Vérifier si de nouveaux titres ont été débloqués (fire-and-forget)
-  checkAndUnlockTitles?.().catch(() => {});
+  refreshTitlesAfterCloudSync(profile, saveProfile, saveProfileToCloud, markDirty);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1417,14 +1420,7 @@ function buildShareCard(bg, wallpaper, activeTab, textStyle, titleOptions = {}) 
     </h3>
     ${(() => {
       if (titleOptions.include === false) return "";
-      const eq =
-        typeof _titlesData !== "undefined" && _titlesData
-          ? _titlesData.find(
-              (t) =>
-                (profile.equippedTitleId && t.id && t.id === profile.equippedTitleId) ||
-                (profile.equippedTitleSlug && t.slug === profile.equippedTitleSlug)
-            )
-          : null;
+      const eq = getEquippedTitle(profile);
       if (!eq) return "";
       const _prefix = window.location.pathname.startsWith("/personadle/") ? "/personadle" : "";
       const imgSrc = `${_prefix}/profile/${eq.image_path || `titles/${eq.slug}.webp`}`;
@@ -2345,7 +2341,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await pullProfileFromCloud();
       _applyCloudToUI();
       // Re-fetcher /api/titles avec session valide → is_unlocked correct par user
-      await initTitlesSection();
+      await initTitlesSection(profile, saveProfile, saveProfileToCloud, markDirty);
       // Pousser les badges locaux manquants vers le backend (local → cloud)
       await syncBadgesWithBackend(profile, saveProfileAndSyncBadges);
     } catch (_) {}
@@ -2375,10 +2371,8 @@ document.addEventListener("DOMContentLoaded", () => {
     renderUnlockableWallpaperGallery(profile);
     renderBadgesPreview(profile);
     renderBadgesModal(profile, saveProfileAndSyncBadges);
-    _titlesData.forEach((t) => {
-      t.is_unlocked = 0;
-    });
-    renderTitlesSection?.();
+    resetTitlesUnlockedState();
+    renderTitlesSection(profile, saveProfile, saveProfileToCloud, markDirty);
   });
 
   // Sync périodique toutes les 3 min + à chaque retour sur l'onglet (pull + apply seulement)
@@ -2410,7 +2404,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // _bindTitlesModal() : rendu immédiat depuis localStorage (avant auth/cloud)
   // initTitlesSection() : appelé dans _fullCloudSync après auth → is_unlocked correct depuis l'API
   initUnlockableWallpapers(profile, saveProfile).catch(() => {});
-  _bindTitlesModal();
+  _bindTitlesModal(profile, saveProfile, saveProfileToCloud, markDirty);
 
   // 3. Auth — initAuth() est appelé depuis profile.html (bloc <script type="module">)
   //    setupAuth() supprimé : redondant et en conflit avec initAuth() de js/auth.js
@@ -2441,461 +2435,11 @@ window.addEventListener("badgesRendered", () => {
 // (voir ./wallpapers-ui.js — UNLOCKABLE_WALLPAPERS, renderUnlockableWallpaperGallery,
 // checkAndUnlockWallpapers, showWallpaperNotification, initUnlockableWallpapers)
 
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 🎴 TITRES VISUELS (CALLING CARDS)
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Local title definitions — always available, API enriches with user's unlock status
-const TITLES_LOCAL = [
-  {
-    slug: "velvet_room_thou_art_i",
-    name: "Thou Art I",
-    rarity: "legendary",
-    condition_type: "badges_count",
-    condition_value: 20,
-  },
-  {
-    slug: "joker_looking_cool",
-    name: "Looking Cool",
-    rarity: "legendary",
-    condition_type: "joker_profile",
-    condition_value: 0,
-    is_hidden: true,
-  },
-  {
-    slug: "makoto_yuki_memento_mori",
-    name: "Memento Mori",
-    rarity: "epic",
-    condition_type: "unique_days",
-    condition_value: 100,
-  },
-  {
-    slug: "akechi_pancakes",
-    name: "Pancakes?",
-    rarity: "epic",
-    condition_type: "weekly_clean_modes",
-    condition_value: 3,
-  },
-  {
-    slug: "yu_reach_out_to_the_truth",
-    name: "Reach Out to the Truth",
-    rarity: "epic",
-    condition_type: "all_modes_won",
-    condition_value: 1,
-  },
-  {
-    slug: "aigis_i_am_not_afraid",
-    name: "I Am Not Afraid",
-    rarity: "rare",
-    condition_type: "mode_wins",
-    condition_value: 50,
-  },
-  {
-    slug: "marie_i_remembered",
-    name: "I Remembered",
-    rarity: "rare",
-    condition_type: "badges_count",
-    condition_value: 15,
-  },
-  {
-    slug: "yosuke_ride_the_wind",
-    name: "Ride the Wind",
-    rarity: "rare",
-    condition_type: "friends_count",
-    condition_value: 5,
-  },
-  {
-    slug: "naoya_first_awakening",
-    name: "The First Awakening",
-    rarity: "rare",
-    condition_type: "classic_p1_wins",
-    condition_value: 15,
-  },
-  {
-    slug: "adachi_boring_isnt_it",
-    name: "Boring, Isn't It?",
-    rarity: "common",
-    condition_type: "giveups_total",
-    condition_value: 50,
-  },
-  {
-    slug: "maya_always_be_positive",
-    name: "Always Be Positive",
-    rarity: "common",
-    condition_type: "emoji_p2_wins",
-    condition_value: 10,
-  },
-];
-
-// Chemin relatif à profile.html → toujours correct quelle que soit la config serveur
-let _titlesData = TITLES_LOCAL.map((t) => ({
-  ...t,
-  id: null,
-  is_unlocked: 0, // recalculé au render depuis profile réel
-  image_path: `titles/${t.slug}.webp`,
-}));
-
-/**
- * Sync _titlesData.is_unlocked depuis profile.unlockedTitles (localStorage).
- * À appeler après chaque cloud pull ou modification de profile.unlockedTitles.
- */
-function _refreshTitlesUnlockState() {
-  const unlocked = new Set(profile.unlockedTitles || []);
-  for (const t of _titlesData) {
-    // On ne rétrograde jamais : si déjà marqué unlocked (ex: par l'API), on garde
-    if (!t.is_unlocked) t.is_unlocked = unlocked.has(t.slug) ? 1 : 0;
-  }
-}
-
-/**
- * Résout la correspondance ID ↔ slug du titre équipé.
- * - cloud donne equipped_title_id (int) → on cherche le slug dans _titlesData
- * - local peut avoir seulement le slug → on cherche l'id pour pousser vers cloud
- */
-function _resolveEquippedTitle() {
-  const eId = profile.equippedTitleId ?? null;
-  const eSlug = profile.equippedTitleSlug ?? null;
-
-  if (eId && !eSlug) {
-    const match = _titlesData.find((t) => t.id === eId);
-    if (match) {
-      profile.equippedTitleSlug = match.slug;
-      saveProfile();
-    }
-  } else if (!eId && eSlug) {
-    const match = _titlesData.find((t) => t.slug === eSlug);
-    if (match?.id) {
-      profile.equippedTitleId = match.id;
-      saveProfile();
-      saveProfileToCloud({ equipped_title_id: match.id });
-    }
-  }
-}
-
-async function initTitlesSection() {
-  const lang = window.i18n?.getCurrentLang?.() || "en";
-  const _prefix = window.location.pathname.startsWith("/personadle/") ? "/personadle" : "";
-
-  // 1. Charger les titres depuis l'API :
-  //    - vrais IDs (pour les appels unlock)
-  //    - noms localisés (depuis la BDD)
-  //    - is_unlocked PER-USER (la source de vérité la plus fiable)
-  try {
-    const res = await fetch(`${_prefix}/api/titles?lang=${lang}`, { credentials: "include" });
-    const json = await res.json();
-    const apiTitles = Array.isArray(json) ? json : [];
-    if (apiTitles.length > 0) {
-      const bySlug = {};
-      for (const t of apiTitles) bySlug[t.slug] = t;
-
-      _titlesData = _titlesData.map((t) => {
-        const api = bySlug[t.slug];
-        if (!api) return t;
-        return {
-          ...t,
-          id: api.id ?? t.id,
-          name: api.name || t.name,
-          // On garde le chemin local relatif (titles/slug.webp depuis profile/)
-          // Le chemin DB (profile/titles/...) est réservé à profile-view.js
-          is_unlocked: api.is_unlocked ? 1 : 0,
-        };
-      });
-    }
-  } catch (_) {}
-
-  // 2. Fusionner avec localStorage (titres débloqués offline ou sur un autre appareil)
-  _refreshTitlesUnlockState();
-
-  // 3. Résoudre ID ↔ slug du titre équipé (cloud-sync donne les deux désormais)
-  _resolveEquippedTitle();
-
-  // 4. Vérifier les conditions et déverouiller les nouveaux titres mérités
-  await checkAndUnlockTitles();
-  renderTitlesSection();
-}
-
-async function checkAndUnlockTitles() {
-  const stats = profile.stats || {};
-  const badges = profile.badges || [];
-  const giveups = Object.values(stats.modeGiveups || {}).reduce((a, b) => a + b, 0);
-  const allModesWon = ["Classic", "Emoji", "Silhouette", "AllOutAttack", "Personae", "Music"].every(
-    (m) => (stats.modeWins?.[m] || 0) >= 1
-  );
-
-  let friendCount = 0;
-  if (window._currentUser) {
-    try {
-      const _prefix = window.location.pathname.startsWith("/personadle/") ? "/personadle" : "";
-      const res = await fetch(`${_prefix}/api/friends`, { credentials: "include" }).then((r) =>
-        r.json()
-      );
-      friendCount = (res?.friends || []).length;
-    } catch (_) {}
-  }
-
-  const totalWins = Object.values(stats.modeWins || {}).reduce((a, b) => a + b, 0);
-  const streakRecord = stats.streakRecord || 0;
-
-  for (const title of _titlesData) {
-    if (title.is_unlocked) continue;
-    let met = false;
-    switch (title.condition_type) {
-      case "wins_total":
-        met = totalWins >= title.condition_value;
-        break;
-      case "wins_mode":
-        met = Object.values(stats.modeWins || {}).some((w) => w >= title.condition_value);
-        break;
-      case "streak_record":
-        met = streakRecord >= title.condition_value;
-        break;
-      case "badges_count":
-        met = badges.length >= title.condition_value;
-        break;
-      case "unique_days":
-        met = (profile.uniqueDaysPlayed || 0) >= title.condition_value;
-        break;
-      case "mode_wins":
-        met = (stats.modeWins?.Classic || 0) >= title.condition_value;
-        break;
-      case "friends_count":
-        met = friendCount >= title.condition_value;
-        break;
-      case "giveups_total":
-        met = giveups >= title.condition_value;
-        break;
-      case "all_modes_won":
-        met = allModesWon;
-        break;
-      case "classic_p1_wins":
-        met = (profile.classicP1Wins || 0) >= title.condition_value;
-        break;
-      case "emoji_p2_wins":
-        met = (profile.emojiP2Wins || 0) >= title.condition_value;
-        break;
-      case "leaderboard_top":
-        met = (profile.bestLeaderboardRank || 9999) <= title.condition_value;
-        break;
-      case "weekly_clean_modes":
-        met = (profile.weeklyCleanWinModes || 0) >= title.condition_value;
-        break;
-      case "joker_profile": {
-        const _jokerSongs = [
-          "Last_Surprise.mp3",
-          "Take_Over.mp3",
-          "Wake_Up,_Get_Up,_Get_Out_There.mp3",
-          "No_More_What_Ifs.mp3",
-        ];
-        const _song = profile.profileSong?.fichier || profile.profileMusicId || "";
-        met = profile.profileTheme === "all_out" && _jokerSongs.includes(_song);
-        break;
-      }
-    }
-    if (met) {
-      title.is_unlocked = 1;
-      if (!profile.unlockedTitles) profile.unlockedTitles = [];
-      if (!profile.unlockedTitles.includes(title.slug)) {
-        profile.unlockedTitles.push(title.slug);
-        saveProfile();
-        _showTitleNotification(title);
-        // Persister en BDD — on envoie le slug (l'id peut être null si l'API n'a pas répondu)
-        window._personadleApi?.titles?.unlock(title.slug).catch(() => {});
-      }
-    }
-  }
-}
-
-function _showTitleNotification(title) {
-  const imgSrc = title.image_path || `titles/${title.slug}.webp`;
-  const cond = _titleConditionText(title);
-
-  const notif = document.createElement("div");
-  notif.className = "title-notification";
-  notif.innerHTML = `
-    <div class="title-notif-header">🏅 Title Unlocked!</div>
-    <img class="title-notif-img" src="${imgSrc}" alt="${title.name}">
-    <div class="title-notif-footer">
-      <strong>${title.name}</strong>
-      <span class="title-rarity-tag" data-rarity="${title.rarity}">${title.rarity}</span>
-    </div>
-  `;
-
-  document.body.appendChild(notif);
-
-  notif.onclick = () => {
-    notif.remove();
-    _showTitleZoom(title);
-  };
-
-  setTimeout(() => notif.classList.add("show"), 80);
-  setTimeout(() => {
-    notif.classList.remove("show");
-    setTimeout(() => notif.remove(), 400);
-  }, 5000);
-}
-
-function _showTitleZoom(title) {
-  const imgSrc = title.image_path || `titles/${title.slug}.webp`;
-  const cond = _titleConditionText(title);
-
-  const modal = document.createElement("div");
-  modal.className = "badge-zoom-modal title-zoom-modal";
-  modal.innerHTML = `
-    <div class="badge-zoom-content title-zoom-content">
-      <span class="badge-zoom-close">&times;</span>
-      <img src="${imgSrc}" alt="${title.name}" style="width:100%;border-radius:10px;display:block;margin-bottom:14px;">
-      <h3 style="margin:0 0 6px;color:#ffd700;">${title.name}</h3>
-      <span class="title-rarity-tag" data-rarity="${title.rarity}" style="font-size:.7rem;">${title.rarity}</span>
-      <p class="badge-condition" style="margin-top:10px;opacity:.85;">${cond}</p>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.remove();
-  });
-  modal.querySelector(".badge-zoom-close").onclick = () => modal.remove();
-  setTimeout(() => modal.classList.add("show"), 10);
-}
-
-/** Human-readable condition text from API fields. */
-function _titleConditionText(t) {
-  const v = t.condition_value;
-  switch (t.condition_type) {
-    case "wins_total":
-      return `Win ${v} total games`;
-    case "wins_mode":
-      return `Win ${v} games in any single mode`;
-    case "mode_wins":
-      return `Win ${v} Classic games`;
-    case "streak_record":
-      return `Reach a ${v}-day streak record`;
-    case "badges_count":
-      return `Unlock ${v} badges`;
-    case "unique_days":
-      return `Play on ${v} different days`;
-    case "friends_count":
-      return `Have ${v} friends`;
-    case "giveups_total":
-      return `Give up ${v} times`;
-    case "all_modes_won":
-      return `Win at least once in all 6 modes`;
-    case "classic_p1_wins":
-      return `Win ${v} Classic games with P1 filter`;
-    case "emoji_p2_wins":
-      return `Win ${v} Emoji games with P2 filter`;
-    case "leaderboard_top":
-      return `Reach top ${v} on the leaderboard`;
-    case "weekly_clean_modes":
-      return `Win all modes in one week without giving up`;
-    case "joker_profile":
-      return `Equip the All-Out Attack theme with a P5 signature track`;
-    default:
-      return t.condition_type || "???";
-  }
-}
-
-function renderTitlesSection() {
-  // ── Calling card image sous avatar/pseudo ─────────────────────────────────
-  const equippedId = profile.equippedTitleId || null;
-  const equippedSlug = profile.equippedTitleSlug || null;
-  const eq = _titlesData.find(
-    (t) => (equippedId && t.id && t.id === equippedId) || (equippedSlug && t.slug === equippedSlug)
-  );
-  const titleImg = document.getElementById("equippedTitleImg");
-  if (titleImg) {
-    if (eq) {
-      titleImg.src = eq.image_path || `titles/${eq.slug}.webp`;
-      titleImg.dataset.rarity = eq.rarity || "common";
-      titleImg.style.display = "block";
-    } else {
-      titleImg.style.display = "none";
-    }
-  }
-  // ── Grille modale ─────────────────────────────────────────────────────────
-  _renderTitlesGrid();
-}
-
-function _bindTitlesModal() {
-  const modal = document.getElementById("titlesModal");
-  const overlay = document.getElementById("titlesModalOverlay");
-  const openBtn = document.getElementById("openTitlesModal");
-  const closeBtn = document.getElementById("closeTitlesModal");
-  if (!modal || !openBtn) return;
-
-  _renderTitlesGrid();
-
-  const open = () => {
-    modal.classList.remove("hidden");
-    if (overlay) overlay.classList.remove("hidden");
-  };
-  const close = () => {
-    modal.classList.add("hidden");
-    if (overlay) overlay.classList.add("hidden");
-  };
-
-  // addEventListener au lieu de onclick (plus fiable)
-  openBtn.addEventListener("click", open);
-  closeBtn?.addEventListener("click", close);
-  overlay?.addEventListener("click", close);
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-  });
-}
-
-// Render séparé sans dépendance à l'état du modal
-function _renderTitlesGrid() {
-  const grid = document.getElementById("titlesModalGrid");
-  if (!grid) return;
-
-  // Source de vérité combinée : localStorage.unlockedTitles OU _titlesData.is_unlocked (depuis API)
-  const unlockedSlugs = new Set(profile?.unlockedTitles || []);
-  const equippedSlug = profile?.equippedTitleSlug || null;
-  const equippedId = profile?.equippedTitleId || null;
-
-  grid.innerHTML = (_titlesData || [])
-    .filter((t) => !t.is_hidden || unlockedSlugs.has(t.slug) || !!t.is_unlocked)
-    .map((t) => {
-      const isUnlocked = unlockedSlugs.has(t.slug) || !!t.is_unlocked;
-      const isEquipped =
-        (equippedSlug && equippedSlug === t.slug) || (equippedId && t.id && equippedId === t.id);
-      const imgSrc = t.image_path || `titles/${t.slug}.webp`;
-      return `
-      <div class="tm-card ${isUnlocked ? "tm-unlocked" : "tm-locked"} ${isEquipped ? "tm-equipped" : ""}"
-           data-slug="${t.slug}" data-id="${t.id ?? ""}" data-unlocked="${isUnlocked}">
-        <div class="tm-img-wrap">
-          <img src="${imgSrc}" alt="${t.name}" loading="lazy">
-          ${!isUnlocked ? '<span class="tm-lock">🔒</span>' : ""}
-          ${isEquipped ? '<span class="tm-badge-equipped">✓ Equipped</span>' : ""}
-        </div>
-        <div class="tm-info">
-          <strong class="tm-name">${t.name}</strong>
-          <span class="tm-rarity" data-rarity="${t.rarity || "common"}">${t.rarity || "common"}</span>
-          <span class="tm-cond">${isUnlocked ? "🔓" : "🔒"} ${_titleConditionText(t)}</span>
-        </div>
-      </div>`;
-    })
-    .join("");
-
-  // Délégation d'événements — un seul listener sur le conteneur, pas un par carte
-  grid.onclick = (e) => {
-    const card = e.target.closest(".tm-card");
-    if (!card) return;
-    const slug = card.dataset.slug;
-    const titleId = card.dataset.id ? parseInt(card.dataset.id, 10) : null;
-    const isUnlocked = card.dataset.unlocked === "true";
-    if (isUnlocked) {
-      const currentEquipped = profile?.equippedTitleSlug;
-      const alreadyEquipped = currentEquipped === slug;
-      profile.equippedTitleSlug = alreadyEquipped ? null : slug;
-      profile.equippedTitleId = alreadyEquipped ? null : titleId;
-      saveProfile();
-      markDirty();
-      saveProfileToCloud({ equipped_title_id: profile.equippedTitleId ?? null });
-      renderTitlesSection(); // re-render image + grille
-    } else {
-      const titleObj = (_titlesData || []).find((t) => t.slug === slug);
-      if (titleObj) _showTitleZoom(titleObj);
-    }
-  };
-}
+// (voir ./titles-ui.js — TITLES_LOCAL, isTitleConditionMet, titleConditionText,
+// renderTitlesSection, initTitlesSection, _bindTitlesModal, getEquippedTitle,
+// resetTitlesUnlockedState, refreshTitlesAfterCloudSync)
