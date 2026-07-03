@@ -128,6 +128,12 @@ const THEMES = [
   { id: "custom", accent: null, hover: null, light: null, rgb: null, label: null },
 ];
 
+/** Traduit une clé i18n avec un vrai fallback string (window.i18n.t renvoie la clé brute si absente). */
+function tf(key, fallback) {
+  const v = window.i18n?.t?.(key);
+  return v != null && v !== key ? v : fallback;
+}
+
 /** Convertit un hex en "r, g, b" pour rgba(). */
 export function hexToRgb(hex) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -180,9 +186,8 @@ function renderThemePicker() {
   const container = document.getElementById("themeSwatches");
   if (!container) return;
 
-  const i = window.i18n || { t: (k) => k };
   const currentId = profile.profileTheme || "all_out";
-  const customLabel = i.t("profile.theme_custom") || "Custom color";
+  const customLabel = tf("profile.theme_custom", "Custom color");
 
   container.innerHTML = THEMES.map((t) => {
     const isCustom = t.id === "custom";
@@ -832,8 +837,7 @@ saveRefreshBtn.onclick = async () => {
 
 // Réinitialiser le profil
 resetProfileBtn.onclick = () => {
-  const i = window.i18n || { t: (k) => k };
-  if (confirm(i.t("profile.reset_confirm") || "Reset your profile? This cannot be undone.")) {
+  if (confirm(tf("profile.reset_confirm", "Reset your profile? This cannot be undone."))) {
     localStorage.removeItem("personaUserProfile");
     location.reload();
   }

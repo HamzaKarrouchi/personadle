@@ -396,17 +396,17 @@ if (viewParam || uidParam) {
     if (window._currentUser) {
       if (friendshipStatus === "accepted") {
         friendBtn = `
-        <span class="vb-friend-status vb-friend-status--ok">✓ ${t("friends.already_friends") || "Friends"}</span>
+        <span class="vb-friend-status vb-friend-status--ok">✓ ${t("friends.already_friends", "Friends")}</span>
         <button id="vbCompareBtn" class="vb-friend-btn vb-compare-btn" data-fid="">
           ${t("compare.btn", "⚖ Compare Stats")}
         </button>
       `;
       } else if (friendshipStatus === "pending_sent") {
-        friendBtn = `<span class="vb-friend-status vb-friend-status--pending">${t("friends.request_sent") || "Request sent"}</span>`;
+        friendBtn = `<span class="vb-friend-status vb-friend-status--pending">${t("friends.request_sent", "Request sent")}</span>`;
       } else if (friendshipStatus === "pending_received") {
-        friendBtn = `<button id="vbAcceptBtn" class="vb-friend-btn vb-friend-btn--accept" data-code="${escapeHtml(friendCode)}">${t("friends.accept") || "Accept"}</button>`;
+        friendBtn = `<button id="vbAcceptBtn" class="vb-friend-btn vb-friend-btn--accept" data-code="${escapeHtml(friendCode)}">${t("friends.accept", "Accept")}</button>`;
       } else {
-        friendBtn = `<button id="vbAddFriendBtn" class="vb-friend-btn" data-code="${escapeHtml(friendCode)}">${t("friends.add_friend") || "+ Add friend"}</button>`;
+        friendBtn = `<button id="vbAddFriendBtn" class="vb-friend-btn" data-code="${escapeHtml(friendCode)}">${t("friends.add_friend", "+ Add friend")}</button>`;
       }
     }
 
@@ -417,7 +417,7 @@ if (viewParam || uidParam) {
       <span class="vb-code">${escapeHtml(friendCode)}</span>
     </div>
     ${friendBtn}
-    <a href="profile.html" class="vb-back">← ${t("ui.back_my_profile") || t("ui.back") || "My Profile"}</a>
+    <a href="profile.html" class="vb-back">← ${t("ui.back_my_profile", t("ui.back", "My Profile"))}</a>
   `;
     return banner;
   }
@@ -432,10 +432,10 @@ if (viewParam || uidParam) {
         addBtn.textContent = "…";
         try {
           await window._personadleApi.friends.request(friendCode);
-          addBtn.outerHTML = `<span class="vb-friend-status vb-friend-status--pending">${t("friends.request_sent") || "Request sent"}</span>`;
+          addBtn.outerHTML = `<span class="vb-friend-status vb-friend-status--pending">${t("friends.request_sent", "Request sent")}</span>`;
         } catch (err) {
           addBtn.disabled = false;
-          addBtn.textContent = t("friends.add_friend") || "+ Add friend";
+          addBtn.textContent = t("friends.add_friend", "+ Add friend");
           alert(err.message || "Could not send friend request.");
         }
       });
@@ -450,11 +450,11 @@ if (viewParam || uidParam) {
           const req = pending.find((p) => p.friend_code === friendCode);
           if (req) {
             await window._personadleApi.friends.respond(req.friendship_id, "accept");
-            acceptBtn.outerHTML = `<span class="vb-friend-status vb-friend-status--ok">✓ ${t("friends.already_friends") || "Friends"}</span>`;
+            acceptBtn.outerHTML = `<span class="vb-friend-status vb-friend-status--ok">✓ ${t("friends.already_friends", "Friends")}</span>`;
           }
         } catch {
           acceptBtn.disabled = false;
-          acceptBtn.textContent = t("friends.accept") || "Accept";
+          acceptBtn.textContent = t("friends.accept", "Accept");
         }
       });
     }
@@ -625,7 +625,7 @@ if (viewParam || uidParam) {
       if (rawDate) {
         const joinEl = document.createElement("p");
         joinEl.className = "profile-join-date";
-        joinEl.textContent = `${t("profile.since") || "Since"} ${new Date(rawDate).toLocaleDateString(undefined, { year: "numeric", month: "long" })}`;
+        joinEl.textContent = `${t("profile.since", "Since")} ${new Date(rawDate).toLocaleDateString(undefined, { year: "numeric", month: "long" })}`;
         infoContainer.appendChild(joinEl);
       }
       const codeEl = document.createElement("p");
@@ -640,33 +640,33 @@ if (viewParam || uidParam) {
       const firstPlayedStr = (user.first_game_date || user.created_at || "").slice(0, 10) || "—";
 
       const items = [
-        { icon: "🏆", value: stats.total_wins ?? 0, label: t("profile.stat_wins_label") || "Wins" },
-        { icon: "🏳️", value: totalGiveups, label: t("profile.stat_giveups_label") || "Give-ups" },
+        { icon: "🏆", value: stats.total_wins ?? 0, label: t("profile.stat_wins_label", "Wins") },
+        { icon: "🏳️", value: totalGiveups, label: t("profile.stat_giveups_label", "Give-ups") },
         {
           icon: "🎮",
           value: stats.total_games ?? 0,
-          label: t("profile.stat_games_label") || "Games Played",
+          label: t("profile.stat_games_label", "Games Played"),
         },
         {
           icon: "⭐",
           value: stats.best_streak ?? 0,
-          label: t("profile.stat_best_streak_label") || "Best Streak",
+          label: t("profile.stat_best_streak_label", "Best Streak"),
         },
         {
           icon: "⏱️",
           value: formatPlayTime(totalTimeMinutes),
-          label: t("profile.stat_time_label") || "Time Played",
+          label: t("profile.stat_time_label", "Time Played"),
         },
         {
           icon: "📅",
           value: firstPlayedStr,
-          label: t("profile.stat_first_played_label") || "First Played",
+          label: t("profile.stat_first_played_label", "First Played"),
           full: true,
         },
         {
           icon: "🎯",
           value: favModeLabel,
-          label: t("profile.stat_fav_mode_label") || "Fav Mode",
+          label: t("profile.stat_fav_mode_label", "Fav Mode"),
           full: true,
         },
       ];
@@ -687,7 +687,7 @@ if (viewParam || uidParam) {
 
       const streakHTML = buildStreakItem(
         currentStreak,
-        t("profile.stat_current_streak_label") || "Current Streak",
+        t("profile.stat_current_streak_label", "Current Streak"),
         "0.5s"
       );
       statsContainer.innerHTML = regularHTML + streakHTML;
@@ -722,8 +722,8 @@ if (viewParam || uidParam) {
 
         modeContainer.innerHTML = `
         <div class="mode-stats-header">
-          <span>${t("profile.mode_col_mode") || "Mode"}</span>
-          <span>${t("profile.mode_col_games") || "Games / Win %"}</span>
+          <span>${t("profile.mode_col_mode", "Mode")}</span>
+          <span>${t("profile.mode_col_games", "Games / Win %")}</span>
         </div>
         <div class="mode-stats-list">${rows}</div>`;
       }
@@ -771,7 +771,7 @@ if (viewParam || uidParam) {
     // HTML identique à renderSongCard() dans profile-page.js (sans les boutons d'action)
     songCard.classList.remove("hidden");
     songCard.innerHTML = `
-    <h3 class="card-title"><span class="card-accent">◆</span> ${t("profile.song_title") || "Profile Song"}</h3>
+    <h3 class="card-title"><span class="card-accent">◆</span> ${t("profile.song_title", "Profile Song")}</h3>
     <div id="viewSongPlayerUI" class="song-player">
       <img id="viewSongArtwork"
            class="song-artwork"
@@ -891,7 +891,7 @@ if (viewParam || uidParam) {
         `
       <div class="viewing-error">
         <p>⚠️ ${err.status === 404 ? "Player not found." : "Could not load this profile."}</p>
-        <a href="profile.html">← ${t("ui.back_my_profile") || "My profile"}</a>
+        <a href="profile.html">← ${t("ui.back_my_profile", "My profile")}</a>
       </div>
     `
       );
