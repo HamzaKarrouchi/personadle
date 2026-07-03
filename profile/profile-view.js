@@ -4,6 +4,8 @@ import {
   getSocialLinkData,
   applyRank10Effect,
 } from "../js/social-link.js";
+import { getStreakTier, formatSongTime } from "./profile-format.js";
+import { formatPlayTime } from "./formatPlayTime.js";
 
 /**
  * profile/profile-view.js — Mode consultation du profil d'un autre joueur
@@ -119,102 +121,6 @@ if (viewParam || uidParam) {
     // window.i18n.t returns the key string when not found, so check r !== key
     const r = window.i18n?.t?.(key);
     return r != null && r !== key ? r : (fallback ?? key);
-  }
-
-  /** Formate "m:ss" depuis des secondes. */
-  function formatSongTime(s) {
-    if (!isFinite(s) || s < 0) return "0:00";
-    return `${Math.floor(s / 60)}:${Math.floor(s % 60)
-      .toString()
-      .padStart(2, "0")}`;
-  }
-
-  /**
-   * Formate des minutes en texte lisible — copié de profile-page.js.
-   */
-  function formatPlayTime(totalMinutes) {
-    const lang = localStorage.getItem("lang") || "en";
-    const U = {
-      en: {
-        min: "min",
-        h: "h",
-        day: ["day", "days"],
-        week: ["week", "weeks"],
-        month: ["month", "months"],
-        year: ["year", "years"],
-      },
-      fr: {
-        min: "min",
-        h: "h",
-        day: ["jour", "jours"],
-        week: ["semaine", "semaines"],
-        month: ["mois", "mois"],
-        year: ["an", "ans"],
-      },
-      es: {
-        min: "min",
-        h: "h",
-        day: ["día", "días"],
-        week: ["semana", "semanas"],
-        month: ["mes", "meses"],
-        year: ["año", "años"],
-      },
-      de: {
-        min: "Min.",
-        h: "Std.",
-        day: ["Tag", "Tage"],
-        week: ["Woche", "Wochen"],
-        month: ["Monat", "Monate"],
-        year: ["Jahr", "Jahre"],
-      },
-      it: {
-        min: "min",
-        h: "h",
-        day: ["giorno", "giorni"],
-        week: ["settimana", "settimane"],
-        month: ["mese", "mesi"],
-        year: ["anno", "anni"],
-      },
-    };
-    const u = U[lang] || U.en;
-    const p = (n, [s, pl]) => `${n} ${n <= 1 ? s : pl}`;
-    const m = Math.max(0, Math.round(totalMinutes));
-    const PER_DAY = 1440,
-      PER_WEEK = 10080,
-      PER_MONTH = 43200,
-      PER_YEAR = 525600;
-    if (m < PER_DAY) return `${m} ${u.min}`;
-    if (m < PER_WEEK) {
-      const d = Math.floor(m / PER_DAY),
-        h = Math.floor((m % PER_DAY) / 60);
-      return h ? `${p(d, u.day)} ${h}${u.h}` : p(d, u.day);
-    }
-    if (m < PER_MONTH) {
-      const w = Math.floor(m / PER_WEEK),
-        d = Math.floor((m % PER_WEEK) / PER_DAY);
-      return d ? `${p(w, u.week)} ${p(d, u.day)}` : p(w, u.week);
-    }
-    if (m < PER_YEAR) {
-      const mo = Math.floor(m / PER_MONTH),
-        w = Math.floor((m % PER_MONTH) / PER_WEEK);
-      return w ? `${p(mo, u.month)} ${p(w, u.week)}` : p(mo, u.month);
-    }
-    const yr = Math.floor(m / PER_YEAR),
-      mo = Math.floor((m % PER_YEAR) / PER_MONTH);
-    return mo ? `${p(yr, u.year)} ${p(mo, u.month)}` : p(yr, u.year);
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // STREAK — copié de profile-page.js
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  function getStreakTier(streak) {
-    if (streak >= 30) return 5;
-    if (streak >= 14) return 4;
-    if (streak >= 7) return 3;
-    if (streak >= 3) return 2;
-    if (streak >= 1) return 1;
-    return 0;
   }
 
   function buildStreakItem(streak, label, delay) {

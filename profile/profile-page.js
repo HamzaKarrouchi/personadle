@@ -38,6 +38,11 @@ import { canRecover, showStreakRecoveryMenu } from "../js/streak-recovery.js";
 import { pullProfileFromCloud, pushLangToCloud } from "../js/cloud-sync.js";
 import { formatPlayTime } from "./formatPlayTime.js";
 import { AVATAR_GROUPS } from "./avatars_data.js";
+import { getStreakTier, formatSongTime } from "./profile-format.js";
+
+// Ré-exportées pour compatibilité avec le code existant qui importe ces deux
+// fonctions depuis profile-page.js plutôt que depuis profile-format.js.
+export { getStreakTier, formatSongTime };
 
 // Exposer les songs pour d'autres modules (notifications.js, social-link.js…)
 window._profileSongs = ALL_SONGS;
@@ -614,19 +619,6 @@ function _applyCloudToUI() {
 // ─────────────────────────────────────────────────────────
 // AFFICHAGE DES STATISTIQUES
 // ─────────────────────────────────────────────────────────
-
-/**
- * Retourne le tier visuel du streak (0-5).
- * 0 = aucun, 1 = 1-2j, 2 = 3-6j, 3 = 7-13j, 4 = 14-29j, 5 = 30j+
- */
-export function getStreakTier(streak) {
-  if (streak >= 30) return 5;
-  if (streak >= 14) return 4;
-  if (streak >= 7) return 3;
-  if (streak >= 3) return 2;
-  if (streak >= 1) return 1;
-  return 0;
-}
 
 /**
  * Construit le HTML de l'item streak avec effets visuels progressifs.
@@ -2136,15 +2128,6 @@ function getSortedSongGroups() {
   return groups;
 }
 
-/** Formate un nombre de secondes en "m:ss". */
-export function formatSongTime(s) {
-  if (!isFinite(s) || s < 0) return "0:00";
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60)
-    .toString()
-    .padStart(2, "0");
-  return `${m}:${sec}`;
-}
 
 /** Met à jour la barre de progression et le temps courant du lecteur. */
 function updateSongProgress() {
