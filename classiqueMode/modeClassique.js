@@ -22,6 +22,7 @@ import {
 
 // Collapsible opus filter panel (shared across all modes)
 import { initFilterMenu } from "../js/filterMenu.js";
+import { closeAutocompleteList, removeFromAutocomplete } from "../js/autocomplete.js";
 import { checkChallengeCompletion } from "../js/challenge-result.js";
 import { trackUniqueDay, checkBadgesAfterGame } from "../profile/badges/badgesManager.js";
 
@@ -93,7 +94,7 @@ function initializeAutocomplete(element, array) {
     clearTimeout(_debounceTimer);
     _debounceTimer = setTimeout(() => {
       const val = this.value.trim();
-      closeList(null, element);
+      closeAutocompleteList(null, element);
       if (!val) return;
 
       const list = document.createElement("DIV");
@@ -142,7 +143,7 @@ function initializeAutocomplete(element, array) {
 
         option.addEventListener("click", function () {
           element.value = this.getElementsByTagName("input")[0].value;
-          closeList(null, element);
+          closeAutocompleteList(null, element);
           document.getElementById("guessButton")?.click();
         });
 
@@ -183,23 +184,7 @@ function initializeAutocomplete(element, array) {
     for (let item of items) item.classList.remove("autocomplete-active");
   }
 
-  document.addEventListener("click", (e) => closeList(e.target, element));
-}
-
-function closeList(e, inputElement) {
-  const items = document.getElementsByClassName("autocomplete-items");
-  for (let i = 0; i < items.length; i++) {
-    if (e !== items[i] && e !== inputElement) items[i].parentNode.removeChild(items[i]);
-  }
-}
-
-/**
- * Removes a name from the autocomplete pool so it can't be guessed twice.
- * @param {string} name
- */
-function removeFromAutocomplete(name) {
-  const index = personas.findIndex((n) => n.toLowerCase() === name.toLowerCase());
-  if (index !== -1) personas.splice(index, 1);
+  document.addEventListener("click", (e) => closeAutocompleteList(e.target, element));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -413,7 +398,7 @@ function checkGuess(name, target, forceReveal = false) {
   });
 
   output.insertBefore(row, output.querySelector(".category-row")?.nextSibling);
-  removeFromAutocomplete(guess.nom);
+  removeFromAutocomplete(personas, guess.nom);
 
   if (isWin) {
     const textbar = document.getElementById("textbar");
