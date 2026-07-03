@@ -89,6 +89,14 @@ Nouveau jeu — cas A (roster inédit)
 - [ ] **Mode Versus / défi temps réel** entre amis.
 - [ ] **Historique de profil** : graphe de streak + calendrier des jours joués (on a déjà `uniqueDaysSet`).
 - [ ] **Saison / ladder** avec reset périodique + récompenses.
+- [ ] 💡 **Mode Expert / New Game+** — moins d'essais autorisés ou moins d'indices affichés,
+  avec un badge dédié à la clé. Rejoue de la valeur pour les joueurs qui maîtrisent déjà le jeu.
+- [ ] 💡 **Compendium des unlocks** — vue "archive" style Persona de tous les badges/titres/
+  wallpapers débloqués avec leur date. Réutilise `badges_unlocked`/`user_titles` déjà en base,
+  pas de nouvelle donnée serveur nécessaire.
+- [ ] 💡 **Groupes d'amis** (au-delà du 1-à-1) — petits groupes ("table du Velvet Room") avec
+  leaderboard privé. Étend `friendships`/`leaderboard` au-delà des paires Social Link
+  (implique une nouvelle table de groupe + permissions à définir).
 - [ ] **Notifications push (PWA)** — rappel quotidien (levier de rétention « daily »).
 
 ### 🔐 Sécurité / compte
