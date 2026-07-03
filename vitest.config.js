@@ -17,6 +17,7 @@ export default defineConfig({
         "js/gameCore.js",
         "js/streak-recovery.js",
         "js/cloud-sync.js",
+        "js/social-link.js",
         "profile/profileStats.js",
         "profile/formatPlayTime.js",
         "scripts/validate_characters.js",

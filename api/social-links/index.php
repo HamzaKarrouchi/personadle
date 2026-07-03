@@ -14,6 +14,7 @@
  */
 
 require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../lib/social_link.php';
 
 /**
  * Équivalent PHP de la procédure stockée add_social_link_xp().
@@ -40,15 +41,8 @@ function addSocialLinkXp(PDO $pdo, int $linkId, int $xpAmount): array
     return ['xp' => $newXp, 'rank' => $newRank, 'ranked_up' => $rankedUp];
 }
 
-// XP par action (solo | mutuel si l'autre a fait la même action aujourd'hui)
-const XP_TABLE = [
-    'share_streak'  => ['solo' => 15, 'mutual' => 30],
-    'share_score'   => ['solo' => 10, 'mutual' => 20],
-    'visit_profile' => ['solo' =>  5, 'mutual' => 10],
-    'play_same_day' => ['solo' => 20, 'mutual' => 20], // toujours mutuel
-    'compare_stats' => ['solo' => 10, 'mutual' => 20],
-    'challenge'     => ['solo' => 15, 'mutual' => 35],
-];
+// XP par action (solo | mutuel) — table + calcul extraits dans api/lib/social_link.php
+// (testable en PHPUnit sans MySQL, cf. tests/php/SocialLinkTest.php).
 
 $authId = requireAuth();
 $pdo    = pdo();
@@ -135,7 +129,7 @@ if ($method === 'POST' && $slIdx !== false
 
     $data       = getJsonBody();
     $actionType = trim($data['action_type'] ?? '');
-    if (!isset(XP_TABLE[$actionType])) jsonError('Invalid action_type', 400);
+    if (!isset(PERSONADLE_SL_XP_TABLE[$actionType])) jsonError('Invalid action_type', 400);
 
     // Friendship guard : vérifier que les deux utilisateurs sont amis
     $stmtFriend = $pdo->prepare(
@@ -189,7 +183,7 @@ if ($method === 'POST' && $slIdx !== false
         $stmtOther->execute([$linkId, $friendId, $actionType, $today]);
         $isMutual = $actionType === 'play_same_day' ? true : (bool) $stmtOther->fetch();
 
-        $xpGained = $isMutual ? XP_TABLE[$actionType]['mutual'] : XP_TABLE[$actionType]['solo'];
+        $xpGained = personadle_sl_xp_for_action($actionType, $isMutual);
 
         $pdo->prepare("
             INSERT INTO social_link_interactions (social_link_id, initiator_id, action_type, xp_gained, is_mutual)
@@ -201,8 +195,8 @@ if ($method === 'POST' && $slIdx !== false
                 UPDATE social_link_interactions SET is_mutual = 1, xp_gained = ?
                 WHERE social_link_id = ? AND initiator_id = ? AND action_type = ?
                   AND DATE(CONVERT_TZ(created_at, '+00:00', 'Europe/Paris')) = ?
-            ")->execute([XP_TABLE[$actionType]['mutual'], $linkId, $friendId, $actionType, $today]);
-            $bonusXp = XP_TABLE[$actionType]['mutual'] - XP_TABLE[$actionType]['solo'];
+            ")->execute([PERSONADLE_SL_XP_TABLE[$actionType]['mutual'], $linkId, $friendId, $actionType, $today]);
+            $bonusXp = PERSONADLE_SL_XP_TABLE[$actionType]['mutual'] - PERSONADLE_SL_XP_TABLE[$actionType]['solo'];
             if ($bonusXp > 0) addSocialLinkXp($pdo, $linkId, $bonusXp);
         }
 
@@ -305,7 +299,7 @@ if ($method === 'POST' && $subAction === 'interact') {
     $data       = getJsonBody();
     $actionType = trim($data['action_type'] ?? '');
 
-    if (!isset(XP_TABLE[$actionType])) {
+    if (!isset(PERSONADLE_SL_XP_TABLE[$actionType])) {
         jsonError('Invalid action_type', 400);
     }
 
@@ -349,7 +343,7 @@ if ($method === 'POST' && $subAction === 'interact') {
     // play_same_day est toujours mutuel
     if ($actionType === 'play_same_day') $isMutual = true;
 
-    $xpGained = $isMutual ? XP_TABLE[$actionType]['mutual'] : XP_TABLE[$actionType]['solo'];
+    $xpGained = personadle_sl_xp_for_action($actionType, $isMutual);
 
     $result = [];
     $pdo->beginTransaction();
@@ -370,10 +364,10 @@ if ($method === 'POST' && $subAction === 'interact') {
                   AND initiator_id   = ?
                   AND action_type    = ?
                   AND DATE(CONVERT_TZ(created_at, '+00:00', 'Europe/Paris')) = ?
-            ")->execute([XP_TABLE[$actionType]['mutual'], $linkId, $otherId, $actionType, $today]);
+            ")->execute([PERSONADLE_SL_XP_TABLE[$actionType]['mutual'], $linkId, $otherId, $actionType, $today]);
 
             // Ajouter l'XP bonus à l'autre (différence solo→mutual)
-            $bonusXp = XP_TABLE[$actionType]['mutual'] - XP_TABLE[$actionType]['solo'];
+            $bonusXp = PERSONADLE_SL_XP_TABLE[$actionType]['mutual'] - PERSONADLE_SL_XP_TABLE[$actionType]['solo'];
             if ($bonusXp > 0) {
                 addSocialLinkXp($pdo, $linkId, $bonusXp);
             }

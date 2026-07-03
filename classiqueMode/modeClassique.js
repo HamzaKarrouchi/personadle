@@ -238,9 +238,51 @@ function filterCharacterPool() {
  * @param {string} age - e.g. "15-20", "40+"
  * @returns {number} Numeric value or -1 if unknown
  */
-function convertAgeToValue(age) {
+export function convertAgeToValue(age) {
   const map = { "< 15": 10, "15-20": 17.5, "21-40": 30, "40+": 50, "80+": 85 };
   return map[age] ?? -1;
+}
+
+/**
+ * Pure comparison of a single guessed attribute against the target's value.
+ * No DOM, no i18n — just the Wordle-style correct/misplaced/wrong decision
+ * (plus an age arrow direction), so it can be unit-tested in isolation.
+ *
+ * @param {string} key       - Attribute key ("age", "genre", "arcane", "opus", …)
+ * @param {*}      value     - The guessed character's value for this key
+ * @param {*}      targetVal - The target character's value for this key
+ * @returns {{status: "correct"|"misplaced"|"wrong", arrow: "up"|"down"|null}}
+ */
+export function compareAttribute(key, value, targetVal) {
+  if (key === "age") {
+    if (value === targetVal) return { status: "correct", arrow: null };
+    const guessVal = convertAgeToValue(value);
+    const targetValue = convertAgeToValue(targetVal);
+    if (guessVal !== -1 && targetValue !== -1) {
+      return { status: "misplaced", arrow: guessVal < targetValue ? "up" : "down" };
+    }
+    return { status: "wrong", arrow: null };
+  }
+
+  if (typeof value === "boolean" || typeof targetVal === "boolean") {
+    return { status: value === targetVal ? "correct" : "wrong", arrow: null };
+  }
+
+  if (Array.isArray(targetVal)) {
+    const guessArr = Array.isArray(value) ? value : [value];
+    const intersection = guessArr.filter((v) => targetVal.includes(v));
+    if (intersection.length === targetVal.length && guessArr.length === targetVal.length) {
+      return { status: "correct", arrow: null };
+    }
+    if (intersection.length > 0) return { status: "misplaced", arrow: null };
+    return { status: "wrong", arrow: null };
+  }
+
+  const isMatch =
+    typeof value === "string" &&
+    typeof targetVal === "string" &&
+    value.toLowerCase() === targetVal.toLowerCase();
+  return { status: isMatch ? "correct" : "wrong", arrow: null };
 }
 
 /**
@@ -331,40 +373,17 @@ function checkGuess(name, target, forceReveal = false) {
     }
 
     // Determine cell colour: correct (green), misplaced (yellow), wrong (red)
+    // — decision delegated to the pure compareAttribute() (unit-tested separately).
     if (isWin) {
       cell.classList.add("correct");
-    } else if (key === "age") {
-      const guessVal = convertAgeToValue(value);
-      const targetValue = convertAgeToValue(targetVal);
-      if (value === targetVal) {
-        cell.classList.add("correct");
-      } else if (guessVal !== -1 && targetValue !== -1) {
-        cell.classList.add("misplaced");
-        displayValue += guessVal < targetValue ? " ↑" : " ↓";
-      } else {
-        cell.classList.add("wrong");
-      }
-    } else if (typeof value === "boolean" || typeof targetVal === "boolean") {
-      cell.classList.add(value === targetVal ? "correct" : "wrong");
-      displayValue = value ? i18.t("ui.yes") : i18.t("ui.no");
-    } else if (Array.isArray(targetVal)) {
-      const guessArr = Array.isArray(value) ? value : [value];
-      const intersection = guessArr.filter((v) => targetVal.includes(v));
-      if (intersection.length === targetVal.length && guessArr.length === targetVal.length) {
-        cell.classList.add("correct");
-      } else if (intersection.length > 0) {
-        cell.classList.add("misplaced");
-      } else {
-        cell.classList.add("wrong");
-      }
     } else {
-      cell.classList.add(
-        typeof value === "string" &&
-          typeof targetVal === "string" &&
-          value.toLowerCase() === targetVal.toLowerCase()
-          ? "correct"
-          : "wrong"
-      );
+      const { status, arrow } = compareAttribute(key, value, targetVal);
+      cell.classList.add(status);
+      if (key === "age" && arrow) {
+        displayValue += arrow === "up" ? " ↑" : " ↓";
+      } else if (typeof value === "boolean" || typeof targetVal === "boolean") {
+        displayValue = value ? i18.t("ui.yes") : i18.t("ui.no");
+      }
     }
 
     // Daltonian mode: replace colours with symbols + accessible palette
