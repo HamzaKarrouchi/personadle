@@ -122,7 +122,10 @@ if ($method === 'POST' && $slIdx !== false
         jsonError($e->getMessage(), 409);
     } catch (Throwable $e) {
         $pdo->rollBack();
-        error_log('[SL by-friend interact] ' . $e->getMessage());
+        personadle_log_error($pdo, 'error', $e->getMessage(), [
+            'source'    => 'social-links-interact',
+            'friend_id' => $friendId,
+        ], $authId);
         jsonError('Interaction failed', 500);
     }
 

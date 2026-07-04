@@ -33,7 +33,7 @@ try {
     jsonError($e->getMessage(), $e->status);
 } catch (Throwable $e) {
     $pdo->rollBack();
-    error_log('[recover-streak] ' . $e->getMessage());
+    personadle_log_error($pdo, 'error', $e->getMessage(), ['source' => 'recover-streak'], $authId);
     jsonError('Failed to recover streak', 500);
 }
 

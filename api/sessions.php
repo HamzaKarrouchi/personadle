@@ -82,7 +82,10 @@ try {
     jsonError($dup->getMessage(), 409);
 } catch (Throwable $e) {
     $pdo->rollBack();
-    error_log('[PersonaDLE sessions] ' . $e->getMessage());
+    personadle_log_error($pdo, 'error', $e->getMessage(), [
+        'source' => 'sessions',
+        'mode'   => $mode,
+    ], $userId);
     jsonError('Failed to save session', 500);
 }
 

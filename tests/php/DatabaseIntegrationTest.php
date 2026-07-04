@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/../../api/lib/game_session.php';
 require_once __DIR__ . '/../../api/lib/streak_recovery.php';
 require_once __DIR__ . '/../../api/lib/social_link_interaction.php';
+require_once __DIR__ . '/../../api/lib/error_log.php';
 
 /**
  * Tests d'INTÉGRATION sur la vraie base MariaDB (Docker).
@@ -181,7 +182,7 @@ final class DatabaseIntegrationTest extends TestCase
             'friendships', 'social_links', 'social_link_ranks',
             'social_link_interactions', 'social_link_rankup_notifs', 'leaderboard_cache',
             'messages', 'wallpapers', 'user_wallpapers', 'deletion_requests',
-            'event_codes', 'event_codes_redeemed', 'rate_limits',
+            'event_codes', 'event_codes_redeemed', 'rate_limits', 'error_log',
         ];
         foreach ($required as $t) {
             $this->assertContains($t, $tables, "Table '$t' manquante (schéma Docker périmé ?)");
@@ -519,5 +520,55 @@ final class DatabaseIntegrationTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'not_a_real_action');
+    }
+
+    // ── personadle_log_error() — api/lib/error_log.php ────────────────────────
+    // (observabilité prod — panel admin "🪵 Logs")
+
+    public function testLogErrorPersistsToDatabase(): void
+    {
+        $uid = $this->makeUser();
+
+        personadle_log_error(self::$pdo, 'error', 'Something broke', ['source' => 'phpunit'], $uid);
+
+        $stmt = self::$pdo->prepare('SELECT level, message, context, user_id FROM error_log WHERE user_id = ?');
+        $stmt->execute([$uid]);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row, 'la ligne error_log aurait dû être insérée');
+        $this->assertSame('error', $row['level']);
+        $this->assertSame('Something broke', $row['message']);
+        $this->assertSame(['source' => 'phpunit'], json_decode($row['context'], true));
+        $this->assertSame($uid, (int) $row['user_id']);
+    }
+
+    public function testLogErrorAllowsNullContextAndUser(): void
+    {
+        personadle_log_error(self::$pdo, 'warning', 'Anonymous warning');
+
+        $stmt = self::$pdo->prepare('SELECT context, user_id FROM error_log WHERE message = ?');
+        $stmt->execute(['Anonymous warning']);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row);
+        $this->assertNull($row['context']);
+        $this->assertNull($row['user_id']);
+    }
+
+    public function testLogErrorSetsUserIdToNullWhenUserIsDeleted(): void
+    {
+        // ON DELETE SET NULL : une ligne de log ne doit jamais bloquer/empêcher
+        // la suppression d'un compte, ni pointer vers un user_id fantôme.
+        $uid = $this->makeUser();
+        personadle_log_error(self::$pdo, 'error', 'Will survive user deletion', [], $uid);
+
+        self::$pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$uid]);
+
+        $stmt = self::$pdo->prepare('SELECT user_id FROM error_log WHERE message = ?');
+        $stmt->execute(['Will survive user deletion']);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row, 'la ligne error_log doit survivre à la suppression du user');
+        $this->assertNull($row['user_id']);
     }
 }
