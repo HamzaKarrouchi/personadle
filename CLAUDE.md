@@ -141,6 +141,22 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 - Tout nouvel utilitaire `gameCore.js` → tests correspondants obligatoires
 - Vocabulaire des modes : **toujours** passer par `normalizeModeKey()` / `modeLabel()` (gameCore.js)
 
+### 🔢 Chiffres de doc — ne JAMAIS les mettre à jour à la main
+
+Les nombres ci-dessus (tests, tables SQL, clés i18n) ainsi que leurs équivalents dans
+`README.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `tests/README.md` sont **auto-calculés et
+auto-corrigés** par `scripts/check-doc-numbers.js` — c'est ce script qui a recalculé ces
+valeurs, pas une estimation manuelle. Après avoir ajouté un test, une table SQL ou une
+clé i18n :
+
+- `npm run docs:fix` — recalcule et réécrit directement les chiffres partout où ils apparaissent
+- `npm run docs:check` — vérifie sans écrire (utilisé en CI, échoue si un chiffre est faux)
+- Le hook pre-commit lance `docs:fix` automatiquement et re-stage les fichiers modifiés
+
+Si tu ajoutes un nouvel endroit où un de ces chiffres est cité en dur, ajoute aussi son
+point de synchronisation dans `syncPoints` (`scripts/check-doc-numbers.js`) — sinon il
+driftera en silence comme tous les autres avant l'audit de juillet 2026.
+
 ---
 
 ## 9. Documentation des mises à jour
