@@ -132,10 +132,12 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **242 tests** (Vitest + jsdom), 8 suites : `gameCore`, `backend`, `i18n`, `profileStats`,
-  `streakRecovery`, `streakFlow.integration`, `validateCharacters`, `formatPlayTime`
+- **448 tests** (Vitest + jsdom), 24 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+  `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
+  `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
-- E2E Playwright (optionnel, hors CI) : `npm run test:e2e` — voir `tests-e2e/README.md`
+- E2E Playwright : `npm run test:e2e` (local, nécessite `make up`) — job CI dédié `e2e` non-bloquant
+  (`continue-on-error`) en attendant confirmation de sa stabilité — voir `tests-e2e/README.md`
 - Tout nouvel utilitaire `gameCore.js` → tests correspondants obligatoires
 - Vocabulaire des modes : **toujours** passer par `normalizeModeKey()` / `modeLabel()` (gameCore.js)
 
