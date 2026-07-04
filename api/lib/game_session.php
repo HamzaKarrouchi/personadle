@@ -27,7 +27,7 @@ class PersonadleDuplicateSessionException extends RuntimeException
  * fonction suppose des valeurs déjà validées.
  *
  * @param array<string,mixed> $filters Filtres actifs, encodés en JSON pour la colonne.
- * @return array{session_id:int, stats:array<string,int>, global_streak:int}
+ * @return array{session_id:int, stats:array{mode:string, games:int, wins:int, giveups:int, streak:int, streak_record:int, perfect_wins:int, total_time_ms:int}, global_streak:int}
  * @throws PersonadleDuplicateSessionException Session déjà enregistrée pour ce (user, mode, date).
  */
 function personadle_record_game_session(

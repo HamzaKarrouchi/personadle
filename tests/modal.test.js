@@ -160,4 +160,19 @@ describe("multiple independent modals", () => {
     closeModal("m1");
     expect(document.activeElement.id).toBe("trigger1");
   });
+
+  it("does not leak a keydown listener when opened twice for the same id without closing in between", () => {
+    makeModal("m1", `<button id="a">A</button>`);
+    const addSpy = vi.spyOn(document, "addEventListener");
+    const removeSpy = vi.spyOn(document, "removeEventListener");
+
+    openModal("m1");
+    openModal("m1"); // re-open without an intervening closeModal("m1")
+    closeModal("m1");
+
+    const keydownAdds = addSpy.mock.calls.filter(([type]) => type === "keydown").length;
+    const keydownRemoves = removeSpy.mock.calls.filter(([type]) => type === "keydown").length;
+    expect(keydownAdds).toBe(2);
+    expect(keydownRemoves).toBe(2); // the stale listener from the first open must also be removed
+  });
 });

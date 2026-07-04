@@ -38,6 +38,17 @@ const _trapState = new Map();
 export function openModal(id, opts = {}) {
   const el = document.getElementById(id);
   if (!el) return;
+
+  // Double-open sur le même id sans closeModal() entre les deux : retirer
+  // l'ancien listener keydown avant d'en poser un nouveau, sinon il reste
+  // accroché à document pour toujours (cf. CLAUDE.md — ne jamais empiler
+  // un listener sans vérifier qu'un précédent n'existe pas déjà).
+  const stale = _trapState.get(id);
+  if (stale) {
+    document.removeEventListener("keydown", stale.keyHandler);
+    _trapState.delete(id);
+  }
+
   el.classList.remove("hidden");
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-modal", "true");
