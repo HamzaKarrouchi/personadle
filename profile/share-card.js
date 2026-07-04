@@ -765,14 +765,22 @@ export function setupShareProfile(profile, saveProfile) {
 
     // Générer le PNG haute résolution (scale:2)
     setTimeout(async () => {
-      const cvs = await html2canvas(offscreen, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: null,
-        logging: false,
-        allowTaint: true,
-      });
-      document.body.removeChild(offscreen);
+      let cvs;
+      try {
+        cvs = await html2canvas(offscreen, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null,
+          logging: false,
+          allowTaint: true,
+        });
+      } catch (err) {
+        console.error("Share card generation failed:", err);
+        alert("❌ Couldn't generate the share image. Please try again.");
+        return;
+      } finally {
+        document.body.removeChild(offscreen);
+      }
       const dataUrl = cvs.toDataURL("image/png");
 
       // Bouton PNG
