@@ -34,12 +34,12 @@ personadle/
 ├── js/                  ← gameCore.js, api.js, auth.js, i18n.js, cloud-sync.js…
 ├── css/                 ← global.css + un CSS par composant
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
-├── lang/                ← en.json (source de vérité, ~871 clés), fr/es/de/it.json
+├── lang/                ← en.json (source de vérité, 947 clés), fr/es/de/it.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 8 suites Vitest (242 tests) + tests/php/ (PHPUnit)
-└── sql/                 ← bdd_mysql.sql (20 tables)
+├── tests/               ← 24 suites Vitest (449 tests) + tests/php/ (PHPUnit)
+└── sql/                 ← bdd_mysql.sql (23 tables)
 ```
 
 **Fichiers clés :**
@@ -132,12 +132,30 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **242 tests** (Vitest + jsdom), 8 suites : `gameCore`, `backend`, `i18n`, `profileStats`,
-  `streakRecovery`, `streakFlow.integration`, `validateCharacters`, `formatPlayTime`
+- **449 tests** (Vitest + jsdom), 24 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+  `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
+  `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
-- E2E Playwright (optionnel, hors CI) : `npm run test:e2e` — voir `tests-e2e/README.md`
+- E2E Playwright : `npm run test:e2e` (local, nécessite `make up`) — job CI dédié `e2e` non-bloquant
+  (`continue-on-error`) en attendant confirmation de sa stabilité — voir `tests-e2e/README.md`
 - Tout nouvel utilitaire `gameCore.js` → tests correspondants obligatoires
 - Vocabulaire des modes : **toujours** passer par `normalizeModeKey()` / `modeLabel()` (gameCore.js)
+
+### 🔢 Chiffres de doc — ne JAMAIS les mettre à jour à la main
+
+Les nombres ci-dessus (tests, tables SQL, clés i18n) ainsi que leurs équivalents dans
+`README.md`, `ROADMAP.md`, `CONTRIBUTING.md`, `tests/README.md` sont **auto-calculés et
+auto-corrigés** par `scripts/check-doc-numbers.js` — c'est ce script qui a recalculé ces
+valeurs, pas une estimation manuelle. Après avoir ajouté un test, une table SQL ou une
+clé i18n :
+
+- `npm run docs:fix` — recalcule et réécrit directement les chiffres partout où ils apparaissent
+- `npm run docs:check` — vérifie sans écrire (utilisé en CI, échoue si un chiffre est faux)
+- Le hook pre-commit lance `docs:fix` automatiquement et re-stage les fichiers modifiés
+
+Si tu ajoutes un nouvel endroit où un de ces chiffres est cité en dur, ajoute aussi son
+point de synchronisation dans `syncPoints` (`scripts/check-doc-numbers.js`) — sinon il
+driftera en silence comme tous les autres avant l'audit de juillet 2026.
 
 ---
 
