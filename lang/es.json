@@ -1111,5 +1111,19 @@
     "error_cooldown": "Recuperación en espera — inténtalo más tarde.",
     "error_offline": "Parece que estás sin conexión. Inténtalo de nuevo.",
     "error_generic": "Recuperación no disponible ahora mismo. Inténtalo de nuevo."
+  },
+  "reset_password": {
+    "title": "🔐 Restablece tu contraseña",
+    "subtitle": "Elige una nueva contraseña para tu cuenta de PersonaDLE.",
+    "new_password_label": "Nueva contraseña",
+    "new_password_placeholder": "Mínimo 8 caracteres",
+    "confirm_password_label": "Confirma la contraseña",
+    "submit_btn": "Actualizar contraseña",
+    "back_link": "← Volver a PersonaDLE",
+    "invalid_link": "Enlace de restablecimiento inválido o faltante.",
+    "error_too_short": "La contraseña debe tener al menos 8 caracteres.",
+    "error_invalid_expired": "El enlace de restablecimiento es inválido o ha expirado.",
+    "error_network": "Error de red. Inténtalo de nuevo.",
+    "success": "¡Contraseña actualizada! Ya puedes iniciar sesión."
   }
 }

@@ -1111,5 +1111,19 @@
     "error_cooldown": "Ripristino in cooldown — riprova più tardi.",
     "error_offline": "Sembri offline. Riprova.",
     "error_generic": "Ripristino non disponibile al momento. Riprova."
+  },
+  "reset_password": {
+    "title": "🔐 Reimposta la tua password",
+    "subtitle": "Scegli una nuova password per il tuo account PersonaDLE.",
+    "new_password_label": "Nuova password",
+    "new_password_placeholder": "Almeno 8 caratteri",
+    "confirm_password_label": "Conferma la password",
+    "submit_btn": "Aggiorna password",
+    "back_link": "← Torna a PersonaDLE",
+    "invalid_link": "Link di ripristino non valido o mancante.",
+    "error_too_short": "La password deve contenere almeno 8 caratteri.",
+    "error_invalid_expired": "Il link di ripristino non è valido o è scaduto.",
+    "error_network": "Errore di rete. Riprova.",
+    "success": "Password aggiornata! Ora puoi accedere."
   }
 }

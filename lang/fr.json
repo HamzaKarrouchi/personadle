@@ -1111,5 +1111,19 @@
     "error_cooldown": "Récupération en cooldown — réessaie plus tard.",
     "error_offline": "Tu sembles hors ligne. Réessaie.",
     "error_generic": "Récupération indisponible pour le moment. Réessaie."
+  },
+  "reset_password": {
+    "title": "🔐 Réinitialise ton mot de passe",
+    "subtitle": "Choisis un nouveau mot de passe pour ton compte PersonaDLE.",
+    "new_password_label": "Nouveau mot de passe",
+    "new_password_placeholder": "8 caractères minimum",
+    "confirm_password_label": "Confirme le mot de passe",
+    "submit_btn": "Mettre à jour le mot de passe",
+    "back_link": "← Retour à PersonaDLE",
+    "invalid_link": "Lien de réinitialisation invalide ou manquant.",
+    "error_too_short": "Le mot de passe doit contenir au moins 8 caractères.",
+    "error_invalid_expired": "Le lien de réinitialisation est invalide ou expiré.",
+    "error_network": "Erreur réseau. Merci de réessayer.",
+    "success": "Mot de passe mis à jour ! Tu peux maintenant te connecter."
   }
 }
