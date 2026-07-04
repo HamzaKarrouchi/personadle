@@ -79,7 +79,7 @@ Nouveau jeu — cas A (roster inédit)
 
 ### 🟠 Qualité / robustesse
 
-- [ ] **Responsive + a11y** des nouvelles modales (avatar, musique, couleurs) : focus trap + Escape + test mobile.
+- [x] **Responsive + a11y** des nouvelles modales (avatar, musique, couleurs) — ✅ _livré (`js/modal.js`, focus trap + Escape + restauration du focus, réutilisé par avatarCropModal/sharePreviewModal/songModal/titlesModal). Vérifié en Playwright/Chromium (Tab/Shift+Tab cantonné, crop modal OK en viewport mobile 375px)._
 - [ ] **Couverture PHP** : tests d'intégration par endpoint critique (`sessions`, `social-links/interact`, `recover-streak`).
 - [x] **Check i18n « valeur == EN »** — ✅ _livré (`scripts/check-i18n-untranslated.js`, `npm run i18n:check-untranslated`, avertissement pre-commit sur `lang/*.json` staged). Premier passage : 0 vraie traduction manquante, uniquement des correspondances attendues (noms, opus, lore, placeholders — voir §5 de CLAUDE.md)._
 - [ ] **Observabilité prod** : au-delà d'`error_log` — Sentry-like ou table `error_log` + page admin.
