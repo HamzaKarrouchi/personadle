@@ -36,7 +36,7 @@ personadle/
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
 ├── lang/                ← en.json (source de vérité, ~871 clés), fr/es/de/it.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
-├── profile/             ← profile.js, badges/, friends/, leaderboard/
+├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
 ├── tests/               ← 8 suites Vitest (242 tests) + tests/php/ (PHPUnit)
 └── sql/                 ← bdd_mysql.sql (20 tables)
