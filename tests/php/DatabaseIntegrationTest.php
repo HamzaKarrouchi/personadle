@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
+require_once __DIR__ . '/../../api/lib/game_session.php';
+require_once __DIR__ . '/../../api/lib/streak_recovery.php';
+require_once __DIR__ . '/../../api/lib/social_link_interaction.php';
+
 /**
  * Tests d'INTÉGRATION sur la vraie base MariaDB (Docker).
  *
@@ -249,5 +253,271 @@ final class DatabaseIntegrationTest extends TestCase
 
         $stmt->execute([$rndRecent]);
         $this->assertSame(1, (int) $stmt->fetchColumn(), 'la fenêtre active ne doit pas être purgée');
+    }
+
+    // ── personadle_record_game_session() — api/lib/game_session.php ──────────
+    // (endpoint : POST /api/sessions)
+
+    private function makeUserStats(int $userId, string $mode, array $overrides = []): void
+    {
+        $defaults = [
+            'wins' => 0, 'giveups' => 0, 'games' => 0,
+            'streak' => 0, 'streak_record' => 0, 'perfect_wins' => 0,
+            'total_time_ms' => 0, 'last_played_at' => null,
+        ];
+        $row = array_merge($defaults, $overrides);
+        self::$pdo->prepare(
+            'INSERT INTO user_stats
+                (user_id, mode, wins, giveups, games, streak, streak_record, perfect_wins, total_time_ms, last_played_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        )->execute([
+            $userId, $mode, $row['wins'], $row['giveups'], $row['games'],
+            $row['streak'], $row['streak_record'], $row['perfect_wins'],
+            $row['total_time_ms'], $row['last_played_at'],
+        ]);
+    }
+
+    public function testRecordGameSessionInsertsSessionAndUpdatesStats(): void
+    {
+        $uid   = $this->makeUser();
+        $today = (new DateTime('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+
+        $out = personadle_record_game_session(
+            self::$pdo, $uid, 'classic', $today, 'Joker', 'win', 1, 4200, ['opus' => ['P5']]
+        );
+
+        $this->assertGreaterThan(0, $out['session_id']);
+        $this->assertSame(1, $out['stats']['games']);
+        $this->assertSame(1, $out['stats']['wins']);
+        $this->assertSame(0, $out['stats']['giveups']);
+        $this->assertSame(1, $out['stats']['streak'], 'première partie jouée → streak = 1');
+        $this->assertSame(1, $out['stats']['perfect_wins'], 'victoire en 1 essai = parfaite');
+        $this->assertSame(1, $out['global_streak']);
+
+        // Vérifie que la ligne game_sessions a bien été persistée avec les filtres encodés.
+        $stmt = self::$pdo->prepare(
+            'SELECT active_filters FROM game_sessions WHERE user_id = ? AND mode = ? AND played_date = ?'
+        );
+        $stmt->execute([$uid, 'classic', $today]);
+        $this->assertSame(['opus' => ['P5']], json_decode($stmt->fetchColumn(), true));
+    }
+
+    public function testRecordGameSessionThrowsOnDuplicate(): void
+    {
+        $uid   = $this->makeUser();
+        $today = (new DateTime('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+
+        personadle_record_game_session(self::$pdo, $uid, 'classic', $today, 'Joker', 'win', 1, 1000, []);
+
+        $this->expectException(PersonadleDuplicateSessionException::class);
+        personadle_record_game_session(self::$pdo, $uid, 'classic', $today, 'Joker', 'win', 1, 1000, []);
+    }
+
+    public function testRecordGameSessionBootstrapsMissingStatsRow(): void
+    {
+        // Aucune ligne user_stats préexistante pour ce (user, mode) — le garde-fou
+        // INSERT IGNORE de personadle_record_game_session() doit la créer.
+        $uid   = $this->makeUser();
+        $today = (new DateTime('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+
+        $stmt = self::$pdo->prepare('SELECT COUNT(*) FROM user_stats WHERE user_id = ? AND mode = ?');
+        $stmt->execute([$uid, 'emoji']);
+        $this->assertSame(0, (int) $stmt->fetchColumn());
+
+        $out = personadle_record_game_session(self::$pdo, $uid, 'emoji', $today, 'Morgana', 'giveup', 0, 500, []);
+
+        $this->assertSame(0, $out['stats']['wins']);
+        $this->assertSame(1, $out['stats']['giveups']);
+        $this->assertSame(0, $out['stats']['streak'], 'abandon → streak remise à 0');
+    }
+
+    public function testRecordGameSessionIncrementsStreakOnConsecutiveDay(): void
+    {
+        $uid = $this->makeUser();
+        $paris = new DateTimeZone('Europe/Paris');
+        $today = (new DateTime('now', $paris))->format('Y-m-d');
+        $yesterday = (new DateTime('yesterday', $paris))->format('Y-m-d');
+        $yesterdayUtc = (new DateTime($yesterday . ' 12:00:00', $paris))
+            ->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+
+        $this->makeUserStats($uid, 'classic', ['streak' => 5, 'streak_record' => 5, 'last_played_at' => $yesterdayUtc]);
+
+        $out = personadle_record_game_session(self::$pdo, $uid, 'classic', $today, 'Joker', 'win', 2, 1000, []);
+
+        $this->assertSame(6, $out['stats']['streak']);
+        $this->assertSame(6, $out['stats']['streak_record']);
+    }
+
+    // ── personadle_attempt_streak_recovery() — api/lib/streak_recovery.php ───
+    // (endpoint : POST /api/user/recover-streak)
+
+    public function testStreakRecoverySucceedsAndUpdatesStreakAndCooldown(): void
+    {
+        $uid = $this->makeUser();
+        $this->makeUserStats($uid, 'classic', ['streak' => 1]);
+        // 3 jours distincts joués → previous_streak=3 est dans la limite autorisée.
+        $ins = self::$pdo->prepare(
+            'INSERT INTO game_sessions (user_id, mode, played_date, target_name, result, attempts) VALUES (?, "classic", ?, "Joker", "win", 2)'
+        );
+        foreach (['2026-01-01', '2026-01-02', '2026-01-03'] as $d) {
+            $ins->execute([$uid, $d]);
+        }
+
+        $out = personadle_attempt_streak_recovery(self::$pdo, $uid, 3);
+
+        $this->assertSame(1, $out['modes_updated']);
+
+        $stmt = self::$pdo->prepare('SELECT streak, streak_record FROM user_stats WHERE user_id = ? AND mode = "classic"');
+        $stmt->execute([$uid]);
+        $row = $stmt->fetch();
+        $this->assertSame(3, (int) $row['streak']);
+        $this->assertSame(3, (int) $row['streak_record']);
+
+        $stmt = self::$pdo->prepare('SELECT streak_recovered_at, global_streak FROM users WHERE id = ?');
+        $stmt->execute([$uid]);
+        $urow = $stmt->fetch();
+        $this->assertNotNull($urow['streak_recovered_at'], 'le cooldown doit être enregistré');
+        $this->assertSame(3, (int) $urow['global_streak']);
+    }
+
+    public function testStreakRecoveryRejectsWhenCooldownActive(): void
+    {
+        $uid = $this->makeUser();
+        $recentRecovery = (new DateTime('-10 days'))->format('Y-m-d H:i:s'); // < 60j
+        self::$pdo->prepare('UPDATE users SET streak_recovered_at = ? WHERE id = ?')
+            ->execute([$recentRecovery, $uid]);
+
+        try {
+            personadle_attempt_streak_recovery(self::$pdo, $uid, 2);
+            $this->fail('devait lever PersonadleStreakRecoveryException (cooldown actif)');
+        } catch (PersonadleStreakRecoveryException $e) {
+            $this->assertSame(429, $e->status);
+        }
+    }
+
+    public function testStreakRecoveryAllowsAfterCooldownExpires(): void
+    {
+        $uid = $this->makeUser();
+        $oldRecovery = (new DateTime('-61 days'))->format('Y-m-d H:i:s'); // > 60j
+        self::$pdo->prepare('UPDATE users SET streak_recovered_at = ? WHERE id = ?')
+            ->execute([$oldRecovery, $uid]);
+        $this->makeUserStats($uid, 'classic', ['streak' => 0]);
+        self::$pdo->prepare(
+            'INSERT INTO game_sessions (user_id, mode, played_date, target_name, result, attempts) VALUES (?, "classic", "2026-01-01", "Joker", "win", 2)'
+        )->execute([$uid]);
+
+        $out = personadle_attempt_streak_recovery(self::$pdo, $uid, 1);
+        $this->assertSame(1, $out['modes_updated']);
+    }
+
+    public function testStreakRecoveryRejectsWhenExceedingDaysPlayed(): void
+    {
+        $uid = $this->makeUser();
+        // Un seul jour distinct joué → max autorisé = 1
+        self::$pdo->prepare(
+            'INSERT INTO game_sessions (user_id, mode, played_date, target_name, result, attempts) VALUES (?, "classic", "2026-01-01", "Joker", "win", 2)'
+        )->execute([$uid]);
+
+        try {
+            personadle_attempt_streak_recovery(self::$pdo, $uid, 5);
+            $this->fail('devait lever PersonadleStreakRecoveryException (anti-triche)');
+        } catch (PersonadleStreakRecoveryException $e) {
+            $this->assertSame(400, $e->status);
+        }
+    }
+
+    public function testStreakRecoveryThrowsWhenUserNotFound(): void
+    {
+        try {
+            personadle_attempt_streak_recovery(self::$pdo, 999999999, 3);
+            $this->fail('devait lever PersonadleStreakRecoveryException (user introuvable)');
+        } catch (PersonadleStreakRecoveryException $e) {
+            $this->assertSame(404, $e->status);
+        }
+    }
+
+    // ── personadle_perform_social_link_interaction() — api/lib/social_link_interaction.php ──
+    // (endpoint : POST /api/social-links/by-friend/:id/interact)
+
+    public function testSocialLinkGetOrCreateLinkIsIdempotentAndCanonical(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+
+        $linkId1 = personadle_sl_get_or_create_link(self::$pdo, $u1, $u2);
+        $linkId2 = personadle_sl_get_or_create_link(self::$pdo, $u2, $u1); // ordre inversé
+
+        $this->assertSame($linkId1, $linkId2, 'même paire dans les deux sens → même lien, pas de doublon');
+    }
+
+    public function testSocialLinkInteractionAwardsSoloXp(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+
+        $out = personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'visit_profile');
+
+        $this->assertSame(5, $out['xp_gained']); // solo
+        $this->assertFalse($out['is_mutual']);
+        $this->assertSame(5, $out['new_xp']);
+        $this->assertSame(1, $out['new_rank']);
+        $this->assertFalse($out['ranked_up']);
+    }
+
+    public function testSocialLinkInteractionAwardsMutualBonusWhenBothActSameDay(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+
+        $first  = personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'share_streak');
+        $this->assertSame(15, $first['xp_gained']); // solo
+        $this->assertFalse($first['is_mutual']);
+
+        $second = personadle_perform_social_link_interaction(self::$pdo, $u2, $u1, 'share_streak');
+        $this->assertSame(30, $second['xp_gained']); // mutuel
+        $this->assertTrue($second['is_mutual']);
+
+        // Total : 15 (solo initial de u1) relevé à 30 rétroactivement (+15) + 30 (u2) = 60
+        $this->assertSame(60, $second['new_xp']);
+    }
+
+    public function testSocialLinkInteractionRejectsDuplicateSameDayAction(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+
+        personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'compare_stats');
+
+        $this->expectException(PersonadleAlreadyInteractedException::class);
+        personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'compare_stats');
+    }
+
+    public function testSocialLinkInteractionTriggersRankUpNotification(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+        $linkId = personadle_sl_get_or_create_link(self::$pdo, $u1, $u2);
+        // Juste sous le seuil du rang 2 (100 xp) pour déclencher la montée de rang.
+        self::$pdo->prepare('UPDATE social_links SET xp = 95, `rank` = 1 WHERE id = ?')->execute([$linkId]);
+
+        $out = personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'share_streak'); // +15 solo
+
+        $this->assertSame(2, $out['new_rank']);
+        $this->assertTrue($out['ranked_up']);
+
+        $stmt = self::$pdo->prepare(
+            'SELECT COUNT(*) FROM social_link_rankup_notifs WHERE recipient_id = ? AND partner_id = ? AND new_rank = 2'
+        );
+        $stmt->execute([$u2, $u1]);
+        $this->assertSame(1, (int) $stmt->fetchColumn(), 'le partenaire doit être notifié de la montée de rang');
+    }
+
+    public function testSocialLinkInteractionRejectsUnknownActionType(): void
+    {
+        $u1 = $this->makeUser('a');
+        $u2 = $this->makeUser('b');
+
+        $this->expectException(InvalidArgumentException::class);
+        personadle_perform_social_link_interaction(self::$pdo, $u1, $u2, 'not_a_real_action');
     }
 }
