@@ -30,6 +30,9 @@
           <a id="btn-home" class="btn-home">🏠 Accueil</a>
           <button id="btn-codes" class="btn-codes">🎟️ Codes</button>
           <button id="btn-error-logs" class="btn-codes">🪵 Logs</button>
+          <button id="btn-audit-log" class="btn-codes">📋 Audit</button>
+          <button id="btn-deletion-requests" class="btn-codes">🗑️ RGPD</button>
+          <button id="btn-rate-limits" class="btn-codes">⏱️ Rate Limits</button>
           <span id="admin-username" class="admin-username-pill"></span>
           <button id="admin-logout" class="btn-logout">Logout</button>
         </div>
@@ -78,6 +81,21 @@
           <!-- ── Error Logs panel (global, not per-user) ────── -->
           <section id="error-logs-panel" class="user-detail hidden">
             <div id="error-logs-panel-content"></div>
+          </section>
+
+          <!-- ── Admin Audit Log panel (global, not per-user) ── -->
+          <section id="audit-log-panel" class="user-detail hidden">
+            <div id="audit-log-panel-content"></div>
+          </section>
+
+          <!-- ── RGPD Deletion Requests panel (global, not per-user) ── -->
+          <section id="deletion-requests-panel" class="user-detail hidden">
+            <div id="deletion-requests-panel-content"></div>
+          </section>
+
+          <!-- ── Rate Limits panel (global, not per-user) ────── -->
+          <section id="rate-limits-panel" class="user-detail hidden">
+            <div id="rate-limits-panel-content"></div>
           </section>
 
           <section id="user-detail" class="user-detail hidden">

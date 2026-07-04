@@ -584,6 +584,35 @@ CREATE INDEX idx_error_log_level   ON error_log(level, created_at DESC);
 
 
 -- =============================================================================
+-- 21. ADMIN_AUDIT_LOG — Traçabilité des actions admin (qui a fait quoi)
+-- =============================================================================
+CREATE TABLE admin_audit_log (
+    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    admin_id    BIGINT UNSIGNED NULL,
+    -- Admin ayant effectué l'action. NULL si son compte est supprimé depuis
+    -- — ON DELETE SET NULL pour ne jamais bloquer une suppression de compte.
+    action      VARCHAR(60)     NOT NULL,
+    -- ex: 'user.ban', 'user.unban', 'user.grant_admin', 'user.delete',
+    --     'badge.grant', 'badge.revoke', 'title.grant', 'title.revoke',
+    --     'wallpaper.grant', 'wallpaper.revoke', 'event_code.create',
+    --     'event_code.update', 'event_code.delete', 'social_link.update',
+    --     'social_link.delete'
+    target_type VARCHAR(40)     NOT NULL,
+    -- ex: 'user', 'badge', 'title', 'wallpaper', 'event_code', 'social_link'
+    target_id   VARCHAR(100)    NOT NULL,
+    -- id numérique ou code/slug selon la cible, toujours stocké en texte
+    details     JSON            NULL,
+    -- Détails structurés de la mutation (avant/après, champs modifiés…)
+    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_admin_audit_log_admin FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_admin_audit_log_created ON admin_audit_log(created_at DESC);
+CREATE INDEX idx_admin_audit_log_target  ON admin_audit_log(target_type, target_id);
+CREATE INDEX idx_admin_audit_log_admin   ON admin_audit_log(admin_id, created_at DESC);
+
+
+-- =============================================================================
 -- SEED CATALOGUES (badges, wallpapers, event_codes) — folded from migrations 007/011
 -- =============================================================================
 INSERT IGNORE INTO badges (slug, name_en, category, rarity, image_path, condition_en, is_secret) VALUES

@@ -8,6 +8,8 @@ require_once __DIR__ . '/../../api/lib/game_session.php';
 require_once __DIR__ . '/../../api/lib/streak_recovery.php';
 require_once __DIR__ . '/../../api/lib/social_link_interaction.php';
 require_once __DIR__ . '/../../api/lib/error_log.php';
+require_once __DIR__ . '/../../api/lib/admin_audit.php';
+require_once __DIR__ . '/../../api/lib/deletion_requests.php';
 
 /**
  * Tests d'INTÉGRATION sur la vraie base MariaDB (Docker).
@@ -183,6 +185,7 @@ final class DatabaseIntegrationTest extends TestCase
             'social_link_interactions', 'social_link_rankup_notifs', 'leaderboard_cache',
             'messages', 'wallpapers', 'user_wallpapers', 'deletion_requests',
             'event_codes', 'event_codes_redeemed', 'rate_limits', 'error_log',
+            'admin_audit_log',
         ];
         foreach ($required as $t) {
             $this->assertContains($t, $tables, "Table '$t' manquante (schéma Docker périmé ?)");
@@ -570,5 +573,138 @@ final class DatabaseIntegrationTest extends TestCase
 
         $this->assertNotFalse($row, 'la ligne error_log doit survivre à la suppression du user');
         $this->assertNull($row['user_id']);
+    }
+
+    // ── personadle_log_admin_action() — api/lib/admin_audit.php ──────────────
+    // (traçabilité admin — panel admin "📋 Audit")
+
+    public function testLogAdminActionPersistsToDatabase(): void
+    {
+        $admin  = $this->makeUser('admin');
+        $target = $this->makeUser('target');
+
+        personadle_log_admin_action(self::$pdo, $admin, 'user.ban', 'user', (string) $target, ['reason' => 'spam']);
+
+        $stmt = self::$pdo->prepare('SELECT admin_id, action, target_type, target_id, details FROM admin_audit_log WHERE admin_id = ?');
+        $stmt->execute([$admin]);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row, 'la ligne admin_audit_log aurait dû être insérée');
+        $this->assertSame($admin, (int) $row['admin_id']);
+        $this->assertSame('user.ban', $row['action']);
+        $this->assertSame('user', $row['target_type']);
+        $this->assertSame((string) $target, $row['target_id']);
+        $this->assertSame(['reason' => 'spam'], json_decode($row['details'], true));
+    }
+
+    public function testLogAdminActionAllowsNullDetails(): void
+    {
+        $admin = $this->makeUser('admin2');
+
+        personadle_log_admin_action(self::$pdo, $admin, 'event_code.delete', 'event_code', 'SUMMER2026');
+
+        $stmt = self::$pdo->prepare('SELECT details FROM admin_audit_log WHERE action = ?');
+        $stmt->execute(['event_code.delete']);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row);
+        $this->assertNull($row['details']);
+    }
+
+    public function testLogAdminActionSetsAdminIdToNullWhenAdminIsDeleted(): void
+    {
+        // ON DELETE SET NULL : une entrée d'audit ne doit jamais bloquer/empêcher
+        // la suppression du compte admin, ni pointer vers un admin_id fantôme.
+        $admin = $this->makeUser('admin3');
+        personadle_log_admin_action(self::$pdo, $admin, 'user.grant_admin', 'user', '999');
+
+        self::$pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$admin]);
+
+        $stmt = self::$pdo->prepare('SELECT admin_id FROM admin_audit_log WHERE action = ?');
+        $stmt->execute(['user.grant_admin']);
+        $row = $stmt->fetch();
+
+        $this->assertNotFalse($row, "l'entrée d'audit doit survivre à la suppression de l'admin");
+        $this->assertNull($row['admin_id']);
+    }
+
+    // ── personadle_process_deletion_request() / personadle_process_due_deletion_requests()
+    // — api/lib/deletion_requests.php (RGPD hard delete — panel admin "🗑️ RGPD")
+
+    private function makeDeletionRequest(int $userId, ?string $requestedAt = null, ?string $processedAt = null): int
+    {
+        $stmt = self::$pdo->prepare(
+            'INSERT INTO deletion_requests (user_id, requested_at, processed_at) VALUES (?, ?, ?)'
+        );
+        $stmt->execute([$userId, $requestedAt ?? date('Y-m-d H:i:s'), $processedAt]);
+        return (int) self::$pdo->lastInsertId();
+    }
+
+    public function testProcessDeletionRequestHardDeletesUserAndMarksProcessed(): void
+    {
+        $uid = $this->makeUser();
+        $reqId = $this->makeDeletionRequest($uid);
+
+        personadle_process_deletion_request(self::$pdo, $reqId);
+
+        $userStmt = self::$pdo->prepare('SELECT id FROM users WHERE id = ?');
+        $userStmt->execute([$uid]);
+        $this->assertFalse($userStmt->fetch(), 'le user aurait dû être hard-deleted');
+
+        $reqStmt = self::$pdo->prepare('SELECT processed_at FROM deletion_requests WHERE id = ?');
+        $reqStmt->execute([$reqId]);
+        $row = $reqStmt->fetch();
+        $this->assertNotFalse($row);
+        $this->assertNotNull($row['processed_at'], 'la demande aurait dû être marquée traitée');
+    }
+
+    public function testProcessDeletionRequestRejectsAlreadyProcessed(): void
+    {
+        $uid   = $this->makeUser();
+        $reqId = $this->makeDeletionRequest($uid, null, date('Y-m-d H:i:s'));
+
+        $this->expectException(PersonadleDeletionRequestException::class);
+        try {
+            personadle_process_deletion_request(self::$pdo, $reqId);
+        } catch (PersonadleDeletionRequestException $e) {
+            $this->assertSame(404, $e->status);
+            throw $e;
+        }
+    }
+
+    public function testProcessDeletionRequestRejectsUnknownId(): void
+    {
+        $this->expectException(PersonadleDeletionRequestException::class);
+        personadle_process_deletion_request(self::$pdo, 999999999);
+    }
+
+    public function testProcessDueDeletionRequestsOnlyProcessesRequestsOlderThanThreshold(): void
+    {
+        $uidOld = $this->makeUser('old');
+        $uidNew = $this->makeUser('new');
+
+        $oldTs = (new DateTime('-31 days'))->format('Y-m-d H:i:s');
+        $newTs = (new DateTime('-5 days'))->format('Y-m-d H:i:s');
+
+        $reqOld = $this->makeDeletionRequest($uidOld, $oldTs);
+        $reqNew = $this->makeDeletionRequest($uidNew, $newTs);
+
+        $result = personadle_process_due_deletion_requests(self::$pdo, 30);
+
+        $this->assertSame(1, $result['deleted']);
+        $this->assertSame(1, $result['pending']);
+        $this->assertEmpty($result['errors']);
+
+        $oldUserStmt = self::$pdo->prepare('SELECT id FROM users WHERE id = ?');
+        $oldUserStmt->execute([$uidOld]);
+        $this->assertFalse($oldUserStmt->fetch(), 'le compte échu (>30j) aurait dû être hard-deleted');
+
+        $newUserStmt = self::$pdo->prepare('SELECT id FROM users WHERE id = ?');
+        $newUserStmt->execute([$uidNew]);
+        $this->assertNotFalse($newUserStmt->fetch(), 'le compte récent (<30j) ne doit pas être touché');
+
+        $newReqStmt = self::$pdo->prepare('SELECT processed_at FROM deletion_requests WHERE id = ?');
+        $newReqStmt->execute([$reqNew]);
+        $this->assertNull($newReqStmt->fetch()['processed_at']);
     }
 }

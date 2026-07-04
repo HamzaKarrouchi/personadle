@@ -19,6 +19,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/lib/authz.php';
 require_once __DIR__ . '/lib/format.php';
 require_once __DIR__ . '/lib/error_log.php';
+require_once __DIR__ . '/lib/admin_audit.php';
+require_once __DIR__ . '/lib/deletion_requests.php';
 
 // Garantir que PHP utilise UTC pour date/time, cohérent avec UTC_TIMESTAMP() MySQL
 date_default_timezone_set('UTC');
