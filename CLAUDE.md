@@ -126,6 +126,8 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | DST Paris mal géré | `Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris' })` |
 | `ALTER TABLE … ADD COLUMN IF NOT EXISTS` | Syntaxe MariaDB uniquement — MySQL 8.0 : `ADD COLUMN` sans condition |
 | `isolation: isolate` clippe le burst avatar | Sortir `.tv-burst-wrap` du corps TV → enfant direct de `.tv-wrap`, z-index:20 |
+| `POST`/`PATCH` sur une route dossier (`/api/friends`, `/messages`, `/notifications`…) sans `/` final | Apache (mod_dir) 301 vers l'URL avec slash → la méthode dégrade en GET (body perdu), `res.ok()` reste vrai mais rien n'est écrit. `js/api.js` met déjà le `/` final sur ces routes — faire pareil dans tout nouveau test E2E ou appel direct |
+| `foo.php` + dossier `foo/` coexistants dans `api/` | `api/.htaccess` teste `.php -f` **avant** `-d` (sinon le dossier gagne toujours et le stub `.php` est inatteignable, même avec le slash final) |
 
 ---
 
