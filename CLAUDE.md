@@ -126,6 +126,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | DST Paris mal géré | `Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris' })` |
 | `ALTER TABLE … ADD COLUMN IF NOT EXISTS` | Syntaxe MariaDB uniquement — MySQL 8.0 : `ADD COLUMN` sans condition |
 | `isolation: isolate` clippe le burst avatar | Sortir `.tv-burst-wrap` du corps TV → enfant direct de `.tv-wrap`, z-index:20 |
+| `POST /api/friends` (ou `/messages`) sans `/` final | Apache (mod_dir) 301 vers l'URL avec slash → le POST devient un GET (body perdu), `res.ok()` reste vrai mais la ressource n'est jamais créée. `js/api.js` utilise déjà `/friends/` et `/messages/` — faire pareil dans tout nouveau test E2E ou appel direct |
 
 ---
 
