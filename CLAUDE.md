@@ -51,6 +51,8 @@ personadle/
 - `api/lib/daily_target.php` — anti-triche (phase 1, détection) : recalcule la cible quotidienne
   attendue par mode (portage PHP de `getDailyTarget()`) contre `api/data/daily_pools.json`
   (généré par `scripts/export-daily-pools.js` depuis les datasets JS — `npm run pools:check`/`pools:build`)
+- `api/lib/condition_check.php` — vérification générique de condition de déblocage
+  (`condition_type`/`condition_mode`/`condition_value`), partagée par `titles`/`badges`/`wallpapers`
 
 ---
 
