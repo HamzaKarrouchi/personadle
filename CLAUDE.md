@@ -38,7 +38,7 @@ personadle/
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 24 suites Vitest (473 tests) + tests/php/ (PHPUnit)
+├── tests/               ← 25 suites Vitest (475 tests) + tests/php/ (PHPUnit)
 └── sql/                 ← bdd_mysql.sql (23 tables)
 ```
 
@@ -48,6 +48,9 @@ personadle/
 - `js/cloud-sync.js` — `pullProfileFromCloud()` : backend = source de vérité absolue
 - `api/bootstrap.php` — CORS, PDO singleton, `requireAuth()`, `requireAdmin()`
 - `api/sessions.php` — logique streak (par mode, par date Paris, UTC → Paris)
+- `api/lib/daily_target.php` — anti-triche (phase 1, détection) : recalcule la cible quotidienne
+  attendue par mode (portage PHP de `getDailyTarget()`) contre `api/data/daily_pools.json`
+  (généré par `scripts/export-daily-pools.js` depuis les datasets JS — `npm run pools:check`/`pools:build`)
 
 ---
 
@@ -134,7 +137,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **473 tests** (Vitest + jsdom), 24 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+- **475 tests** (Vitest + jsdom), 25 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
   `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
   `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
@@ -159,15 +162,39 @@ Si tu ajoutes un nouvel endroit où un de ces chiffres est cité en dur, ajoute 
 point de synchronisation dans `syncPoints` (`scripts/check-doc-numbers.js`) — sinon il
 driftera en silence comme tous les autres avant l'audit de juillet 2026.
 
+### 🎯 Pools de tirage quotidien — ne JAMAIS les éditer à la main
+
+`api/data/daily_pools.json` (lu par `api/lib/daily_target.php` pour l'anti-triche serveur,
+§3) est **généré**, pas écrit à la main — `scripts/export-daily-pools.js` l'exporte depuis
+les datasets JS (source de vérité). Après avoir ajouté un personnage, une chanson ou modifié
+un pool de tirage :
+
+- `npm run pools:build` — régénère `api/data/daily_pools.json`
+- `npm run pools:check` — vérifie sans écrire (utilisé en CI, échoue si désynchronisé)
+- Le hook pre-commit régénère et re-stage automatiquement si nécessaire
+
 ---
 
 ## 9. Documentation des mises à jour
 
-> **Règle absolue** : tout ajout/correction notable → `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.md`
+> **Règle absolue** : tout ajout/correction notable → deux fichiers distincts, pas un seul
+> (corrigé le 2026-07-06 — la version précédente de cette section pointait vers un
+> `PersonaDLE_Update.md` qui n'existe pas pour la v2.0, seulement pour l'archive v1.1) :
+>
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/DEV_CHANGELOG.md` — changelog **dev**
+>   (contributeurs/mainteneurs), détail précis par commit : fichiers touchés, décisions
+>   d'architecture, angles morts connus. Toute modification qui touche au code en a besoin.
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.html` — changelog
+>   **joueur** (page HTML bilingue EN/FR, blocs `data-i18n-block`), highlights uniquement,
+>   langage non technique. À alimenter **seulement** si le changement est visible/parlant
+>   pour un joueur (nouvelle feature, fix d'un bug qu'il pouvait remarquer) — jamais l'inverse
+>   (ne pas alléger DEV_CHANGELOG.md pour "faire propre").
+
+Format d'une entrée `DEV_CHANGELOG.md` :
 
 ```markdown
-## 🏷️ Titre _(vX.X.X)_
-Description concise.
+## AAAA-MM-JJ — Titre court
+Description concise du lot (pourquoi, pas juste quoi).
 ### Détails techniques (si pertinent)
 ```
 
