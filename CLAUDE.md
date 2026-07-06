@@ -177,11 +177,24 @@ un pool de tirage :
 
 ## 9. Documentation des mises à jour
 
-> **Règle absolue** : tout ajout/correction notable → `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.md`
+> **Règle absolue** : tout ajout/correction notable → deux fichiers distincts, pas un seul
+> (corrigé le 2026-07-06 — la version précédente de cette section pointait vers un
+> `PersonaDLE_Update.md` qui n'existe pas pour la v2.0, seulement pour l'archive v1.1) :
+>
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/DEV_CHANGELOG.md` — changelog **dev**
+>   (contributeurs/mainteneurs), détail précis par commit : fichiers touchés, décisions
+>   d'architecture, angles morts connus. Toute modification qui touche au code en a besoin.
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.html` — changelog
+>   **joueur** (page HTML bilingue EN/FR, blocs `data-i18n-block`), highlights uniquement,
+>   langage non technique. À alimenter **seulement** si le changement est visible/parlant
+>   pour un joueur (nouvelle feature, fix d'un bug qu'il pouvait remarquer) — jamais l'inverse
+>   (ne pas alléger DEV_CHANGELOG.md pour "faire propre").
+
+Format d'une entrée `DEV_CHANGELOG.md` :
 
 ```markdown
-## 🏷️ Titre _(vX.X.X)_
-Description concise.
+## AAAA-MM-JJ — Titre court
+Description concise du lot (pourquoi, pas juste quoi).
 ### Détails techniques (si pertinent)
 ```
 
