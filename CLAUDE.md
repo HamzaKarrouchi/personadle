@@ -34,7 +34,7 @@ personadle/
 ├── js/                  ← gameCore.js, api.js, auth.js, i18n.js, cloud-sync.js…
 ├── css/                 ← global.css + un CSS par composant
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
-├── lang/                ← en.json (source de vérité, 949 clés), fr/es/de/it.json
+├── lang/                ← en.json (source de vérité, 965 clés), fr/es/de/it.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
@@ -88,6 +88,9 @@ Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de gar
 - Variables : `{{variable}}` — `t('key', { vars })` dans `js/i18n.js`
 - Ne pas traduire : noms persos, personas, titres musiques, codes opus, termes lore
 - `npm run i18n:check` — vérifie la cohérence entre tous les fichiers lang/
+- **`admin/` est hors périmètre i18n** — outil interne, mono-langue (FR) par choix explicite,
+  0 `data-i18n`. Ne pas le traduire "par réflexe" en ajoutant du contenu ailleurs dans le
+  produit ; si ce choix change un jour, le documenter ici en même temps.
 
 **Pattern fallback correct :**
 ```js
