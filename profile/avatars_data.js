@@ -115,6 +115,7 @@ export const AVATAR_GROUPS = [
     "Har.jpg",
     "haru_jazz.jpg",
     "Haru.png",
+    "JOKER.webp",
     "joker_starlight.jpg",
     "Joker.jpg",
     "Lavenza.jpg",
@@ -130,6 +131,7 @@ export const AVATAR_GROUPS = [
     "ren_jazz.jpg",
     "ren_t.webp",
     "Ren.gif",
+    "Ren.webp",
     "Ren2.gif",
     "ryuji_jazz.jpg",
     "Ryuji.jpg",
@@ -169,6 +171,7 @@ export const AVATAR_GROUPS = [
     "Yaoling2.png",
     "YUI.png",
     "YUI2.png",
+    "kotone-p5x.webp",
     "yukimifujikawa_persona_5_phantom_x.jpg",
   ] },
   { game: "SPECIAL", key: "special", avatars: [

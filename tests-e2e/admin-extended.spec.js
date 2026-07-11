@@ -15,7 +15,7 @@ import { csrfHeader } from "./helpers/csrf.js";
  * `make up` avec une base fraîche.
  */
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8080";
+const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8090";
 
 test.describe.serial("API — endpoints admin étendus (event codes, logs, RGPD, social links, dons utilisateur)", () => {
   let adminCtx;

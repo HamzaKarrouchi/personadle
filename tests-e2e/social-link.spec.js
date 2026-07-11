@@ -14,7 +14,7 @@ import { csrfHeader } from "./helpers/csrf.js";
  * par run pour rester idempotent (1 action par jour par couple d'amis).
  */
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8080";
+const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8090";
 
 async function registerUser(rnd, suffix) {
   const ctx = await pwRequest.newContext({ baseURL: BASE });

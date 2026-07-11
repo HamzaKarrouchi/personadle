@@ -116,7 +116,7 @@ cp .env.example .env # valeurs par défaut suffisantes pour tester en local
 make up
 ```
 
-- [ ] `http://localhost:8080` répond (page d'accueil)
+- [ ] `http://localhost:8090` répond (page d'accueil)
 - [ ] `http://localhost:8081` répond (phpMyAdmin — `personadle_usr` / `devpassword`)
 
 ```bash
@@ -210,13 +210,13 @@ npm run test:e2e
 
 ### 2.6 Réorganisation `pages/` (PR #9)
 
-- [ ] `http://localhost:8080/pages/faq.html` s'affiche correctement, CSS/JS/images chargées
+- [ ] `http://localhost:8090/pages/faq.html` s'affiche correctement, CSS/JS/images chargées
   (rien en 404 dans l'onglet Network)
-- [ ] `http://localhost:8080/pages/privacy.html` idem
+- [ ] `http://localhost:8090/pages/privacy.html` idem
 - [ ] Depuis ces deux pages, la bottom nav (barre de nav du bas) fonctionne et pointe vers les
   bons chemins (`../index.html`, `../profile/profile.html`...) — c'est le point qui aurait
   cassé silencieusement sans le fix de `js/bottomNav.js`
-- [ ] Aller volontairement sur une URL inexistante (`http://localhost:8080/n-importe-quoi`) →
+- [ ] Aller volontairement sur une URL inexistante (`http://localhost:8090/n-importe-quoi`) →
   la page `pages/404.html` s'affiche (pas une erreur Apache brute)
 - [ ] Demander un reset de mot de passe (§4.5 plus bas) → l'email (ou le lien affiché en local
   si pas de vrai SMTP configuré) pointe vers `/pages/reset-password.html?token=...` et la page
@@ -574,7 +574,7 @@ Pour chaque mode : une partie jusqu'à la victoire.
 ## 16 — Sécurité (côté utilisateur)
 
 - [ ] Upload d'un faux fichier image (`.txt` renommé `.jpg`) en avatar → refusé proprement
-- [ ] `curl -I http://localhost:8080/api/auth/me` → headers `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` présents
+- [ ] `curl -I http://localhost:8090/api/auth/me` → headers `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` présents
 - [ ] Voir aussi §2.2/2.5 ci-dessus pour CSRF et CSP spécifiquement
 
 ---
