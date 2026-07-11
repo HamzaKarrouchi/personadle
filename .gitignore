@@ -130,7 +130,6 @@ docs/superpowers/
 # Données personnelles de test
 # ─────────────────────────────────────────────────────────────────────────────
 personadle_profile.json
-img/kotone-p5x.webp
 # PHPUnit (phar standalone + cache)
 phpunit.phar
 .phpunit.cache/
