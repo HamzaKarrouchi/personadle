@@ -171,7 +171,6 @@ export const AVATAR_GROUPS = [
     "Yaoling2.png",
     "YUI.png",
     "YUI2.png",
-    "kotone-p5x.webp",
     "yukimifujikawa_persona_5_phantom_x.jpg",
   ] },
   { game: "SPECIAL", key: "special", avatars: [
