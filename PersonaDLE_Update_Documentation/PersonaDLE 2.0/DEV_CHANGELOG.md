@@ -51,6 +51,24 @@ sans impact fonctionnel :
 - `game_sessions.result` : `VARCHAR` local vs `ENUM` Hostinger.
 - Types `ENUM` vs `VARCHAR` sur `rarity` (titles/badges) — valeurs identiques.
 
+### Correction post-review (2026-07-12)
+
+Le script `migration_hostinger_full.sql` committé ne reflétait pas fidèlement les
+correctifs listés ci-dessus (probablement appliqués à la main sur Hostinger sans
+être reportés dans le fichier). Corrigé :
+
+- `friendships.seen_at` : `AFTER accepted_at` remplacé par `AFTER updated_at`
+  (le script plantait sur une base fraîche, `accepted_at` n'existant pas).
+- `social_link_rankup_notifs.recipient_id/partner_id` : `MODIFY COLUMN` vers
+  `BIGINT UNSIGNED` ajouté avant les `ADD CONSTRAINT` (m015) — la FK vers
+  `users.id` échouait sinon (type mismatch, la colonne restait `INT` depuis m009).
+- `ADD CONSTRAINT IF NOT EXISTS` (FK) réellement remplacé par le pattern
+  `PREPARE/EXECUTE` conditionnel (il était encore utilisé tel quel en m015).
+- `social_link_rankup_notifs.is_badge_prompt` : colonne présente sur Hostinger
+  mais absente du script — ajoutée (`ADD COLUMN IF NOT EXISTS`).
+- Rappel de sauvegarde ajouté avant le `DROP TABLE IF EXISTS social_link_badges`
+  (destructif, aucun backup mentionné auparavant).
+
 ---
 
 ## 2026-07-04 — Sécurité, tests réels, CI E2E (revue de projet)

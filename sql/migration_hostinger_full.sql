@@ -8,7 +8,7 @@
 
 -- ── m000 : Social foundation ──────────────────────────────────
 ALTER TABLE profiles    ADD COLUMN IF NOT EXISTS settings  JSON      NULL AFTER equipped_title_id;
-ALTER TABLE friendships ADD COLUMN IF NOT EXISTS seen_at   TIMESTAMP NULL AFTER accepted_at;
+ALTER TABLE friendships ADD COLUMN IF NOT EXISTS seen_at   TIMESTAMP NULL AFTER updated_at;
 
 CREATE TABLE IF NOT EXISTS messages (
     id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -207,6 +207,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned     TINYINT(1) NOT NULL DEF
 ALTER TABLE users ADD COLUMN IF NOT EXISTS pseudo_locked TINYINT(1) NOT NULL DEFAULT 0 AFTER is_banned;
 
 -- ── m012 : supprimer social_link_badges + colonne badge_generated
+-- ⚠️ Destructif — s'assurer d'un dump (mysqldump) préalable si la table
+-- contient encore des données avant de lancer ce script en prod.
 DROP TABLE IF EXISTS social_link_badges;
 
 SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
@@ -230,8 +232,33 @@ ALTER TABLE game_sessions ADD    INDEX        idx_gs_user_mode_date  (user_id, m
 -- ── m015 : nettoyage index redondant + FK rankup notifs ──────
 ALTER TABLE users DROP INDEX IF EXISTS idx_users_pseudo;
 CREATE INDEX IF NOT EXISTS idx_sli_composite ON social_link_interactions(social_link_id, initiator_id, action_type);
-ALTER TABLE social_link_rankup_notifs ADD CONSTRAINT IF NOT EXISTS fk_slrn_recipient FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE;
-ALTER TABLE social_link_rankup_notifs ADD CONSTRAINT IF NOT EXISTS fk_slrn_partner   FOREIGN KEY (partner_id)   REFERENCES users(id) ON DELETE CASCADE;
+
+-- recipient_id/partner_id ont été créés en INT (m009) mais users.id est BIGINT UNSIGNED :
+-- on élargit avant d'ajouter les FK (MODIFY COLUMN est sans risque à rejouer, no-op si déjà au bon type).
+ALTER TABLE social_link_rankup_notifs
+  MODIFY COLUMN recipient_id BIGINT UNSIGNED NOT NULL,
+  MODIFY COLUMN partner_id   BIGINT UNSIGNED NOT NULL;
+ALTER TABLE social_link_rankup_notifs ADD COLUMN IF NOT EXISTS is_badge_prompt TINYINT(1) NOT NULL DEFAULT 0;
+
+-- ADD CONSTRAINT IF NOT EXISTS n'est pas fiable pour les FK sur MariaDB 11.8 :
+-- vérification via INFORMATION_SCHEMA avant ajout, comme pour m012 (badge_generated).
+SET @fk_recipient_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+                             WHERE TABLE_SCHEMA = DATABASE()
+                               AND TABLE_NAME = 'social_link_rankup_notifs'
+                               AND CONSTRAINT_NAME = 'fk_slrn_recipient');
+SET @sql = IF(@fk_recipient_exists = 0,
+    'ALTER TABLE social_link_rankup_notifs ADD CONSTRAINT fk_slrn_recipient FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @fk_partner_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+                           WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = 'social_link_rankup_notifs'
+                             AND CONSTRAINT_NAME = 'fk_slrn_partner');
+SET @sql = IF(@fk_partner_exists = 0,
+    'ALTER TABLE social_link_rankup_notifs ADD CONSTRAINT fk_slrn_partner FOREIGN KEY (partner_id) REFERENCES users(id) ON DELETE CASCADE',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ── m016 : global_streak (IF NOT EXISTS — MariaDB OK) ────────
 ALTER TABLE users
