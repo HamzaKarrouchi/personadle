@@ -27,7 +27,7 @@ Depuis fin mars 2026, le projet a reçu **233 commits** : nouveau backend comple
 
 ### 0.4 Ressources utiles pendant les tests
 
-- 📖 FAQ du site : [http://localhost:8090/faq.html](http://localhost:8090/faq.html) — si un comportement vous semble bizarre, vérifiez d'abord si la FAQ l'explique (certains "bugs" sont des choix voulus).
+- 📖 FAQ du site : [http://localhost:8080/faq.html](http://localhost:8080/faq.html) — si un comportement vous semble bizarre, vérifiez d'abord si la FAQ l'explique (certains "bugs" sont des choix voulus).
 - 📜 Changelog technique complet de la 2.0 : [`PersonaDLE_Update.md`](./PersonaDLE_Update.md) (même dossier que ce fichier) — utile si vous voulez comprendre le détail technique d'une feature avant de la tester.
 - 📝 Notes de développement : [`note_ajout.md`](./note_ajout.md) (même dossier).
 
@@ -89,11 +89,11 @@ Cette commande démarre 3 services dans des conteneurs isolés :
 
 Le **premier lancement** peut prendre 1 à 2 minutes (construction de l'image PHP + initialisation de la base). Patientez jusqu'à voir s'afficher :
 ```
-→ Site       : http://localhost:8090
+→ Site       : http://localhost:8080
 → phpMyAdmin : http://localhost:8081
 ```
 
-- [ ] Ouvrir [http://localhost:8090](http://localhost:8090) dans le navigateur → la page d'accueil de PersonaDLE s'affiche (les 6 modes de jeu en cartes)
+- [ ] Ouvrir [http://localhost:8080](http://localhost:8080) dans le navigateur → la page d'accueil de PersonaDLE s'affiche (les 6 modes de jeu en cartes)
 - [ ] Ouvrir [http://localhost:8081](http://localhost:8081) → phpMyAdmin s'affiche (login : `personadle_usr` / mot de passe : `devpassword`)
 
 ### 1.5 Commandes utiles pendant les tests
@@ -114,7 +114,7 @@ make logs        # Voir ce qui se passe "sous le capot" si une page plante (Ctrl
 
 ### 2.1 Compte Principal
 
-1. Aller sur [http://localhost:8090](http://localhost:8090)
+1. Aller sur [http://localhost:8080](http://localhost:8080)
 2. Cliquer sur "Sign Up" / "Créer un compte"
 3. Remplir avec une adresse email à vous (ex : `votrenom.test@gmail.com` — peu importe qu'elle existe vraiment, ce n'est pas vérifié en local), un pseudo, un mot de passe
 
@@ -132,7 +132,7 @@ Pour avoir un 2ème compte **en même temps** que le premier (sans être déconn
 | Firefox | `Ctrl+Shift+P` (Windows/Linux) ou `Cmd+Shift+P` (Mac) |
 
 1. Ouvrir une fenêtre de navigation privée
-2. Aller sur [http://localhost:8090](http://localhost:8090) (oui, ça fonctionne aussi en local)
+2. Aller sur [http://localhost:8080](http://localhost:8080) (oui, ça fonctionne aussi en local)
 3. Créer un 2ème compte avec une **autre adresse email** et un **autre pseudo** que le Compte Principal
 
 - [ ] Le 2ème compte se crée sans erreur, indépendamment du premier
@@ -204,7 +204,7 @@ make test-php
 npm i -D @playwright/test
 npx playwright install chromium
 
-# Lancer les tests — cible déjà http://localhost:8090 par défaut (le port Docker de §1.4).
+# Lancer les tests — cible déjà http://localhost:8080 par défaut (le port Docker de §1.4).
 # Seulement nécessaire si ton .env change APP_PORT :
 # PLAYWRIGHT_BASE_URL=http://localhost:TON_PORT npm run test:e2e
 npm run test:e2e
@@ -222,7 +222,7 @@ npm run test:e2e
 
 > Vous avez déjà testé l'inscription "qui marche" en §2. Ici on teste les cas qui doivent **échouer proprement**.
 
-Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et essayer :
+Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et essayer :
 
 - [ ] Un email déjà utilisé par un compte existant → message d'erreur clair affiché (pas de page blanche, pas de crash)
 - [ ] Un pseudo déjà pris → message d'erreur clair
@@ -245,7 +245,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 ### 4.4 "Se souvenir de moi"
 
 1. Se reconnecter en cochant l'option "Remember me" / "Se souvenir de moi" si elle existe
-2. Fermer complètement le navigateur (pas juste l'onglet) puis le rouvrir sur [http://localhost:8090](http://localhost:8090)
+2. Fermer complètement le navigateur (pas juste l'onglet) puis le rouvrir sur [http://localhost:8080](http://localhost:8080)
 
 - [ ] Toujours connecté automatiquement
 
@@ -282,7 +282,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ### 5.1 Mode Classique
 
-👉 [http://localhost:8090/classiqueMode/classiqueMode.html](http://localhost:8090/classiqueMode/classiqueMode.html)
+👉 [http://localhost:8080/classiqueMode/classiqueMode.html](http://localhost:8080/classiqueMode/classiqueMode.html)
 
 1. Taper le nom d'un personnage dans la barre de recherche
 2. Valider une proposition
@@ -296,7 +296,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ### 5.2 Mode Emoji
 
-👉 [http://localhost:8090/emojiMode/emojiMode.html](http://localhost:8090/emojiMode/emojiMode.html)
+👉 [http://localhost:8080/emojiMode/emojiMode.html](http://localhost:8080/emojiMode/emojiMode.html)
 
 - [ ] Une séquence d'emojis s'affiche, avec un emoji supplémentaire révélé à chaque mauvaise réponse
 - [ ] Victoire → confettis + son
@@ -304,14 +304,14 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ### 5.3 Mode Silhouette
 
-👉 [http://localhost:8090/silhouetteMode/silhouette.html](http://localhost:8090/silhouetteMode/silhouette.html)
+👉 [http://localhost:8080/silhouetteMode/silhouette.html](http://localhost:8080/silhouetteMode/silhouette.html)
 
 - [ ] Une silhouette sombre du personnage s'affiche, de plus en plus "dézoomée"/visible à chaque erreur
 - [ ] Victoire → l'image apparaît en couleur + confettis
 
 ### 5.4 Mode All-Out Attack
 
-👉 [http://localhost:8090/allOutAttackMode/allOutAttack.html](http://localhost:8090/allOutAttackMode/allOutAttack.html)
+👉 [http://localhost:8080/allOutAttackMode/allOutAttack.html](http://localhost:8080/allOutAttackMode/allOutAttack.html)
 
 > Ce mode a reçu des **nouveaux personnages P5X** récemment (Hatsune Miku en collaboration P5X, et les 3 Phantom Idols Anri/Pinky/Blitz) — portez une attention particulière à ceux-là.
 
@@ -322,14 +322,14 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ### 5.5 Mode Personae
 
-👉 [http://localhost:8090/personaeMode/personae.html](http://localhost:8090/personaeMode/personae.html)
+👉 [http://localhost:8080/personaeMode/personae.html](http://localhost:8080/personaeMode/personae.html)
 
 - [ ] C'est le Persona (pas le personnage) qui est affiché à deviner
 - [ ] Une réponse correcte révèle le personnage associé à ce Persona
 
 ### 5.6 Mode Musique
 
-👉 [http://localhost:8090/musicsMode/musics.html](http://localhost:8090/musicsMode/musics.html)
+👉 [http://localhost:8080/musicsMode/musics.html](http://localhost:8080/musicsMode/musics.html)
 
 > Ce mode a reçu **13 nouvelles pistes** et 2 nouveaux opus filtrables (P4AU, P5T).
 
@@ -353,7 +353,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 > Le panneau de filtres est partagé par les 6 modes — testez-le une fois en détail dans le Mode Classique, le comportement doit être identique partout.
 
-👉 [http://localhost:8090/classiqueMode/classiqueMode.html](http://localhost:8090/classiqueMode/classiqueMode.html) → ouvrir l'icône/le bouton "Filtres"
+👉 [http://localhost:8080/classiqueMode/classiqueMode.html](http://localhost:8080/classiqueMode/classiqueMode.html) → ouvrir l'icône/le bouton "Filtres"
 
 ### 6.1 Sélection simple
 
@@ -380,7 +380,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ## 7 — Profil utilisateur
 
-👉 [http://localhost:8090/profile/profile.html](http://localhost:8090/profile/profile.html)
+👉 [http://localhost:8080/profile/profile.html](http://localhost:8080/profile/profile.html)
 
 ### 7.1 Affichage de base
 
@@ -423,7 +423,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 1. Avec le Compte Secondaire (fenêtre privée), récupérer son code ami affiché sur son profil
 2. Avec le Compte Principal, aller sur :
-   `http://localhost:8090/profile/profile.html?view=LE_CODE_AMI_RÉCUPÉRÉ`
+   `http://localhost:8080/profile/profile.html?view=LE_CODE_AMI_RÉCUPÉRÉ`
 
 - [ ] Le profil du Compte Secondaire s'affiche en lecture seule (pas de bouton "Sauvegarder" visible)
 - [ ] Pseudo, avatar et stats du Compte Secondaire sont visibles correctement
@@ -501,7 +501,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ### 9.1 Devenir amis
 
-👉 [http://localhost:8090/profile/friends/friends.html](http://localhost:8090/profile/friends/friends.html)
+👉 [http://localhost:8080/profile/friends/friends.html](http://localhost:8080/profile/friends/friends.html)
 
 1. Avec le Compte Principal, rechercher le pseudo du Compte Secondaire et envoyer une demande d'ami
 2. Avec le Compte Secondaire, aller sur la même page, onglet "Demandes reçues", accepter la demande
@@ -593,7 +593,7 @@ Sur [http://localhost:8090](http://localhost:8090), cliquer sur "Sign Up" et ess
 
 ## 10 — Leaderboard (classement)
 
-👉 [http://localhost:8090/profile/leaderboard/leaderboard.html](http://localhost:8090/profile/leaderboard/leaderboard.html)
+👉 [http://localhost:8080/profile/leaderboard/leaderboard.html](http://localhost:8080/profile/leaderboard/leaderboard.html)
 
 > La base de test contient déjà **19 faux joueurs** pré-remplis — vous n'avez pas besoin de créer des dizaines de comptes pour tester la pagination.
 
@@ -627,7 +627,7 @@ Pour chaque filtre, vérifier que la liste se met à jour sans erreur :
 
 ## 11 — Panneau admin
 
-👉 [http://localhost:8090/admin/](http://localhost:8090/admin/)
+👉 [http://localhost:8080/admin/](http://localhost:8080/admin/)
 
 > Nécessite que le Compte Principal soit admin (§2.3). Connectez-vous avec lui avant d'aller sur cette URL.
 
@@ -766,7 +766,7 @@ Pour **chaque** langue testée :
 > Optionnel — seulement si vous êtes à l'aise avec un terminal.
 
 ```bash
-curl -I http://localhost:8090/api/auth/me
+curl -I http://localhost:8080/api/auth/me
 ```
 
 - [ ] La réponse contient bien les lignes `X-Frame-Options`, `X-Content-Type-Options` et `Referrer-Policy`
@@ -785,7 +785,7 @@ curl -I http://localhost:8090/api/auth/me
 
 Pour chacune des pages suivantes, à **375px de large** :
 
-- [ ] [http://localhost:8090](http://localhost:8090) — page d'accueil, cartes des modes lisibles sans débordement horizontal
+- [ ] [http://localhost:8080](http://localhost:8080) — page d'accueil, cartes des modes lisibles sans débordement horizontal
 - [ ] Mode Classique — la grille de résultats reste consultable (scroll horizontal si besoin, mais rien de coupé/illisible)
 - [ ] Mode Musique — le lecteur audio s'adapte à la largeur de l'écran
 - [ ] Profil — statistiques et boutons restent accessibles sans superposition
@@ -812,7 +812,7 @@ Pour chacune des pages suivantes, à **375px de large** :
 - [ ] [`README.md`](../../README.md) — présentation générale, stack technique, modes décrits
 - [ ] [`ROADMAP.md`](../../ROADMAP.md) — les éléments marqués "déjà livrés" (✅) correspondent à des fonctionnalités que vous avez testées et qui fonctionnent
 - [ ] [`CLAUDE.md`](../../CLAUDE.md) — pas un README à proprement parler, mais très dense en pièges connus (section "Pièges critiques") ; en cas de bug surprenant pendant vos tests, vérifiez d'abord s'il n'est pas déjà documenté ici
-- [ ] [`faq.html`](http://localhost:8090/faq.html) (site) — toutes les catégories parcourues ; aucune réponse ne contredit ce que vous avez observé
+- [ ] [`faq.html`](http://localhost:8080/faq.html) (site) — toutes les catégories parcourues ; aucune réponse ne contredit ce que vous avez observé
 - [ ] [`PersonaDLE_Update.md`](./PersonaDLE_Update.md) — le changelog technique 2.0 couvre bien les grandes fonctionnalités que vous venez de tester
 - [ ] [`note_ajout.md`](./note_ajout.md) — notes de développement, cohérentes avec le changelog
 

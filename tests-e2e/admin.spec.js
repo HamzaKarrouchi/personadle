@@ -11,7 +11,7 @@ import { csrfHeader } from "./helpers/csrf.js";
  * fraîche (le seed ne tourne qu'à la première init du volume Docker).
  */
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8090";
+const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8080";
 
 test.describe.serial("API — endpoints admin (requireAdmin, listes)", () => {
   let adminCtx;

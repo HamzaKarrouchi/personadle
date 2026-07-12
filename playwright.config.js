@@ -17,7 +17,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8090",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:8080",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
