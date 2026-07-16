@@ -59,10 +59,11 @@ footer {
 #gameModeSelector {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  max-width: 900px;
+  gap: 28px 36px;
+  max-width: 1080px;
+  width: 92%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0;
 }
 
 /* =====================================================
