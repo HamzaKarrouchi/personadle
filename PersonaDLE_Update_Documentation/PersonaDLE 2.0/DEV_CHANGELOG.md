@@ -35,6 +35,102 @@
 
 ---
 
+## 2026-07-16 — fix: onglet Admin nav + stats profil i18n + drag-to-close modale
+
+Trois bugs isolés corrigés dans la même PR.
+
+### Onglet Admin manquant sur friends/leaderboard (`js/auth.js`, `js/bottomNav.js`)
+
+`personadle:auth-ready` n'était jamais dispatché : seul `personadle:auth-login` existait,
+déclenché uniquement lors d'une connexion manuelle. Sur les pages friends et leaderboard,
+`initBottomNav()` est appelé avant que la promesse `initAuth()` soit résolue — le check
+synchrone `window._currentUser?.is_admin` échoue, et le listener `personadle:auth-ready`
+ne se déclenchait jamais → l'onglet Admin n'apparaissait pas.
+
+Fix : dispatch `personadle:auth-ready` dans le bloc `finally` d'`initAuth()`, après
+`window._authResolved = true`.
+
+Second bug associé : le calcul du href admin dans `_addAdminNavItem()` ne distinguait
+pas les pages 2 niveaux de profondeur (`/profile/friends/`, `/profile/leaderboard/`)
+— elles recevaient `../admin/` au lieu de `../../admin/`. Corrigé en réutilisant
+le pattern `isDeepSubpath` déjà présent dans `buildHrefs()`.
+
+### Stats profil en anglais quelle que soit la langue (`profile/profile-page.js`)
+
+Les labels des stats (`renderStats`) et des en-têtes du tableau de modes
+(`renderModeStats`) étaient des chaînes hardcodées en anglais, ignorant les clés i18n
+qui existent pourtant dans `lang/*.json` :
+`profile.stat_wins_label`, `stat_giveups_label`, `stat_games_label`,
+`stat_best_streak_label`, `stat_time_label`, `stat_first_played_label`,
+`stat_fav_mode_label`, `stat_current_streak_label`, `mode_col_mode`, `mode_col_games`.
+
+Fix : remplacement par `tf()`. Ajout de `renderModeStats()` dans le listener
+`personadle:i18n-ready` (seul `renderStats()` y était, le tableau de modes restait
+donc en anglais même après changement de langue).
+
+### Drag text → fermeture modale compte (`js/auth.js`)
+
+Si l'utilisateur sélectionnait du texte dans le formulaire et relâchait la souris
+sur le backdrop, le navigateur générait un `click` sur le backdrop (cible commune
+du mousedown/mouseup) → fermeture involontaire de la modale.
+
+Fix : flag `_dragStartedInside` posé sur `mousedown`. Le handler `click` ignore la
+fermeture si le drag a commencé à l'intérieur du contenu de la modale.
+
+---
+
+## 2026-07-16 — feat: nouveau logo + avatars Theodore + correctifs UI/perf
+
+### Logo
+
+`img/New_Logo_PersonaDLE.png` remplace `img/Logo_PersonaDLE.png` dans tous les
+points d'entrée : `index.html` (src + og:image), les 6 pages mode, `README.md`.
+L'ancien fichier reste présent pour l'affichage avant/après dans `PersonaDLE_Update.html`.
+
+### Avatars Theodore (P3 Portable)
+
+`theodore.jpeg`, `theodore2-5.jpeg` ajoutés dans `profile/avatars_data.js` (groupe P3),
+juste après Elisabeth/Elisabeth2. `img/avatar/` contient déjà les fichiers — le
+user les a déposés manuellement.
+
+### Fix gitignore — illustrations docs
+
+`.gitignore` : ajout de règles `!` pour `*.png`, `*.jpg`, `*.jpeg`, `*.gif`,
+`*.webp`, `*.pdf`, `note_ajout.md`, `PersonaDLE_Update.md` dans
+`PersonaDLE_Update_Documentation/PersonaDLE 2.0/`. 13 fichiers de doc précédemment
+exclus sont maintenant versionnés.
+
+### Fix "Mot de passe oublié?" — ressemble à un lien
+
+`.auth-forgot-link` dans `profile/profile-page.css` : suppression de
+`text-decoration: underline`, couleur neutre muted au lieu de la couleur accent
+rouge. Hover subtil au lieu du `filter: brightness`. Aucun changement fonctionnel.
+
+### Fix AOA lag — CDN CloudFlare R2 exclu du SW
+
+`sw.js` : le CDN R2 (`pub-39a737fc7a9c44c08b7701bdd4b2de4a.r2.dev`) était capturé
+par la stratégie `cacheFirst` des images, créant des réponses opaques stale qui
+causaient le lag du mode All-Out Attack (Ctrl+Shift+R le contournait). Ajout d'un
+cas `network-only` avant `cacheFirst`. CACHE_VERSION bumped `v74 → v75`.
+
+### Grille index — 2 colonnes + tailles ajustées
+
+`css/index.css` :
+
+- `#gameModeSelector` : grille 2×3 sur desktop (>768px). Colonne gauche :
+  Classique, Emoji, All-Out Attack. Colonne droite : Silhouette, Personae, Music.
+  `grid-template-columns: repeat(2, 1fr)`, max-width 900px.
+- `.gamemode-title` : font-size 36px → 27px (proportionnel 75 %), responsive
+  adapté (22px → 16px sur tablette, 16px sur mobile).
+
+### Fix background 404
+
+`pages/404.html` : redesign du background — gradient diagonal plus marqué,
+motif de lignes en relief, suppression des scanlines plates au profit d'un
+effet velvet room plus riche visuellement.
+
+---
+
 ## 2026-07-16 — fix(build): Makefile portable Windows natif (sans Git Bash/WSL)
 
 Trouvé en aidant un testeur (Windows, PowerShell natif) : `make test-php`
