@@ -231,3 +231,41 @@ Claude Code agit en **mentor technique** : critiquer les choix problématiques a
 Knowledge graph dans `graphify-out/`.
 - Questions d'architecture → lire `graphify-out/GRAPH_REPORT.md` en premier
 - Après modification de fichiers : `python3 -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"`
+
+---
+
+## 13. Definition of Done — vérification par type de changement
+
+> Ajouté après review PR #19/#20 (juillet 2026) : le changelog décrivait correctement
+> les fixes attendus, le script SQL committé ne les appliquait pas. Donner le contexte
+> "correct" ne suffit pas — il faut comparer l'artefact réel à ce qui est annoncé, pas
+> juste le décrire.
+
+**Migrations SQL**
+- Exécuter réellement le script contre une base **vierge** (pré-migration) — pas une
+  base déjà migrée (`IF NOT EXISTS` y rend tout no-op, ne prouve rien)
+- Backup rappelé juste avant tout `DROP`/`DELETE`/`TRUNCATE`/rétrécissement de colonne
+- Chaque fix annoncé dans le changelog repéré ligne par ligne dans le script committé
+- Types FK vérifiés cohérents avec la table référencée avant `ADD CONSTRAINT`
+
+**Config partagée (ports, env, CI)**
+- Toute valeur par défaut modifiée vérifiée contre `docker-compose.yml`/`.env.example`,
+  pas en isolation dans le fichier qu'on modifie
+- Variable d'env fixée en dur en CI qui pourrait masquer une régression du défaut
+  local → vérifier explicitement, ou noter l'angle mort dans la PR
+
+**Sécurité / PHP**
+- PDO + requêtes préparées vérifié ligne par ligne sur le diff — pas un `grep SELECT`
+- Condition de déblocage (badge/titre/wallpaper) revérifiée côté serveur, jamais
+  côté client seul
+
+**État dérivé (localStorage, cloud sync)**
+- Champ dérivé d'une autre source de vérité (ex: `avatarSrc` dérivé de `avatar`) →
+  tracer tous les chemins d'écriture de la source et vérifier l'invalidation. Périmé
+  silencieusement = bug, même si ça marchait au premier test.
+
+**Avant merge**
+- Affirmations du corps de PR spot-vérifiées contre le diff réel, pas prises pour
+  acquises
+- CI verte insuffisante si elle ne peut pas exécuter le scénario concerné (replay
+  migration sur base vierge, config testée sans override d'env) → le signaler
