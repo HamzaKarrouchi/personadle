@@ -45,6 +45,21 @@ réellement exécutés via `make` (pas juste les scripts isolés), `php -l`/
 `npm run lint` propres. Le téléchargement effectif reste à confirmer par un
 contributeur (CI ou local) non bloqué par ce proxy.
 
+### `test-php` déplacé vers Docker (suite du même fil)
+
+Le même testeur n'avait pas PHP installé nativement sur Windows (seulement
+dans le conteneur `personadle_php`, monté sur `.:/var/www/html`) —
+`php phpunit.phar` échouait avec `php n'est pas reconnu`. Plutôt que
+d'exiger un PHP natif juste pour lancer les tests (jamais documenté comme
+prérequis), `test-php` tourne maintenant dans le conteneur :
+`$(DC) exec -T php php $(PHPUNIT_PHAR)` au lieu de `php $(PHPUNIT_PHAR)`.
+Nécessite `make up` (déjà un prérequis documenté dans `CONTRIBUTING.md`).
+Confirmé fonctionnel en conditions réelles côté testeur : 175 tests, 317
+assertions, 71 skipped (attendu — tests d'intégration BDD spécifiques).
+
+`CONTRIBUTING.md` mis à jour en conséquence (retire la mention implicite
+d'un PHP natif requis).
+
 ## 2026-07-16 — fix(api): rateLimit() fail-open + erreur JS brute côté auth
 
 Bug remonté par un testeur (compte local, schéma Docker périmé) : inscription

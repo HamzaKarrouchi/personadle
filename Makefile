@@ -49,8 +49,8 @@ $(PHPUNIT_PHAR): ## Télécharge phpunit.phar s'il est absent
 	@node scripts/download_phpunit.js $(PHPUNIT_PHAR) $(PHPUNIT_URL)
 
 .PHONY: test-php
-test-php: $(PHPUNIT_PHAR) ## Lance les tests backend (PHPUnit)
-	php $(PHPUNIT_PHAR)
+test-php: $(PHPUNIT_PHAR) ## Lance les tests backend (PHPUnit, via Docker — `make up` requis)
+	$(DC) exec -T php php $(PHPUNIT_PHAR)
 
 .PHONY: test-all
 test-all: test test-php ## Lance tous les tests (JS + PHP)
