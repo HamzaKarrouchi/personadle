@@ -247,10 +247,7 @@ Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et ess
 
 ### 4.4 "Se souvenir de moi"
 
-> ⚠️ Corrigé le 17 juillet 2026 : cette case n'existait pas avant (le cookie `remember_me`
-> était posé automatiquement à chaque connexion, sans aucun contrôle utilisateur, alors
-> que la politique de confidentialité annonçait déjà que c'était optionnel). La case existe
-> désormais réellement dans le formulaire de connexion, cochée par défaut.
+> La case "Remember me" / "Se souvenir de moi" est cochée par défaut dans le formulaire de connexion.
 
 1. Se reconnecter avec la case "Remember me" / "Se souvenir de moi" **cochée** (valeur par défaut)
 2. Fermer complètement le navigateur (pas juste l'onglet) puis le rouvrir sur [http://localhost:8080](http://localhost:8080)
@@ -489,11 +486,9 @@ Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et ess
 
 ### 8.3 Code événement
 
-> ⚠️ Corrigé le 17 juillet 2026 : la version précédente de cette section demandait un
-> "quota" — ce champ n'existe ni dans le formulaire admin, ni dans la base. Le formulaire
-> réel n'a que : Code, Badge ID (texte libre, le **slug exact** du badge — pas son nom
-> affiché), Description (optionnel), case "Code permanent", et si décochée : Date début /
-> Date fin (granularité jour, pas d'heure précise).
+> Le formulaire de création a : Code, Badge ID (texte libre, le **slug exact** du badge —
+> pas son nom affiché), Description (optionnel), case "Code permanent", et si décochée :
+> Date début / Date fin (granularité jour, pas d'heure précise).
 
 1. Avec le Compte Principal (admin, §2.3), aller dans le panneau admin → onglet "Codes" (§11)
 2. Créer un nouveau code : code = `QATEST2026`, badge ID = `first_win` (ou un autre slug que vous n'avez pas encore débloqué — le slug, pas le nom affiché), cocher "Code permanent" pour simplifier le test
@@ -1016,8 +1011,8 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 - [ ] Connecté en admin, aller sur `/profile/friends/friends.html` → onglet **Admin** visible dans la bottom nav, et le lien pointe bien vers `/admin/` (pas de 404)
 - [ ] Idem sur `/profile/leaderboard/leaderboard.html`
 - [ ] Page profil, passer la langue en français (ou une autre) → les libellés de stats sont traduits ("Victoires", "Parties jouées", etc. — plus de texte en anglais)
-- [ ] Changer de langue une 2e fois sur la page profil → le tableau de détail par mode (en dessous des stats) se retraduit aussi (avant ce fix, il restait en anglais après un changement de langue)
-- [ ] Dans la modale login/register, **sélectionner du texte** dans le formulaire (double-clic sur un mot) puis relâcher la souris en dehors du formulaire → la modale reste ouverte (avant : elle se fermait par erreur)
+- [ ] Changer de langue une 2e fois sur la page profil → le tableau de détail par mode (en dessous des stats) se retraduit aussi
+- [ ] Dans la modale login/register, **sélectionner du texte** dans le formulaire (double-clic sur un mot) puis relâcher la souris en dehors du formulaire → la modale reste ouverte
 
 ### 22.3 PR #27 — Streak recovery visuel, challenges classiques, console, admin responsive
 
@@ -1094,10 +1089,9 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 
 ### 23.3 Synchronisation badges/titres/wallpapers après avoir joué sur une autre page (bfcache)
 
-> Cause plus générale derrière le §23.2 (et probablement derrière ce que tu as remonté sur le
-> badge Naoto/Futaba) : la page profil ne réagissait pas du tout à une restauration
-> "bfcache" du navigateur (retour via le bouton **précédent**, pas un vrai rechargement) — la
-> page gardait alors l'état d'avant la partie jouée, badge/titre/wallpaper inclus.
+> Teste la restauration "bfcache" du navigateur spécifiquement (retour via le bouton
+> **précédent**, pas un vrai rechargement) — cause plus générale derrière le §23.2 et
+> probablement derrière ce que tu as remonté sur le badge Naoto/Futaba.
 
 1. Aller sur le profil, **noter** un badge/titre/wallpaper pas encore débloqué mais dont vous
    pouvez remplir la condition rapidement (ex : gagner une partie dans un mode où il ne vous
@@ -1106,25 +1100,20 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 3. Utiliser le bouton **précédent** du navigateur (pas F5, pas retaper l'URL) pour revenir sur le profil
 
 - [ ] Le badge/titre/wallpaper apparaît débloqué **sans avoir besoin de recharger la page une
-  2ème fois** (avant ce fix, il fallait un vrai rechargement complet pour que ça apparaisse)
+  2ème fois**
 
 ### 23.4 Case "Remember me" au login
 
-> Cette case n'existait pas avant : chaque connexion mémorisait automatiquement l'appareil
-> pendant 30 jours, sans aucun moyen de désactiver ça — alors que la politique de
-> confidentialité annonçait déjà ce cookie comme optionnel. Voir §4.4 (mis à jour) pour le
-> test complet coché/décoché.
+> Voir §4.4 (mis à jour) pour le test complet coché/décoché.
 
 - [ ] Revoir §4.4 en entier — nouveau comportement à tester dans les deux sens (coché = mémorisé,
   décoché = déconnecté à la fermeture du navigateur)
 
 ### 23.5 Notifications de badge/titre/wallpaper "en live", sur n'importe quelle page
 
-> Avant : titres et wallpapers ne se vérifiaient **que** sur la page profil — remplir leur
-> condition ailleurs ne montrait rien tant qu'on n'y allait pas. Les badges avaient déjà ce
-> mécanisme, mais 2 vrais bugs l'empêchaient de fonctionner correctement dans certains cas
-> (Give Up en Classique ne le déclenchait jamais du tout ; en Silhouette il tournait un tour
-> trop tôt). Les 6 modes sont concernés — testez-en au moins 2-3, pas besoin des 6.
+> Un badge/titre/wallpaper débloqué doit se notifier directement sur la page où vous jouez,
+> pas seulement en visitant le profil. Les 6 modes sont concernés — testez-en au moins 2-3,
+> pas besoin des 6.
 
 1. Choisir un mode de jeu où il vous manque **une seule condition** pour débloquer un badge,
    un titre ou un wallpaper (ex : `ace_defective` s'il vous manque un seul Give Up ; n'importe
@@ -1150,8 +1139,7 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 2. Dans le popup, essayer de **sélectionner du texte** (double-clic sur un mot de la
    description) puis relâcher la souris **en dehors** du popup (sur le fond assombri)
 
-- [ ] Le popup **reste ouvert** (avant ce fix, il se fermait, perdant l'accès direct au bouton
-  de récupération sans que ce soit forcément voulu)
+- [ ] Le popup **reste ouvert**
 3. Cliquer directement, sans sélection, sur le fond assombri en dehors du popup
 
 - [ ] Le popup se ferme normalement (comportement "clic dehors" volontaire, inchangé)

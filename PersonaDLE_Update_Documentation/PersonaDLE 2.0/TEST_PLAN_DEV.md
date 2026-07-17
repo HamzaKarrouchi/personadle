@@ -1,10 +1,7 @@
 # PersonaDLE v2.0 — Plan de Test Dev (Hamza)
 
-> ⚠️ **Relu et corrigé le 17 juillet 2026** (numéros incohérents entre §0.1bis/§2.1, un
-> "Menu de filtres (Jack Frost)" qui n'a rien à voir avec Jack Frost — copié par erreur
-> depuis §14, "Import JSON" testé alors que ce bouton n'existe pas). Ce document couvre
-> `4d6634e` → PR #13 (6 juillet) : pour tout ce qui vient après (PR #25→#30, 17 juillet et
-> suivant), voir `TEST_PLAN.md` §22-§23 — pas dupliqué ici.
+> ⚠️ Ce document couvre `4d6634e` → PR #13 (6 juillet) : pour tout ce qui vient après
+> (PR #25→#30, 17 juillet et suivant), voir `TEST_PLAN.md` §22-§23 — pas dupliqué ici.
 
 > **Ce document est pour toi**, contrairement à [`TEST_PLAN.md`](./TEST_PLAN.md) (même dossier)
 > qui reste tel quel pour Léo et Damien (QA, sans accès code). Ici tu as accès au terminal et au
@@ -159,9 +156,8 @@ make check        # lint + data:check + i18n:check + tests JS + tests PHP, tout 
 - [ ] `npm run i18n:check` — clés cohérentes sur les 5 langues (949 à la date de rédaction)
 - [ ] `npm run data:check` — schéma personnages valide
 - [ ] `npm run pools:check` — `api/data/daily_pools.json` synchronisé avec les datasets JS (nouveau, PR #13)
-- [ ] `make test-php` — 0 failed (168 méthodes à la date de rédaction — la ligne "139" d'une
-  version antérieure de ce document était incohérente avec le §0.1bis ci-dessus, corrigé)
-  — nouveau fichier à surveiller : `tests/php/DailyTargetTest.php`
+- [ ] `make test-php` — 0 failed (168 méthodes à la date de rédaction) — nouveau fichier à
+  surveiller : `tests/php/DailyTargetTest.php`
 - [ ] PHPStan niveau 5 (voir `ci.yml` job `PHP Lint & Tests` pour la commande exacte si tu veux le lancer isolément)
 
 ```bash
@@ -192,9 +188,8 @@ npm run test:e2e
 > coup d'œil visuel en vrai.
 
 - [ ] Mode Classique, faire 8 mauvaises réponses, cliquer "Give Up"
-- [ ] La `victoryBox` verte (fond + bordure) s'affiche correctement — **avant le fix, elle
-  n'avait ni fond ni bordure en mode Classique** (`class="victory-box"` manquante), donc si tu
-  vois une boîte vide/invisible, le fix n'est pas passé
+- [ ] La `victoryBox` verte (fond + bordure) s'affiche correctement — si tu vois une boîte
+  vide/invisible, `class="victory-box"` manque quelque part
 - [ ] Vérifier en base (`game_sessions`, dernière ligne pour ton compte) que `result = 'giveup'`
   et pas `'win'`
 - [ ] Vérifier que le badge "victoire du premier coup" (`hasWonFirstTry`) ne se débloque **pas**
@@ -206,8 +201,7 @@ npm run test:e2e
 > `user-drag:none` + `preventDefault(dragstart)`).
 
 - [ ] Mode Silhouette, essayer de cliquer-glisser l'image floutée hors de sa zone → l'image ne
-  doit **plus** pouvoir être déplacée du tout (avant : on pouvait voir l'aperçu net du personnage
-  en dehors de la zone floutée)
+  doit **plus** pouvoir être déplacée du tout
 - [ ] Même test en mode All-Out Attack sur le GIF
 
 ### 2.5 CSP — pages HTML (PR #9)
@@ -244,8 +238,7 @@ npm run test:e2e
 - [ ] Avec 2 comptes (voir §2 de la checklist fonctionnelle plus bas pour en créer un second),
   envoyer une demande d'ami → elle apparaît bien côté destinataire (pas de body perdu)
 - [ ] Le badge rouge de demandes d'ami sur la bottom nav se marque bien comme "vu" après avoir
-  consulté la page Amis (`PATCH /api/notifications/` — avant le fix, ce badge ne se marquait
-  **jamais** comme vu en prod, silencieusement)
+  consulté la page Amis (`PATCH /api/notifications/`)
 - [ ] DevTools → Network, en envoyant la demande d'ami : la requête `POST` part directement en
   `POST` vers `/api/friends/` (avec le slash), **pas** de redirection 301 visible dans l'onglet
   Network vers une variante sans slash
@@ -277,8 +270,7 @@ npm run test:e2e
   changer de langue → texte entièrement traduit, pas de résidu anglais
 - [ ] Se tromper de mot de passe / prendre un pseudo déjà utilisé / mismatch de mot de passe à
   l'inscription, **dans une langue autre que l'anglais** (ex : allemand) → le message d'erreur
-  s'affiche bien traduit (avant ce fix, ces messages arrivaient toujours en anglais brut depuis
-  le backend, quelle que soit la langue choisie)
+  s'affiche bien traduit
 - [ ] Le sélecteur de langue (`js/lang-selector.js`) se comporte identiquement sur `pages/404.html`
   et `pages/reset-password.html` que sur les autres pages qui l'utilisaient déjà
 
@@ -558,10 +550,8 @@ Pour chaque mode : une partie jusqu'à la victoire.
 - [ ] Mode daltonien (si activé) : grille Classique reste distinguable
 - [ ] **Nouveau** : Tab/Shift+Tab dans une modale (crop avatar, musique, titres, paramètres)
   reste cantonné dedans, Escape ferme + restaure le focus sur l'élément d'origine
-- [ ] Menu de filtres (`js/filterMenu.js` — pas de rapport avec "Jack Frost", qui désigne la
-  récupération de streak au §14 ; erreur de copier-coller d'une version antérieure de ce
-  document, corrigée) : Tab envoie le focus dans le panneau à l'ouverture, restauré
-  sur le bouton toggle à la fermeture (pattern menu déroulant, pas un piège Tab complet)
+- [ ] Menu de filtres (`js/filterMenu.js`) : Tab envoie le focus dans le panneau à l'ouverture,
+  restauré sur le bouton toggle à la fermeture (pattern menu déroulant, pas un piège Tab complet)
 - [ ] **Nouveau (PR #6)** : `avatarCropModal`, `sharePreviewModal`, `songModal`, `titlesModal`
   ont maintenant le même focus trap que les modales login/register — Tab/Shift+Tab cantonné,
   Escape ferme + restaure le focus, pas de fuite de listener si on rouvre la même modale
