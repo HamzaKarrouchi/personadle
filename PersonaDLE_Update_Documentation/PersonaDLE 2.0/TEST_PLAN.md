@@ -247,10 +247,19 @@ Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et ess
 
 ### 4.4 "Se souvenir de moi"
 
-1. Se reconnecter en cochant l'option "Remember me" / "Se souvenir de moi" si elle existe
+> ⚠️ Corrigé le 17 juillet 2026 : cette case n'existait pas avant (le cookie `remember_me`
+> était posé automatiquement à chaque connexion, sans aucun contrôle utilisateur, alors
+> que la politique de confidentialité annonçait déjà que c'était optionnel). La case existe
+> désormais réellement dans le formulaire de connexion, cochée par défaut.
+
+1. Se reconnecter avec la case "Remember me" / "Se souvenir de moi" **cochée** (valeur par défaut)
 2. Fermer complètement le navigateur (pas juste l'onglet) puis le rouvrir sur [http://localhost:8080](http://localhost:8080)
 
 - [ ] Toujours connecté automatiquement
+3. Se déconnecter, se reconnecter en **décochant** cette fois la case
+4. Fermer complètement le navigateur puis le rouvrir
+
+- [ ] **Déconnecté** cette fois (pas de reconnexion automatique — la case décochée doit être respectée)
 
 ### 4.5 Mot de passe oublié
 

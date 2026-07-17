@@ -4342,6 +4342,22 @@ body.darkmode .swatch.active { box-shadow: 0 0 0 2px #161020, 0 0 0 4px var(--ac
 }
 
 /* Bouton « Mot de passe oublié ? » — action secondaire discrète, pas un lien */
+.auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: rgba(160, 155, 180, 0.85);
+  cursor: pointer;
+  user-select: none;
+}
+.auth-remember input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .auth-forgot-link {
   display: block;
   margin: 12px auto 0;
