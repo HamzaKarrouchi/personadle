@@ -10,6 +10,53 @@
 
 ---
 
+## 2026-07-17 — fix(qa): 2e lot de retours de test manuel (Hamza)
+
+Suite de la session de test manuel. Trois correctifs + deux décisions de design
+laissées ouvertes.
+
+### Détails techniques
+
+- **Personae — portrait du propriétaire absent au refresh après un abandon**
+  (`personaeMode/modePersonae.js`). À la restauration de session (bloc `if (storedGameOver)`),
+  un abandon appelait `showVictory(true, null)` : `showVictory` ne pose le portrait
+  que `if (name)`, donc zone image vide. L'abandon EN DIRECT passait pourtant bien
+  `target.user[0]`. Fix : la restauration passe toujours le propriétaire du persona,
+  quel que soit `force`.
+- **Music — clé de garde quotidienne en UTC au lieu de Paris** (`musicsMode/modeMusic.js`,
+  `personaeMode/modePersonae.js`). Music et Personae construisaient
+  `statsLogged_<mode>_<date>` avec `new Date().toISOString()` (UTC) alors que les 4
+  autres modes utilisent `parisDateKey()`. Conséquence : la garde « déjà joué »
+  basculait à minuit UTC (1-2h du matin à Paris). Corrigé — `parisDateKey()` importé
+  dans les deux fichiers (piège CLAUDE.md « toujours parisDateKey() »).
+- **Music — thème couleur** (`musicsMode/modeMusic.js`, `musicsMode/music.css`,
+  `musicsMode/database/songs.js`). (1) `setPlayerTheme` accepte désormais l'objet
+  chanson et lit un champ `theme` explicite prioritaire sur l'opus. (2) Nouveau thème
+  `VELVET` (bleu profond `#151da6`) pour les morceaux transversaux à toute la série ;
+  *Aria of the Souls* (opus P3 en tête, présente dans tous les Persona majeurs) le
+  reçoit via `theme: "VELVET"` — avant elle héritait du bleu P3. (3) P3P gagne un
+  flag `duality` qui active une **bordure conique tournante mi-bleu (Makoto) /
+  mi-rose (Kotone)** autour du player (`.p3p-duality`, `@property --p3p-angle` +
+  `@keyframes`, garde `prefers-reduced-motion`).
+
+### Décisions de design ouvertes (pas codées)
+
+- **« Gagner après avoir abandonné/joué doit compter »** — les 6 modes ont une garde
+  quotidienne à un seul essai (`statsLogged_<mode>_<date>`, posée au 1er win OU
+  abandon). Rejouer et gagner le même jour ne recompte pas. Hamza le vit comme un
+  bug ; mais lever la garde permettrait de **farmer des victoires en abandonnant
+  d'abord** (l'abandon révèle la réponse) → triche stats/leaderboard/badges.
+  Recommandation : garder la garde ; pour tester le titre « all modes won » sans
+  attendre plusieurs jours, bumper les stats en BDD/admin plutôt que d'affaiblir
+  l'anti-triche. **À trancher avec Hamza.**
+- **Cible de défi random au lieu de la cible du jour** — actuellement un défi =
+  « bats mon score sur le puzzle du jour » (le message stocke `challenge_mode`/
+  `challenge_date`/`challenge_filters`, pas de cible propre → même cible quotidienne
+  pour les deux joueurs). Hamza veut une cible aléatoire dédiée au défi. Impact :
+  il faut (1) stocker/transmettre une cible spécifique dans le message de défi,
+  (2) un état de partie distinct du quotidien, (3) adapter l'anti-triche
+  `daily_target.php` qui rejetterait une cible ≠ cible du jour. **À trancher.**
+
 ## 2026-07-17 — fix(qa): lot de retours de test manuel (Hamza)
 
 Session de test manuel sur une BDD vierge. Six retours traités en un lot ; deux
