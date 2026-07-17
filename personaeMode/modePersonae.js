@@ -40,7 +40,7 @@ import {
 // Collapsible opus filter panel (shared across all modes)
 import { initFilterMenu } from "../js/filterMenu.js";
 import { checkChallengeCompletion } from "../js/challenge-result.js";
-import { checkBadgesAfterGame } from "../profile/badges/badgesManager.js";
+import { checkUnlocksAfterGame } from "../js/unlock-notify.js";
 import { closeAllAutocompleteLists } from "../js/autocomplete.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ function showVictory(force = false, name = null) {
   }
 
   localStorage.setItem("personaeGameOver", "true");
-  checkBadgesAfterGame();
+  checkUnlocksAfterGame();
 }
 
 /**
