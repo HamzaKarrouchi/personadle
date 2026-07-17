@@ -1118,6 +1118,53 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 - [ ] Revoir §4.4 en entier — nouveau comportement à tester dans les deux sens (coché = mémorisé,
   décoché = déconnecté à la fermeture du navigateur)
 
+### 23.5 Notifications de badge/titre/wallpaper "en live", sur n'importe quelle page
+
+> Avant : titres et wallpapers ne se vérifiaient **que** sur la page profil — remplir leur
+> condition ailleurs ne montrait rien tant qu'on n'y allait pas. Les badges avaient déjà ce
+> mécanisme, mais 2 vrais bugs l'empêchaient de fonctionner correctement dans certains cas
+> (Give Up en Classique ne le déclenchait jamais du tout ; en Silhouette il tournait un tour
+> trop tôt). Les 6 modes sont concernés — testez-en au moins 2-3, pas besoin des 6.
+
+1. Choisir un mode de jeu où il vous manque **une seule condition** pour débloquer un badge,
+   un titre ou un wallpaper (ex : `ace_defective` s'il vous manque un seul Give Up ; n'importe
+   quel badge/titre/wallpaper à condition simple visible dans la collection du profil)
+2. Jouer et remplir cette condition (gagner ou abandonner selon le cas), **sans quitter la page**
+   du mode de jeu
+
+- [ ] Une notification de déblocage apparaît directement sur la page du mode de jeu, sans avoir
+  besoin d'aller sur le profil (comparez avec l'attente `_style visuel_` : badge = notif en haut
+  à droite façon toast, titre = carte façon "calling card" glissant depuis la droite en bas,
+  wallpaper = bandeau horizontal en bas)
+3. Refaites le test spécifiquement en **Give Up en mode Classique** (c'était le cas cassé)
+
+- [ ] Notification badge visible directement après le Give Up, sans recharger ni changer de page
+
+### 23.6 Popup streak recovery — fermeture accidentelle par clic sur le fond
+
+> Comportement confirmé en revue de code, discutable plutôt que franchement cassé — carte
+> blanche donnée par Hamza pour ajouter une garde, comme sur la modale login (§4.4/PR26).
+
+1. Forcer l'apparition du popup Jack Frost (§14.2/§22.3 — `streak` à 0 en base +
+   `previousStreak` en localStorage)
+2. Dans le popup, essayer de **sélectionner du texte** (double-clic sur un mot de la
+   description) puis relâcher la souris **en dehors** du popup (sur le fond assombri)
+
+- [ ] Le popup **reste ouvert** (avant ce fix, il se fermait, perdant l'accès direct au bouton
+  de récupération sans que ce soit forcément voulu)
+3. Cliquer directement, sans sélection, sur le fond assombri en dehors du popup
+
+- [ ] Le popup se ferme normalement (comportement "clic dehors" volontaire, inchangé)
+
+### 23.7 Style "mot de passe oublié"
+
+> Retour design de Léo, pas un bug — carte blanche donnée par Hamza. Texte agrandi et mis en
+> gras pour ne plus se lire comme un lien classique, même sans soulignement (déjà retiré en PR25).
+
+- [ ] Sur l'écran de connexion, "Forgot password?" / "Mot de passe oublié ?" se lit maintenant
+  comme du texte de formulaire plutôt qu'un lien isolé — avis subjectif à donner (toujours pas
+  convaincant ? autre chose à essayer ?)
+
 ---
 
 *PersonaDLE v2.0 — Plan de test généré le 26 juin 2026, corrigé et complété le 17 juillet 2026.*

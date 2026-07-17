@@ -10,6 +10,118 @@
 
 ---
 
+## 2026-07-17 — style(auth): "mot de passe oublié" ne ressemble plus à un lien
+
+Léo : malgré le fix PR25 (soulignement retiré), le texte se lit toujours comme un
+lien classique. Carte blanche donnée par Hamza. Taille et poids augmentés
+(0.8rem/400 → 0.92rem/600), couleur rapprochée du texte normal du formulaire
+(hover → `var(--accent)`) — se lit maintenant comme un bouton texte intégré,
+pas comme du texte de bas de page. `profile/profile-page.css`, `.auth-forgot-link`.
+
+---
+
+## 2026-07-17 — fix(streak-recovery): garde anti-clic-accidentel sur le fond du popup
+
+Repéré en revue (comportement confirmé, discutable) : cliquer n'importe où sur
+`#sr-backdrop` fermait le popup Jack Frost immédiatement, contrairement à la
+modale login/register (PR26) qui a une garde anti-clic-accidentel. Carte blanche
+donnée par Hamza pour trancher — implémenté (rien n'était perdu définitivement,
+mais facile à fermer par erreur pour un truc important).
+
+Fix : même pattern exact que `js/auth.js` (`_dragStartedInside` sur mousedown,
+vérifié au click sur le fond) — adapté au fait que `#sr-backdrop` et `#sr-menu`
+sont des éléments frères (pas un wrapper autour du contenu comme la modale login),
+donc le check compare `e.target !== backdrop` au mousedown plutôt que
+`e.target.id !== id`. 3 tests ajoutés (`tests/streakRecovery.test.js`).
+
+---
+
+## 2026-07-17 — feat(badges,titres,wallpapers): notifications de déblocage sur n'importe quelle page
+
+Léo : "les notifications d'obtention doivent se faire peu importe la page, je
+viens de gagner et hop notification si j'ai rempli les conditions". Point de
+départ de l'investigation : les badges avaient déjà `checkBadgesAfterGame()`
+(`profile/badges/badgesManager.js`) câblé dans les 6 modes de jeu depuis un
+moment — mais **titres et wallpapers n'avaient strictement aucun équivalent**,
+jamais vérifiés en dehors du chargement de la page profil.
+
+En creusant pourquoi les badges eux-mêmes semblaient malgré tout capricieux
+(cf. le fix `ace_defective` de la veille, qui ne couvrait que le chemin
+serveur/cloud-sync), **deux vrais bugs distincts trouvés côté client** :
+
+1. **`classiqueMode/modeClassique.js`** : le chemin Give Up n'appelait **jamais**
+   `checkBadgesAfterGame()` — seul `checkGuess()` côté victoire l'appelait, dans
+   un bloc explicitement gardé par `!forceReveal`. Un badge comme `ace_defective`
+   (10 give-ups) ne se vérifiait donc jamais juste après l'action qui devait le
+   débloquer.
+2. **`silhouetteMode/modeSilhouette.js`** : `giveUp()` appelait `showVictory(true)`
+   — qui déclenche `checkBadgesAfterGame()` en interne, à la toute fin — **avant**
+   d'écrire `stats.giveups` pour CE give-up (le `updateProfileStats`/
+   `savePendingSession` de `giveUp()` tournait après le retour de `showVictory()`).
+   Le check tournait donc systématiquement sur le compteur d'avant, un tour de
+   retard — corrigé en réordonnant : stats loggées avant l'appel à `showVictory()`.
+
+`emojiMode`/`personaeMode`/`musicsMode`/`allOutAttackMode` (chemin give-up direct,
+pas de fonction `showVictory()` partagée avec le même piège d'ordre) étaient déjà
+corrects des deux côtés.
+
+**Code mort trouvé au passage** : `allOutAttackMode/modeAllOutAttack.js` référençait
+`window.forceCheckBadges` — jamais défini nulle part dans tout le repo (`grep`
+confirmé), le bloc ne s'exécutait donc jamais. Remplacé par un vrai appel.
+
+### Fix
+
+- `profile/titles-ui.js` : nouvelle fonction exportée `checkTitlesAfterGame()`,
+  même contrat que `checkBadgesAfterGame()` (lit `localStorage`, vérifie les
+  conditions, notifie, ne rend rien de l'UI profil).
+- `profile/wallpapers-ui.js` : idem, `checkWallpapersAfterGame()`.
+- `js/unlock-notify.js` (nouveau) : `checkUnlocksAfterGame()`, point d'appel
+  unique regroupant les 3 checks — évite de dupliquer 3 imports + 3 appels dans
+  les 6 fichiers de mode. **Volontairement pas importé par `gameCore.js`** (qui
+  reste sans imports statiques pour éviter tout risque de cycle avec `api.js`,
+  cf. CLAUDE.md § Pièges critiques) — chaque mode l'importe directement, comme
+  il importait déjà `badgesManager.js`.
+- Les 12 points d'appel (6 modes × win/give-up) basculés sur
+  `checkUnlocksAfterGame()` ; les 2 bugs ci-dessus corrigés au passage.
+- `css/title-notification.css` (nouveau, extrait de `profile-page.css`) +
+  `wallpaper-notification.css` : chargés désormais sur les 6 pages de mode en
+  plus de `profile.html` — sans ça la notif se déclenchait bien en JS mais
+  s'affichait sans style (`.title-notification`/`.wallpaper-notif` n'étaient
+  stylées que sur `profile.html`). `.badge-notification`, lui, était déjà dans
+  `global.css` — les notifs badges s'affichaient donc déjà correctement partout,
+  juste jamais déclenchées au bon moment.
+
+### Angle mort noté, pas recréé par erreur
+`.title-rarity-tag` (utilisé dans le HTML généré par `titles-ui.js`, notification
+et zoom) n'est stylé nulle part — même pas sur `profile.html` avant ce commit
+(`grep` sur tout `profile-page.css` : 0 résultat). Pré-existant, pas dans le
+périmètre de ce fix — vérifié pour ne pas l'inventer par erreur en extrayant le
+CSS vers le nouveau fichier.
+
+### Tests
+20 nouveaux : `checkTitlesAfterGame` (titlesUi.test.js), `checkWallpapersAfterGame`
+(wallpapersUi.test.js), `checkBadgesAfterGame` — jusqu'ici sans **aucune**
+couverture malgré son usage déjà répandu — (badgesManager.test.js), et
+`checkUnlocksAfterGame` bout-en-bout (nouveau `unlockNotify.test.js`).
+
+---
+
+## 2026-07-17 — docs: audit TEST_PLAN_DEV.md
+
+Même traitement que `TEST_PLAN.md` la veille — relu contre le code réel, pas
+juste contre sa propre description. Trouvé : incohérence interne (139 vs 168
+méthodes PHPUnit citées à deux endroits différents du même document, écrits à
+des moments différents de sa rédaction), "Menu de filtres (Jack Frost)" — mix-up
+avec la récupération de streak (Jack Frost n'a rien à voir avec le panneau de
+filtres opus, visiblement copié par erreur depuis la section §14 dédiée),
+"Export/Import JSON" testé comme si le bouton Import existait alors qu'aucune
+trace de ce bouton n'existe dans l'UI (`profile-page.js`, aucun HTML). "Chiffres
+actuels" relabellisé "à la date de rédaction (6 juillet)" pour ne plus laisser
+croire qu'ils sont à jour, avec pointeur vers `TEST_PLAN.md` §22-23 pour tout ce
+qui est venu après (PR #25→#30, 17 juillet).
+
+---
+
 ## 2026-07-17 — fix(badges): bfcache + collision de nom de persona (Naoto/Futaba)
 
 Hamza : même famille de bug que le badge `ace_defective` de la veille (action faite,
