@@ -1092,6 +1092,32 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 > fois débloqué — puis, si vous avez le temps, testez le vrai parcours (10 abandons naturels)
 > pour valider le fix de timing lui-même.
 
+### 23.3 Synchronisation badges/titres/wallpapers après avoir joué sur une autre page (bfcache)
+
+> Cause plus générale derrière le §23.2 (et probablement derrière ce que tu as remonté sur le
+> badge Naoto/Futaba) : la page profil ne réagissait pas du tout à une restauration
+> "bfcache" du navigateur (retour via le bouton **précédent**, pas un vrai rechargement) — la
+> page gardait alors l'état d'avant la partie jouée, badge/titre/wallpaper inclus.
+
+1. Aller sur le profil, **noter** un badge/titre/wallpaper pas encore débloqué mais dont vous
+   pouvez remplir la condition rapidement (ex : gagner une partie dans un mode où il ne vous
+   manque qu'une victoire)
+2. Cliquer sur un lien vers un mode de jeu (ou taper l'URL), jouer et remplir la condition
+3. Utiliser le bouton **précédent** du navigateur (pas F5, pas retaper l'URL) pour revenir sur le profil
+
+- [ ] Le badge/titre/wallpaper apparaît débloqué **sans avoir besoin de recharger la page une
+  2ème fois** (avant ce fix, il fallait un vrai rechargement complet pour que ça apparaisse)
+
+### 23.4 Case "Remember me" au login
+
+> Cette case n'existait pas avant : chaque connexion mémorisait automatiquement l'appareil
+> pendant 30 jours, sans aucun moyen de désactiver ça — alors que la politique de
+> confidentialité annonçait déjà ce cookie comme optionnel. Voir §4.4 (mis à jour) pour le
+> test complet coché/décoché.
+
+- [ ] Revoir §4.4 en entier — nouveau comportement à tester dans les deux sens (coché = mémorisé,
+  décoché = déconnecté à la fermeture du navigateur)
+
 ---
 
 *PersonaDLE v2.0 — Plan de test généré le 26 juin 2026, corrigé et complété le 17 juillet 2026.*

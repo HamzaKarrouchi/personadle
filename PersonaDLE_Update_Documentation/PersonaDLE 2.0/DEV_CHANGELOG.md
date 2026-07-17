@@ -10,6 +10,70 @@
 
 ---
 
+## 2026-07-17 — fix(badges): bfcache + collision de nom de persona (Naoto/Futaba)
+
+Hamza : même famille de bug que le badge `ace_defective` de la veille (action faite,
+badge pas débloqué, refaire l'action "corrige" — alors que ce n'est pas l'action qui
+manquait). Exemple donné : badge "Chronological Convergence" (Naoto + Futaba), a dû
+regagner une partie avec la persona de Naoto pour que le badge apparaisse.
+
+Deux causes distinctes, pas une seule :
+
+1. **bfcache jamais géré sur `profile-page.js`** — aucun listener `pageshow` nulle
+   part dans le repo (`grep -rl pageshow` vide avant ce commit). Revenir sur la page
+   profil via le bouton "précédent" du navigateur après avoir joué ailleurs restaure
+   la page **depuis le cache mémoire**, sans ré-exécuter ce script : la variable
+   module-level `profile` reste l'objet chargé AVANT la partie. `initBadgesSystem()`
+   ayant déjà tourné une fois au tout premier chargement, rien ne le relance sur un
+   retour bfcache — le badge fraîchement mérité reste invisible jusqu'au prochain
+   rechargement complet **fortuit** de la page (typiquement : l'utilisateur, frustré,
+   rejoue "pour être sûr", puis retape l'URL ou fait F5 au lieu de "précédent" — d'où
+   l'illusion qu'il fallait rejouer). Fix : listener `pageshow`, si `event.persisted`
+   relance `_fullCloudSync()` (qui inclut déjà `forceCheckBadges()` depuis le fix de
+   la veille).
+2. **Vrai faux-positif de badge, trouvé en creusant celui-ci en particulier** :
+   `personaeMode/modePersonae.js` détectait la persona de Futaba via
+   `["Necronomicon", "Prometheus"].includes(target.persona)` — mais "Prometheus" est
+   le nom de la persona de **2 personnages différents** dans
+   `personaeCharacters.js` (Futaba, P5/P5R, ligne ~512 ; Baofu, P2EP, ligne ~874).
+   Gagner sur Baofu déclenchait `foundFutabaPersona = true` par erreur (unlock trop
+   permissif, pas trop strict — n'explique pas le symptôme "il a fallu rejouer", mais
+   bug réel trouvé au passage). Fix : vérifie aussi `target.user.includes("Futaba
+   Sakura")`, pas seulement le nom de la persona.
+
+### Angle mort restant
+Vérifié que "Prometheus" est la SEULE collision de nom parmi les personas utilisées
+par des conditions de badges à flags (`grep -c` sur chaque nom dans
+`personaeCharacters.js` — tous les autres n'apparaissent qu'une fois). Si un futur
+personnage réutilise un nom de persona déjà utilisé dans une condition de badge à
+flags, même angle mort à vérifier au cas par cas — pas de garde générique ajoutée
+(le système `condition_type='manual'` reste entièrement à base de flags ad hoc côté
+client, cf. TEST_PLAN_DEV.md §2.11 sur les badges "à flags" laissés tels quels).
+
+---
+
+## 2026-07-17 — feat(auth): case "Remember me" réelle — décrite dans TEST_PLAN.md mais jamais codée
+
+Hamza : "vérifie qu'on n'a pas un truc noté dans le plan de test mais pas codé".
+Trouvé : `TEST_PLAN.md` §4.4 documentait un test pour une case "Remember me" "si elle
+existe" — elle n'existait nulle part (`grep -ri remember js/auth.js` + tout le HTML :
+0 résultat). `api/auth/login.php` posait pourtant déjà le cookie `remember_me` +
+`remember_me_hash` en base à **chaque** connexion, sans condition — alors que
+`lang/*.json` (`auth.cookies_body`, texte RGPD) décrivait déjà ce cookie comme
+"optional... if you choose to stay logged in". Fonctionnalité à moitié construite :
+le texte légal promettait un choix qui n'existait pas côté UI.
+
+Fix : case à cocher réelle (`#loginRememberMe` dans `profile.html`, cochée par
+défaut — comportement historique préservé si l'utilisateur n'y touche pas), envoyée
+par `js/auth.js` en `remember_me` au login. `login.php` ne pose le cookie que si
+`remember_me` est truthy (absent → `true`, compat clients pas encore à jour).
+Décochée : révoque explicitement tout `remember_me_hash` déjà en base + expire le
+cookie côté navigateur — sinon décocher n'aurait aucun effet sur un appareil déjà
+"mémorisé" par une connexion précédente. Clé i18n `auth.remember_me` ajoutée aux
+5 langues. `TEST_PLAN.md` §4.4 mis à jour pour tester coché **et** décoché.
+
+---
+
 ## 2026-07-17 — fix(classic,badges): victoryBox persiste après reset + badge giveups_total jamais re-vérifié après cloud sync
 
 Léo (test §22) : "j'ai fait reset en Classic mode mais l'image de victoire est
