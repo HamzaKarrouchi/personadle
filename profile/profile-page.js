@@ -1245,6 +1245,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.visibilityState === "visible") _periodicSync();
   });
 
+  // Retour bfcache (bouton "précédent" du navigateur après avoir joué une partie
+  // sur une autre page) : la page est restaurée depuis le cache mémoire du
+  // navigateur SANS ré-exécuter ce script — `profile` reste l'objet périmé chargé
+  // avant la partie jouée. `_periodicSync()` ne suffit pas ici (il ne fait que
+  // pull+apply, pas de re-check badges/titres) : on relance le sync complet pour
+  // que toute condition remplie entre-temps (badge/wallpaper/titre à flags locaux
+  // type `foundXPersona`, écrits par un autre mode de jeu) soit re-testée tout de
+  // suite, sans attendre un rechargement complet fortuit de la page.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) _fullCloudSync();
+  });
+
   // Callback appelé par cloud-sync.js après chaque pull périodique
   window._onCloudSync = () => _applyCloudToUI();
 
