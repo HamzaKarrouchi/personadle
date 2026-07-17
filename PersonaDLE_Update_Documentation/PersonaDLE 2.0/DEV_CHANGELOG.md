@@ -10,6 +10,59 @@
 
 ---
 
+## 2026-07-17 — fix(qa): lot de retours de test manuel (Hamza)
+
+Session de test manuel sur une BDD vierge. Six retours traités en un lot ; deux
+autres restent ouverts (voir « Angles morts » plus bas).
+
+### Détails techniques
+
+- **Stat communautaire retirée** — la ligne « X% of N players found this today! »
+  (`showCommunityStats`, `js/gameCore.js`) encombrait/enlaidissait l'écran de
+  victoire. Décision Hamza : suppression complète. La fonction devient un no-op
+  (export conservé : 6 modes l'importent + `savePendingSession` l'appelle) ;
+  plus d'injection DOM ni d'appel API. L'endpoint backend `community_stats` reste
+  en place mais inutilisé (à retirer plus tard si on confirme). Bloc de tests
+  `showCommunityStats` de `tests/gameCore.test.js` remplacé par 2 gardes-fous de
+  non-régression (n'injecte plus rien, ne tape plus l'API).
+- **AOA — réponse qui cassait en plein milieu** (`allOutAttackMode/modeAllOutAttack.js`).
+  `showVictoryBox` passait de `textContent` à un rendu où le nom (souvent long en
+  FR, ex : « Cherish ( Masaki Ashiya ) ») est isolé dans un `<span>` `white-space:nowrap`.
+  Le template i18n reste intact via une sentinelle U+E000 (zone privée) qui n'apparaît
+  jamais dans une traduction ; échappement HTML du `before`/`name`/`after`.
+- **Code ami cliquable + lisible** (`profile/profile-page.js`, `profile/profile-page.css`).
+  `_renderFriendCode` devient un `<button>` : clic = copie presse-papier
+  (`navigator.clipboard` + fallback `execCommand` pour contexte non sécurisé),
+  feedback inline « Copié ! ». Style passé de fantôme (opacity 0.5, 0.73rem) à un
+  badge pill accentué. Nouvelles clés i18n `profile.friend_code_copy_hint` /
+  `friend_code_copied` (×5 langues). Espacement ajouté entre le badge et le
+  bouton « Change Picture » (`#editAvatarBtn` margin-top).
+- **Wallpapers — conditions i18n + rappel au survol** (`profile/wallpapers-ui.js`,
+  `profile/profile-page.css`). Les 7 conditions d'obtention étaient hardcodées en
+  anglais : nouvelles clés `profile.wp_cond_*` (×5 langues) + helper
+  `wallpaperConditionText()` (fallback sur la chaîne EN du catalogue). Un wallpaper
+  **débloqué** affiche maintenant sa condition au survol (overlay `.wp-cond-hover`),
+  comme badges/titres — avant, seul le nom apparaissait.
+- **Bouton Save de la modale badges déplacé en bas** (`profile/badges/badgesManager.js`,
+  `profile/profile-page.css`). Le bouton existait déjà mais était inséré en haut
+  (après le compteur) — peu intuitif. Déplacé dans un footer sticky en bas de la
+  modale, feedback inline « ✅ Badges saved! » garanti (ne dépend plus de
+  `window.showToast` qui peut manquer), thèmes clair/sombre gérés.
+- **Silhouette — image de Seiji** (`silhouetteMode/database/img/Seiji_silhouette.webp`)
+  remplacée (l'ancienne ne rendait pas correctement).
+
+### Angles morts / à suivre
+
+- **Titre équipé qui ne persiste pas au Save** (`profile/titles-ui.js` +
+  `profile-page.js`) — reproduit par Hamza mais pas encore corrigé : l'équipement
+  est immédiat au clic (`saveProfileToCloud`), puis le Save global relance
+  `pullProfileFromCloud` → suspicion de revert si le back ne remappe pas bien
+  `equipped_title_id`↔slug (piège CLAUDE.md « état dérivé »). Nécessite une repro
+  live à deux pour trancher. **Non inclus dans ce lot.**
+- **AOA — 1er chargement des filtres lent (Ctrl+Shift+R)** : comportement Service
+  Worker déjà documenté (§22.1 du TEST_PLAN), attendu après un `git pull`. Pas un
+  bug — laissé tel quel.
+
 ## 2026-07-17 — style(auth): "mot de passe oublié" ne ressemble plus à un lien
 
 Léo : malgré le fix PR25 (soulignement retiré), le texte se lit toujours comme un

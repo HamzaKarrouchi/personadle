@@ -324,11 +324,45 @@ function _renderFriendCode() {
     return;
   }
   if (!codeEl) {
-    codeEl = document.createElement("p");
+    // <button> : cliquable pour copier le code ami dans le presse-papier.
+    codeEl = document.createElement("button");
+    codeEl.type = "button";
     codeEl.className = "profile-friend-code";
+    codeEl.title = tf("profile.friend_code_copy_hint", "Click to copy your friend code");
     container.appendChild(codeEl);
+    codeEl.addEventListener("click", async () => {
+      const c = codeEl.dataset.code;
+      if (!c) return;
+      try {
+        await navigator.clipboard.writeText(c);
+      } catch {
+        // Fallback (contexte non sécurisé / API clipboard indisponible)
+        const ta = document.createElement("textarea");
+        ta.value = c;
+        ta.style.cssText = "position:fixed;top:-9999px;opacity:0;";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+        } catch (_) {}
+        ta.remove();
+      }
+      const label = codeEl.querySelector(".pfc-code");
+      if (!label) return;
+      codeEl.classList.add("copied");
+      label.textContent = tf("profile.friend_code_copied", "Copied!");
+      clearTimeout(codeEl._copyTimer);
+      codeEl._copyTimer = setTimeout(() => {
+        label.textContent = codeEl.dataset.code || "";
+        codeEl.classList.remove("copied");
+      }, 1400);
+    });
   }
-  codeEl.textContent = `🔑 ${code}`;
+  codeEl.dataset.code = code;
+  codeEl.innerHTML =
+    `<span class="pfc-key" aria-hidden="true">🔑</span>` +
+    `<span class="pfc-code">${code}</span>` +
+    `<span class="pfc-copy" aria-hidden="true">📋</span>`;
 }
 
 /**
