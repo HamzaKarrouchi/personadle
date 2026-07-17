@@ -39,23 +39,34 @@ laissées ouvertes.
   mi-rose (Kotone)** autour du player (`.p3p-duality`, `@property --p3p-angle` +
   `@keyframes`, garde `prefers-reduced-motion`).
 
-### Décisions de design ouvertes (pas codées)
+### Décisions de design — TRANCHÉES par Hamza (implémentation dans un lot dédié)
 
-- **« Gagner après avoir abandonné/joué doit compter »** — les 6 modes ont une garde
-  quotidienne à un seul essai (`statsLogged_<mode>_<date>`, posée au 1er win OU
-  abandon). Rejouer et gagner le même jour ne recompte pas. Hamza le vit comme un
-  bug ; mais lever la garde permettrait de **farmer des victoires en abandonnant
-  d'abord** (l'abandon révèle la réponse) → triche stats/leaderboard/badges.
-  Recommandation : garder la garde ; pour tester le titre « all modes won » sans
-  attendre plusieurs jours, bumper les stats en BDD/admin plutôt que d'affaiblir
-  l'anti-triche. **À trancher avec Hamza.**
-- **Cible de défi random au lieu de la cible du jour** — actuellement un défi =
-  « bats mon score sur le puzzle du jour » (le message stocke `challenge_mode`/
-  `challenge_date`/`challenge_filters`, pas de cible propre → même cible quotidienne
-  pour les deux joueurs). Hamza veut une cible aléatoire dédiée au défi. Impact :
-  il faut (1) stocker/transmettre une cible spécifique dans le message de défi,
-  (2) un état de partie distinct du quotidien, (3) adapter l'anti-triche
-  `daily_target.php` qui rejetterait une cible ≠ cible du jour. **À trancher.**
+Les deux points ci-dessous ont été **décidés** ; volontairement **pas implémentés
+dans ce lot QA** car ce sont des features backend + anti-triche qui méritent leur
+propre branche/PR + tests dédiés (ne pas polluer la PR QA propre).
+
+- **✅ DÉCIDÉ — une victoire compte toujours, même après un abandon le même jour.**
+  Choix produit Hamza : les give up sont déjà visibles dans les stats (le ratio est
+  connu), donc pas de double peine ni d'attente d'un jour pour la récompense — 6
+  victoires = récompense, même avec 55 abandons. Implémentation à prévoir :
+  (1) client — la garde `statsLogged_<mode>_<date>` ne doit plus bloquer un `win`
+  (mais toujours éviter le double-comptage win→win) ; (2) backend — `game_sessions`
+  a `UNIQUE (user_id, mode, played_date)` : `personadle_record_game_session` doit
+  **upserter** (si ligne du jour = `giveup` et nouveau = `win` → passer en `win`,
+  ajuster `user_stats` : +1 win / −1 giveup, `games` inchangé) au lieu de lever un
+  409. Angle mort assumé : l'abandon révèle la réponse, donc un win post-abandon est
+  « gratuit » — accepté par Hamza.
+- **✅ DÉCIDÉ — un défi tire une cible ALÉATOIRE dédiée, pas la cible du jour.**
+  « Le défi doit défier » : nouvelle partie aléatoire dans le mode du défi, un autre
+  perso/chanson à deviner (le même pour les deux joueurs). Implémentation à prévoir :
+  (1) tirer une cible aléatoire à la création du défi et la **stocker/transmettre**
+  dans le message (`api/messages`, nouveau champ `challenge_target` + éventuel seed) ;
+  (2) état de partie de défi **séparé** du quotidien côté client ; (3) **exempter
+  l'anti-triche** `api/lib/daily_target.php` pour les sessions de défi (cible ≠ cible
+  du jour = normal) ; (4) gérer la contrainte `UNIQUE (user_id, mode, played_date)`
+  de `game_sessions` (une partie de défi ne doit pas entrer en collision avec la
+  partie quotidienne — soit table/flag distinct, soit ne pas la compter dans les
+  stats quotidiennes).
 
 ## 2026-07-17 — fix(qa): lot de retours de test manuel (Hamza)
 
