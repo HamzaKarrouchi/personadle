@@ -10,6 +10,33 @@
 
 ---
 
+## 2026-07-17 — fix(nav): admin href sur pages profondes + badge-notification overflow
+
+Deux correctifs de navigation / responsive.
+
+### Détails techniques
+
+**`js/bottomNav.js` — `_addAdminNavItem` profondeur relative**
+
+`buildHrefs()` avait déjà la logique `isDeepSubpath` (commit `2a38619`) mais
+`_addAdminNavItem()` utilisait encore l'ancienne formule deux-états
+(`isSubpath ? "../admin/" : "./admin/"`).
+Sur `/profile/friends/` ou `/profile/leaderboard/` (deux niveaux), `../admin/`
+résolvait en `profile/admin/` au lieu de `/admin/` — lien mort pour les admins
+sur ces pages.
+Correction : même bloc `isDeepSubpath` / `isSubpath` que `buildHrefs`, avec
+`href = isDeepSubpath ? "../../admin/" : isSubpath ? "../admin/" : "./admin/"`.
+
+**`css/global.css` — `.badge-notification` responsive**
+
+`min-width: 300px; max-width: 360px;` faisait déborder la notification à gauche
+sur viewports très étroits (iPhone SE 1ère gen : 320 px — left edge à −60 px).
+Remplacé par `min(300px, calc(100vw - 40px))` / `min(360px, calc(100vw - 40px))`
+pour que la notification reste toujours dans le viewport avec 20 px de marge.
+
+**`lang/README.md`** — compteur de clés mis à jour (967 → 968, clé
+`streak_recovery.profile_btn` ajoutée dans PR #27).
+
 ## 2026-07-16 — fix(build): Makefile portable Windows natif (sans Git Bash/WSL)
 
 Trouvé en aidant un testeur (Windows, PowerShell natif) : `make test-php`
