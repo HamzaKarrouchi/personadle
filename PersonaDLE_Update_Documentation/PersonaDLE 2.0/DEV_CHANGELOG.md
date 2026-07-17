@@ -10,6 +10,51 @@
 
 ---
 
+## 2026-07-17 — fix(classic,badges): victoryBox persiste après reset + badge giveups_total jamais re-vérifié après cloud sync
+
+Léo (test §22) : "j'ai fait reset en Classic mode mais l'image de victoire est
+restée à l'écran" + "j'ai pas réussi à débloquer ace_defective malgré 10+ give-ups".
+
+**Classic mode** : `resetButton` (classiqueMode/modeClassique.js) remettait à zéro
+`attempts`/`history`/tous les champs d'input, mais oubliait de cacher
+`#victoryBox` — contrairement aux 4 autres modes concernés (allOutAttack, personae,
+music, emoji) qui le font tous en tête de leur handler de reset, juste après
+`gameOver = false; attempts = 0;`. Vérifié via grep croisé sur les 5 fichiers de
+mode — silhouetteMode utilise un mécanisme différent (élément `.victory-box` créé/
+détruit dynamiquement, déjà correctement nettoyé dans son `resetGame()`), donc pas
+concerné. Fix : ajout de `document.getElementById("victoryBox").style.display =
+"none";` au même endroit que les autres modes.
+
+**Badge ace_defective (`giveups_total >= 10`)** : bug d'ordre d'exécution, pas de
+logique de comptage — `api/lib/game_session.php` incrémente bien `user_stats.giveups`
+à chaque give-up, et `js/profileStats.js`/`js/cloud-sync.js` répercutent
+correctement ce total dans `profile.stats.giveups` (local à chaque give-up, cloud
+au pull). Le vrai trou : `initBadgesSystem()` (donc `checkAndUnlockBadges()`) est
+appelé de façon **synchrone** au chargement de `profile-page.js`, avant que
+`pullProfileFromCloud()` (async, dans `_fullCloudSync()`) ait eu la moindre chance
+de résoudre et d'écraser `profile.stats` avec le total serveur autoritatif. Tout
+badge dont la condition dépend d'un stat agrégé multi-device/multi-session
+(`giveups_total`, mais potentiellement d'autres) n'est donc testé qu'une seule
+fois, contre un profil local possiblement périmé — et jamais re-testé une fois
+les données fraîches arrivées. Classique cas "État dérivé" (CLAUDE.md §13) :
+tracer les écritures ne suffit pas, il fallait aussi tracer *quand* la lecture
+(le check) a lieu par rapport à ces écritures.
+
+Fix : appel de `forceCheckBadges(profile, saveProfileAndSyncBadges)` dans
+`_fullCloudSync()`, juste après `pullProfileFromCloud()`/`_applyCloudToUI()` et
+avant `syncBadgesWithBackend()` (pour que tout badge fraîchement débloqué soit
+inclus dans le push local→cloud qui suit).
+
+### Angle mort restant
+`initBadgesSystem()` (1er check, synchrone) et ce nouveau `forceCheckBadges()`
+(2e check, post-sync) tournent tous les deux à chaque chargement de page profil —
+redondant mais inoffensif (`checkAndUnlockBadges` ignore déjà les badges présents
+dans `profile.badges`). Pas de fix nécessaire, juste noté pour éviter la surprise
+en lisant les logs console (`🎉 Badge unlocked` peut apparaître différé de
+quelques centaines de ms après le premier rendu de page).
+
+---
+
 ## 2026-07-17 — fix(profile): code ami jamais affiché sur son propre profil
 
 Léo : "on peut toujours pas voir notre code ami" — signalé pendant le test de §9
