@@ -359,10 +359,17 @@ function _renderFriendCode() {
     });
   }
   codeEl.dataset.code = code;
-  codeEl.innerHTML =
-    `<span class="pfc-key" aria-hidden="true">🔑</span>` +
-    `<span class="pfc-code">${code}</span>` +
-    `<span class="pfc-copy" aria-hidden="true">📋</span>`;
+  // Structure statique posée une seule fois ; le code lui-même via textContent
+  // (jamais interpolé dans innerHTML — défensif, même si friend_code est un code
+  // alphanumérique généré serveur).
+  if (!codeEl.querySelector(".pfc-code")) {
+    codeEl.innerHTML =
+      `<span class="pfc-key" aria-hidden="true">🔑</span>` +
+      `<span class="pfc-code"></span>` +
+      `<span class="pfc-copy" aria-hidden="true">📋</span>`;
+  }
+  const codeLabel = codeEl.querySelector(".pfc-code");
+  if (!codeEl.classList.contains("copied")) codeLabel.textContent = code;
 }
 
 /**
