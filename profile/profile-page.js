@@ -24,6 +24,7 @@
 
 import {
   initBadgesSystem,
+  forceCheckBadges,
   syncBadgesWithBackend,
   renderBadgesModal,
   renderBadgesPreview,
@@ -1194,6 +1195,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await pullProfileFromCloud();
       _applyCloudToUI();
+      // Re-vérifier les badges dont la condition dépend de stats agrégées côté
+      // backend (giveups_total, wins…) : le premier appel à initBadgesSystem()
+      // plus bas tourne AVANT que ce pull résolve, donc sur un profil local
+      // potentiellement périmé (autre appareil, localStorage vidé…).
+      forceCheckBadges(profile, saveProfileAndSyncBadges);
       // Re-fetcher /api/titles avec session valide → is_unlocked correct par user
       await initTitlesSection(profile, saveProfile, saveProfileToCloud, markDirty);
       // Pousser les badges locaux manquants vers le backend (local → cloud)

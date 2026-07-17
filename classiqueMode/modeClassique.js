@@ -705,6 +705,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     history = [];
     updateCounters();
     output.innerHTML = "";
+    document.getElementById("victoryBox").style.display = "none";
     quoteHint.style.display = "none";
     textbar.disabled = false;
     textbar.value = "";
