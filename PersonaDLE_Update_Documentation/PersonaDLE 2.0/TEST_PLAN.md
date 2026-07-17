@@ -9,7 +9,7 @@
 
 ### 0.1 Contexte
 
-Depuis fin mars 2026, le projet a reçu **233 commits** : nouveau backend complet (comptes, amis, classements...), beaucoup de contenu ajouté (personnages, musiques), et plein de petites corrections. Tout ça doit être validé avant de sortir la version 2.0. C'est le rôle de ce document.
+Depuis fin mars 2026, le projet a reçu plusieurs centaines de commits (ce nombre continue de grimper à chaque PR, ne vous fiez pas à un chiffre figé) : nouveau backend complet (comptes, amis, classements...), beaucoup de contenu ajouté (personnages, musiques), et plein de petites corrections. Tout ça doit être validé avant de sortir la version 2.0. C'est le rôle de ce document.
 
 ### 0.2 Comment lire ce document
 
@@ -170,7 +170,7 @@ UPDATE users SET is_admin = 1 WHERE pseudo = 'VOTRE_PSEUDO';
 ```bash
 make test
 ```
-- [ ] Le résultat final affiche **`Test Files  24 passed (24)`** et **`Tests  449 passed (449)`** (ou plus, si du contenu a été ajouté depuis ce document — l'important est **0 failed**)
+- [ ] Le résultat final affiche **`Test Files  26 passed (26)`** et **`Tests  482 passed (482)`** (ou plus, si du contenu a été ajouté depuis ce document — l'important est **0 failed**, ces deux nombres montent régulièrement)
 
 ```bash
 npm run lint
@@ -191,7 +191,7 @@ npm run data:check
 make test-php
 ```
 > La première exécution télécharge automatiquement `phpunit.phar` (outil de test PHP), c'est normal que ce soit plus long la première fois.
-- [ ] Les tests PHP (`StreakTest`, `DatabaseIntegrationTest`) passent sans erreur
+- [ ] Les tests PHP (12 classes dans `tests/php/` — `StreakTest`, `DatabaseIntegrationTest`, `FriendsTest`, `SocialLinkTest`... la liste s'allonge avec le projet) passent sans erreur
 
 > 💡 Raccourci : `make check` lance tout d'un coup (lint + data + i18n + tests JS + tests PHP).
 
@@ -200,8 +200,8 @@ make test-php
 > Ces tests pilotent un vrai navigateur contre votre stack Docker. Comme `make up` est déjà lancé (§1.4), vous avez tout ce qu'il faut pour les exécuter — ça vaut le coup de les faire en plus des tests manuels.
 
 ```bash
-# Une seule fois : installer Playwright + son navigateur
-npm i -D @playwright/test
+# Une seule fois : Playwright lui-même est déjà installé via `make install` (§1.3),
+# il ne manque que le binaire du navigateur :
 npx playwright install chromium
 
 # Lancer les tests — cible déjà http://localhost:8080 par défaut (le port Docker de §1.4).
@@ -211,8 +211,11 @@ npm run test:e2e
 ```
 
 - [ ] Les 5 scénarios de `smoke.spec.js` passent (accueil, All-Out Attack, leaderboard avec les 19 faux joueurs, profil public sans connexion, login réel)
-- [ ] Les 2 scénarios de `api.spec.js` passent (persistance des badges épinglés, streak global qui ne s'effondre pas cross-mode)
+- [ ] Les 5 scénarios de `api.spec.js` passent (persistance des badges épinglés, rejet d'un badge non débloqué, streak global qui ne s'effondre pas cross-mode, 2 validations de `previous_streak` côté serveur)
 - [ ] Les 6 scénarios de `social-link.spec.js` passent (ajout d'ami → acceptation → interaction mutuelle → XP → montée de rang)
+- [ ] Les 8 scénarios de `game-flow.spec.js` passent (Give Up en mode Classique, changement de langue, + 6 tests responsive à 375px — un par mode de jeu)
+- [ ] Les 6 scénarios de `admin.spec.js` passent (panneau admin)
+- [ ] Les 24 scénarios de `admin-extended.spec.js` passent (panneau admin, cas avancés)
 
 ---
 
@@ -259,9 +262,14 @@ Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et ess
 
 ### 4.6 Trop de tentatives (anti brute-force)
 
-1. Sur l'écran de connexion, entrer volontairement un **mauvais mot de passe 6 fois de suite** en moins d'une minute, avec le même email
+> Limite réelle : **5 tentatives par tranche de 15 minutes** (pas juste "1 minute" — les 6 essais
+> rapides ci-dessous tombent largement dans cette fenêtre de 15 min, donc le test marche quand
+> même, mais ne soyez pas surpris si le blocage persiste plus longtemps que prévu si vous
+> retestez juste après).
 
-- [ ] À partir de la 6ème tentative environ, un message du type "trop de tentatives, réessayez plus tard" apparaît (au lieu du message "identifiants invalides" habituel)
+1. Sur l'écran de connexion, entrer volontairement un **mauvais mot de passe 6 fois de suite**, avec le même email
+
+- [ ] À partir de la 6ème tentative, un message du type "trop de tentatives, réessayez plus tard" apparaît (au lieu du message "identifiants invalides" habituel)
 
 ### 4.7 Compte banni
 
@@ -709,7 +717,7 @@ Pour **chaque** langue testée :
 - [ ] Les logos d'opus dans le panneau de filtres restent bien lisibles en mode sombre
 - [ ] Recharger la page → le mode sombre reste actif
 
-2. Si un mode "daltonien" existe dans les paramètres, l'activer et retester le Mode Classique (§5.1)
+2. Le mode "daltonien" n'est **pas** dans le panneau de paramètres global — c'est un bouton dédié directement sur la page du Mode Classique (`Daltonian Mode: OFF`, en bas des contrôles). Cliquer dessus, puis rejouer une partie (§5.1)
 
 - [ ] Le code couleur de la grille de résultats (vert/orange/rouge) change pour rester lisible/distinguable
 
@@ -748,7 +756,7 @@ Pour **chaque** langue testée :
 ### 15.1 Le cloud fait foi
 
 1. Via phpMyAdmin, table `users`, changer manuellement le pseudo du Compte Principal en `CloudPseudoTest`
-2. Sur le site (toujours connecté avec ce compte), attendre 2-3 minutes sans rien faire, ou simplement naviguer vers une autre page du profil
+2. Sur le site (toujours connecté avec ce compte), attendre **jusqu'à 3 minutes** sans rien faire (la sync automatique tourne toutes les 3 min pile), ou simplement naviguer vers une autre page du profil
 
 - [ ] Le nouveau pseudo `CloudPseudoTest` apparaît dans l'interface sans avoir eu besoin de recharger complètement la page
 
@@ -871,7 +879,7 @@ Pour chacune des pages suivantes, à **375px de large** :
 ### 18.7 Autres
 
 - [ ] `docs/roadmap/README.md`
-- [ ] `Bot_Alibaba/README.md` — si ce composant n'est pas dans le périmètre de la v2.0 testée, notez-le simplement en suggestion plutôt que de chercher à le tester fonctionnellement
+- [ ] `pages/README.md`
 
 ---
 
@@ -901,6 +909,7 @@ Pour chacune des pages suivantes, à **375px de large** :
 - [ ] §18 — Les 27 README du projet + CLAUDE.md + ROADMAP + FAQ + changelog 2.0 ont été lus en entier
 - [ ] §19 — Au moins quelques suggestions notées
 - [ ] §21 — Toutes les anomalies trouvées sont bien rapportées avec le template ci-dessous
+- [ ] §22, §23 — Correctifs des PR #25→#30 re-testés
 
 ---
 
@@ -1038,5 +1047,43 @@ Dans les deux cas : **une anomalie = une entrée**, même si elle vous semble mi
 
 ---
 
-*PersonaDLE v2.0 — Plan de test généré le 26 juin 2026.*
+## 23 — Correctifs du 17 juillet 2026 (retours Léo) — à re-tester
+
+> Ces 2 fixes répondent directement à deux bugs remontés par Léo pendant les tests du §22.
+> `git pull` sur `develop` (une fois la PR mergée) + `make up` avant de commencer, comme au §22.
+
+### 23.1 Classic mode — l'écran de victoire restait affiché après reset
+
+> Signalé par Léo : "j'ai fait reset en Classic mode mais l'image de victoire est restée à l'écran".
+> Confirmé : le bouton reset oubliait de cacher `#victoryBox`, contrairement aux 5 autres modes.
+
+👉 [http://localhost:8080/classiqueMode/classiqueMode.html](http://localhost:8080/classiqueMode/classiqueMode.html)
+
+1. Jouer une partie jusqu'à la victoire (ou "Give up") — l'écran de victoire/résultat s'affiche
+2. Cliquer sur le bouton "Reset" / de réinitialisation
+
+- [ ] L'écran de victoire disparaît immédiatement au reset (plus aucune trace de l'ancienne partie), la barre de recherche redevient utilisable pour un nouveau personnage
+
+### 23.2 Badge "Ace Defective" (giveups_total ≥ 10) jamais débloqué
+
+> Signalé par Léo : il n'a pas réussi à débloquer `ace_defective` malgré 10+ abandons. Pas un
+> problème de comptage (le total côté serveur était correct) mais un problème d'ordre
+> d'exécution : le tout premier check de badges au chargement de la page profil tournait
+> **avant** que la synchronisation cloud n'ait eu le temps de ramener le total à jour — donc
+> jamais re-testé une fois les vraies données arrivées.
+
+1. Avoir déjà cumulé (ou cumuler maintenant, sur plusieurs jours/modes différents — un abandon
+   par jour et par mode) **10 "Give up"** au total, tous modes confondus
+2. Aller sur [http://localhost:8080/profile/profile.html](http://localhost:8080/profile/profile.html) (recharger la page si vous étiez déjà dessus)
+
+- [ ] Le badge **Ace Defective** apparaît débloqué dans la collection, sans avoir besoin de recharger la page une 2ème fois
+
+> 💡 Pour aller plus vite sans attendre plusieurs jours : en admin (§11.3), attribuez-vous
+> directement ce badge sur votre propre compte pour vérifier au moins qu'il s'affiche bien une
+> fois débloqué — puis, si vous avez le temps, testez le vrai parcours (10 abandons naturels)
+> pour valider le fix de timing lui-même.
+
+---
+
+*PersonaDLE v2.0 — Plan de test généré le 26 juin 2026, corrigé et complété le 17 juillet 2026.*
 *À mettre à jour si de nouvelles fonctionnalités sont ajoutées avant la fin de la phase de test.*
