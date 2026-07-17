@@ -250,8 +250,7 @@ export function initBottomNav() {
     if (document.getElementById("nav-admin-item")) return;
 
     const p = window.location.pathname;
-    const isDeepSubpath =
-      p.includes("/profile/friends/") || p.includes("/profile/leaderboard/");
+    const isDeepSubpath = p.includes("/profile/friends/") || p.includes("/profile/leaderboard/");
     const isSubpath =
       !isDeepSubpath &&
       (p.includes("/profile/") ||

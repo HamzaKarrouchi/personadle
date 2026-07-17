@@ -10,32 +10,144 @@
 
 ---
 
-## 2026-07-17 — fix(nav): admin href sur pages profondes + badge-notification overflow
+## 2026-07-17 — fix(css): `.badge-notification` déborde sur petits viewports
 
-Deux correctifs de navigation / responsive.
-
-### Détails techniques
-
-**`js/bottomNav.js` — `_addAdminNavItem` profondeur relative**
-
-`buildHrefs()` avait déjà la logique `isDeepSubpath` (commit `2a38619`) mais
-`_addAdminNavItem()` utilisait encore l'ancienne formule deux-états
-(`isSubpath ? "../admin/" : "./admin/"`).
-Sur `/profile/friends/` ou `/profile/leaderboard/` (deux niveaux), `../admin/`
-résolvait en `profile/admin/` au lieu de `/admin/` — lien mort pour les admins
-sur ces pages.
-Correction : même bloc `isDeepSubpath` / `isSubpath` que `buildHrefs`, avec
-`href = isDeepSubpath ? "../../admin/" : isSubpath ? "../admin/" : "./admin/"`.
-
-**`css/global.css` — `.badge-notification` responsive**
-
-`min-width: 300px; max-width: 360px;` faisait déborder la notification à gauche
-sur viewports très étroits (iPhone SE 1ère gen : 320 px — left edge à −60 px).
+`css/global.css` : `min-width: 300px; max-width: 360px;` faisait déborder la
+notification de déblocage de badge à gauche sur viewports très étroits
+(iPhone SE 1ère gen : 320 px — bord gauche à −60 px, hors écran).
 Remplacé par `min(300px, calc(100vw - 40px))` / `min(360px, calc(100vw - 40px))`
-pour que la notification reste toujours dans le viewport avec 20 px de marge.
+pour que la notification reste toujours dans le viewport avec 20 px de marge
+de chaque côté.
 
-**`lang/README.md`** — compteur de clés mis à jour (967 → 968, clé
-`streak_recovery.profile_btn` ajoutée dans PR #27).
+Note : la PR d'origine (#28) proposait aussi un fix `_addAdminNavItem`
+(profondeur `/profile/friends/`, `/profile/leaderboard/`) et une correction
+`lang/README.md` (967 → 968 clés) — les deux étaient déjà appliqués sur
+`develop` au moment du merge (PR #26 et le fix `docs:fix` de PR #27,
+respectivement) ; la branche #28 avait divergé avant ces merges. Rebasée
+sans conflit fonctionnel, seul le fix CSS restait réellement nouveau.
+
+---
+
+## 2026-07-16 — fix: streak recovery visuel + challenges classiques + console + admin responsive
+
+### Streak recovery (bug 14.2)
+
+- **`profile/profile.html`** : ajout `<div id="streakRecoveryPrompt" class="srp hidden">` entre `statsContainer` et `modeStatsContainer`.
+- **`js/streak-recovery.js`** : export de `getPreviousStreak()` — retourne `previousStreak` stocké en localStorage (0 si absent).
+- **`profile/profile-page.js`** : quand `streak === 0 && canRecover() && previousStreak > 1`, injecte un bouton proéminent "❄️ Rallumer — 0 → N jours" qui déclenche `showStreakRecoveryMenu(prev)`. Animation ❄️ gelée ajoutée sur la carte streak tier-0 (`streakIceGlow`, `flakeSpin`).
+- **`profile/profile-page.css`** : `.stat-streak-t0` (fond bleu glacier, border translucide, glow cyclique), `.streak-side-flake` (rotation infinie), `.srp-btn` (gradient bleu-cyan, hover subtil).
+- **`lang/{en,fr,es,de,it}.json`** : clé `streak_recovery.profile_btn` ajoutée dans les 5 langues.
+
+### Challenges classiques (bug classique)
+
+- **`classiqueMode/modeClassique.js` l.558** : `textbar.value = ""` à l'init — empêche le bfcache de restaurer la saisie précédente de Player A quand Player B ouvre le même classiqueMode.html depuis une notification.
+- **`classiqueMode/modeClassique.js` l.753-755** : guard `if (localStorage.getItem("activeChallenge")) return;` dans le callback de `checkResetOnLoad`. Sans ce guard, un Player B n'ayant pas encore joué aujourd'hui déclenchait `resetButton.click()` (reset aléatoire via `Math.random()`) qui écrasait la cible quotidienne déterministe posée par `getDailyTarget` — entraînant Igor comme cible sur les pools filtrés minuscules.
+
+### Console (bug 6.3)
+
+- **`profile/badges/badgesManager.js` l.421** : suppression du `console.log("🔍 Checking badges...")` appelé à chaque `DOMContentLoaded` (toutes les pages chargent l'index, qui appelle `checkBadgesAfterGame` en permanence).
+
+### Admin responsive (bug 11.5)
+
+- **`admin/admin.css`** breakpoint `max-width: 480px` : `.admin-header-right` passe en `overflow-x: auto; flex-shrink: 1; min-width: 0` avec enfants `flex-shrink: 0`. Permet de scroller la barre des boutons (Codes, Logs, Audit, RGPD, Rate Limits) sans les cacher — les fonctions restent accessibles sur mobile sans régression.
+
+---
+
+## 2026-07-16 — fix: onglet Admin nav + stats profil i18n + drag-to-close modale
+
+Trois bugs isolés corrigés dans la même PR.
+
+### Onglet Admin manquant sur friends/leaderboard (`js/auth.js`, `js/bottomNav.js`)
+
+`personadle:auth-ready` n'était jamais dispatché : seul `personadle:auth-login` existait,
+déclenché uniquement lors d'une connexion manuelle. Sur les pages friends et leaderboard,
+`initBottomNav()` est appelé avant que la promesse `initAuth()` soit résolue — le check
+synchrone `window._currentUser?.is_admin` échoue, et le listener `personadle:auth-ready`
+ne se déclenchait jamais → l'onglet Admin n'apparaissait pas.
+
+Fix : dispatch `personadle:auth-ready` dans le bloc `finally` d'`initAuth()`, après
+`window._authResolved = true`.
+
+Second bug associé : le calcul du href admin dans `_addAdminNavItem()` ne distinguait
+pas les pages 2 niveaux de profondeur (`/profile/friends/`, `/profile/leaderboard/`)
+— elles recevaient `../admin/` au lieu de `../../admin/`. Corrigé en réutilisant
+le pattern `isDeepSubpath` déjà présent dans `buildHrefs()`.
+
+### Stats profil en anglais quelle que soit la langue (`profile/profile-page.js`)
+
+Les labels des stats (`renderStats`) et des en-têtes du tableau de modes
+(`renderModeStats`) étaient des chaînes hardcodées en anglais, ignorant les clés i18n
+qui existent pourtant dans `lang/*.json` :
+`profile.stat_wins_label`, `stat_giveups_label`, `stat_games_label`,
+`stat_best_streak_label`, `stat_time_label`, `stat_first_played_label`,
+`stat_fav_mode_label`, `stat_current_streak_label`, `mode_col_mode`, `mode_col_games`.
+
+Fix : remplacement par `tf()`. Ajout de `renderModeStats()` dans le listener
+`personadle:i18n-ready` (seul `renderStats()` y était, le tableau de modes restait
+donc en anglais même après changement de langue).
+
+### Drag text → fermeture modale compte (`js/auth.js`)
+
+Si l'utilisateur sélectionnait du texte dans le formulaire et relâchait la souris
+sur le backdrop, le navigateur générait un `click` sur le backdrop (cible commune
+du mousedown/mouseup) → fermeture involontaire de la modale.
+
+Fix : flag `_dragStartedInside` posé sur `mousedown`. Le handler `click` ignore la
+fermeture si le drag a commencé à l'intérieur du contenu de la modale.
+
+---
+
+## 2026-07-16 — feat: nouveau logo + avatars Theodore + correctifs UI/perf
+
+### Logo
+
+`img/New_Logo_PersonaDLE.png` remplace `img/Logo_PersonaDLE.png` dans tous les
+points d'entrée : `index.html` (src + og:image), les 6 pages mode, `README.md`.
+L'ancien fichier reste présent pour l'affichage avant/après dans `PersonaDLE_Update.html`.
+
+### Avatars Theodore (P3 Portable)
+
+`theodore.jpeg`, `theodore2-5.jpeg` ajoutés dans `profile/avatars_data.js` (groupe P3),
+juste après Elisabeth/Elisabeth2. `img/avatar/` contient déjà les fichiers — le
+user les a déposés manuellement.
+
+### Fix gitignore — illustrations docs
+
+`.gitignore` : ajout de règles `!` pour `*.png`, `*.jpg`, `*.jpeg`, `*.gif`,
+`*.webp`, `*.pdf`, `note_ajout.md`, `PersonaDLE_Update.md` dans
+`PersonaDLE_Update_Documentation/PersonaDLE 2.0/`. 13 fichiers de doc précédemment
+exclus sont maintenant versionnés.
+
+### Fix "Mot de passe oublié?" — ressemble à un lien
+
+`.auth-forgot-link` dans `profile/profile-page.css` : suppression de
+`text-decoration: underline`, couleur neutre muted au lieu de la couleur accent
+rouge. Hover subtil au lieu du `filter: brightness`. Aucun changement fonctionnel.
+
+### Fix AOA lag — CDN CloudFlare R2 exclu du SW
+
+`sw.js` : le CDN R2 (`pub-39a737fc7a9c44c08b7701bdd4b2de4a.r2.dev`) était capturé
+par la stratégie `cacheFirst` des images, créant des réponses opaques stale qui
+causaient le lag du mode All-Out Attack (Ctrl+Shift+R le contournait). Ajout d'un
+cas `network-only` avant `cacheFirst`. CACHE_VERSION bumped `v74 → v75`.
+
+### Grille index — 2 colonnes + tailles ajustées
+
+`css/index.css` :
+
+- `#gameModeSelector` : grille 2×3 sur desktop (>768px). Colonne gauche :
+  Classique, Emoji, All-Out Attack. Colonne droite : Silhouette, Personae, Music.
+  `grid-template-columns: repeat(2, 1fr)`, max-width 900px.
+- `.gamemode-title` : font-size 36px → 27px (proportionnel 75 %), responsive
+  adapté (22px → 16px sur tablette, 16px sur mobile).
+
+### Fix background 404
+
+`pages/404.html` : redesign du background — gradient diagonal plus marqué,
+motif de lignes en relief, suppression des scanlines plates au profit d'un
+effet velvet room plus riche visuellement.
+
+---
 
 ## 2026-07-16 — fix(build): Makefile portable Windows natif (sans Git Bash/WSL)
 
