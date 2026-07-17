@@ -308,6 +308,29 @@ function initProfile() {
 }
 
 /**
+ * Affiche le code ami de l'utilisateur connecté sous le pseudo, sur sa propre page de
+ * profil — même pattern que profile-view.js pour un profil public (.profile-friend-code),
+ * jamais câblé côté propriétaire du profil. Idempotent (crée l'élément une seule fois,
+ * le réutilise sinon) car appelée à chaque _fullCloudSync. Retire l'élément si déconnecté.
+ */
+function _renderFriendCode() {
+  const code = window._currentUser?.friend_code;
+  const container = pageUsername?.closest(".avatar-card-info");
+  if (!container) return;
+  let codeEl = container.querySelector(".profile-friend-code");
+  if (!code) {
+    codeEl?.remove();
+    return;
+  }
+  if (!codeEl) {
+    codeEl = document.createElement("p");
+    codeEl.className = "profile-friend-code";
+    container.appendChild(codeEl);
+  }
+  codeEl.textContent = `🔑 ${code}`;
+}
+
+/**
  * Sauvegarde le profil dans localStorage.
  */
 function saveProfile() {
@@ -1167,6 +1190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Dual approach : immédiat si auth déjà résolue, sinon event listener.
   const _fullCloudSync = async () => {
     if (!window._currentUser?.id) return;
+    _renderFriendCode();
     try {
       await pullProfileFromCloud();
       _applyCloudToUI();
@@ -1190,6 +1214,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("personadle:auth-logout", () => {
     // Arrêter la musique si elle joue
     stopProfileSong();
+    _renderFriendCode(); // window._currentUser déjà à null → retire l'élément
     // localStorage déjà vidé par auth.js — initProfile() crée un profil vierge
     initProfile();
     renderThemePicker();

@@ -10,6 +10,29 @@
 
 ---
 
+## 2026-07-17 — fix(profile): code ami jamais affiché sur son propre profil
+
+Léo : "on peut toujours pas voir notre code ami" — signalé pendant le test de §9
+(système social), qui suppose que le code ami est visible sur son propre profil
+(explicitement documenté ainsi en tête de §9 dans `TEST_PLAN.md`).
+
+Confirmé un vrai trou, pas une question de config : le backend renvoie bien
+`friend_code` (`api/auth/me.php`, `api/user/index.php`), et `profile/profile-view.js`
+l'affiche déjà correctement pour un profil **public** (`.profile-friend-code`, classe
+CSS déjà stylée dans `profile-page.css`). Mais `profile/profile-page.js` (sa propre
+page de profil, connecté) ne l'a jamais câblé — fonctionnalité à moitié construite.
+
+Fix : nouvelle fonction `_renderFriendCode()` dans `profile-page.js`, même pattern que
+`profile-view.js` (élément `.profile-friend-code` sous le pseudo dans
+`.avatar-card-info`). Idempotente (créée une fois, réutilisée) et appelée dans
+`_fullCloudSync()` (login/auth-ready) + au logout (retire l'élément, `window._currentUser`
+déjà à `null` à ce moment).
+
+Non testé unitairement — même choix que pour `js/auth.js` (orchestration DOM, cf.
+convention de ce projet) ; à vérifier manuellement/E2E.
+
+---
+
 ## 2026-07-17 — fix(404): chemins relatifs cassés + doc test plan codes événement
 
 Trouvé en creusant les retours de Léo sur les PR #25-28 fraîchement testées.
