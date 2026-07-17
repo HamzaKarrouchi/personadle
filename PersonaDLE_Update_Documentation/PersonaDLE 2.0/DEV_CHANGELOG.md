@@ -10,6 +10,51 @@
 
 ---
 
+## 2026-07-17 — fix(404): chemins relatifs cassés + doc test plan codes événement
+
+Trouvé en creusant les retours de Léo sur les PR #25-28 fraîchement testées.
+
+### `pages/404.html` — chemins relatifs résolus par rapport à la mauvaise URL
+
+`.htaccess` sert cette page via `ErrorDocument 404 /pages/404.html` (chemin absolu),
+mais Apache ne change pas l'URL du navigateur pour un ErrorDocument — elle reste celle
+qui a cassé. Tous les chemins **relatifs** de la page (`../css/*.css`, `../img/*.gif`,
+imports `../js/*.js`, `../sw.js` pour l'enregistrement du Service Worker,
+`../index.html` sur le bouton retour) se résolvaient donc par rapport à l'URL cassée,
+pas par rapport à `pages/` — comportement incohérent selon la profondeur de l'URL
+d'origine (peut fonctionner par coïncidence pour une URL cassée à la racine, casser pour
+une URL cassée plus profonde). Correspond exactement au signalement de Léo : le bouton
+"Return to PersonaDLE" ne ramenait pas au bon endroit.
+
+Fix : tous les chemins passés en absolu (`/css/...`, `/img/...`, `/js/...`, `/sw.js`,
+`/index.html`). Fonctionne pour Docker local et Hostinger (tous deux servis à la racine
+du domaine) — angle mort connu et accepté : ne couvre pas un déploiement Apache local
+hors-Docker servi sous un sous-chemin `/personadle/` (cf. CLAUDE.md §3), cas de moins en
+moins pertinent vu que `make up` est le flux documenté.
+
+### `TEST_PLAN.md` §8.3 — instruction obsolète (champ "quota" inexistant)
+
+La section demandait de renseigner un "quota" à la création d'un code événement — ce
+champ n'existe ni dans `admin/event-codes.js` ni dans la table `event_codes`. Réécrite
+pour matcher le vrai formulaire (Code, Badge ID = slug exact, Description, Code
+permanent, Date début/fin). Ajout d'une note de diagnostic (onglet Network → réponse de
+`redeem`) pour la prochaine fois qu'un testeur rapporte "le code n'existe pas" sans plus
+de détail — cause exacte encore non identifiée au moment de ce commit (piste : Léo à
+recontacter avec la réponse HTTP précise).
+
+### Non résolu / à trancher
+
+- **Popup streak recovery** : `#sr-backdrop` ferme le popup au moindre clic, sans la
+  garde anti-clic-accidentel ajoutée à la modale login/register (PR #26,
+  `_dragStartedInside`). Rien n'est perdu définitivement (le bouton profil reste
+  disponible ensuite), mais correspond au "despawn" rapporté par Léo. Pas corrigé ici —
+  "cliquer dehors pour fermer" peut être un choix voulu, à confirmer avant de toucher au
+  comportement.
+- **Panel admin mobile** : code du tiroir (`admin.css`/`admin.js`) relu, structurellement
+  correct (position fixed, transform, overlay, z-index). Signalé par Léo comme "pas
+  optimisé" mais pas de bug identifié dans le code — à reconfirmer s'il a bien utilisé le
+  bouton ☰.
+
 ## 2026-07-17 — fix(css): `.badge-notification` déborde sur petits viewports
 
 `css/global.css` : `min-width: 300px; max-width: 360px;` faisait déborder la

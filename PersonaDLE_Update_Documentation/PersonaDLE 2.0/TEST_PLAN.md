@@ -472,14 +472,27 @@ Sur [http://localhost:8080](http://localhost:8080), cliquer sur "Sign Up" et ess
 
 ### 8.3 Code événement
 
+> ⚠️ Corrigé le 17 juillet 2026 : la version précédente de cette section demandait un
+> "quota" — ce champ n'existe ni dans le formulaire admin, ni dans la base. Le formulaire
+> réel n'a que : Code, Badge ID (texte libre, le **slug exact** du badge — pas son nom
+> affiché), Description (optionnel), case "Code permanent", et si décochée : Date début /
+> Date fin (granularité jour, pas d'heure précise).
+
 1. Avec le Compte Principal (admin, §2.3), aller dans le panneau admin → onglet "Codes" (§11)
-2. Créer un nouveau code : code = `QATEST2026`, choisir un badge cible que vous n'avez pas encore débloqué, quota = 10, expiration = dans 1 heure
+2. Créer un nouveau code : code = `QATEST2026`, badge ID = `first_win` (ou un autre slug que vous n'avez pas encore débloqué — le slug, pas le nom affiché), cocher "Code permanent" pour simplifier le test
 3. Avec le même compte, aller sur le profil → section badges → champ "Entrer un code"
 4. Saisir `QATEST2026`
 
 - [ ] Le code est accepté, le badge cible se débloque immédiatement
 - [ ] Ressaisir le **même** code une 2ème fois → message d'erreur "code déjà utilisé"
 - [ ] Saisir un code qui n'existe pas (ex : `BIDON123`) → message d'erreur clair
+
+> Si le code créé est refusé comme "inexistant" alors qu'il est bien visible dans la liste
+> de l'onglet Codes : ouvrez DevTools (F12) → onglet **Network** → retentez la saisie →
+> cliquez sur la requête `redeem` → regardez l'onglet **Response**. Le message exact
+> (`Invalid or expired code` / `Code not active yet or already expired` / `Code already
+> redeemed`) indique précisément où ça coince — notez-le dans le rapport d'anomalie plutôt
+> que "ça marche pas", ça permet de creuser sans refaire le test à distance.
 
 ### 8.4 Titres
 
