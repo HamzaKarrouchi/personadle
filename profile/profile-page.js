@@ -314,7 +314,7 @@ function initProfile() {
  * jamais câblé côté propriétaire du profil. Idempotent (crée l'élément une seule fois,
  * le réutilise sinon) car appelée à chaque _fullCloudSync. Retire l'élément si déconnecté.
  */
-function _renderFriendCode() {
+export function _renderFriendCode() {
   const code = window._currentUser?.friend_code;
   const container = pageUsername?.closest(".avatar-card-info");
   if (!container) return;

@@ -4027,7 +4027,7 @@ body.darkmode .vb-code {
    pendant qu'on scrolle la grille (bien plus intuitif qu'un bouton en haut). */
 .badges-modal-footer {
   position: sticky;
-  bottom: -30px; /* annule le padding-bottom (30px) du #badgesModal */
+  bottom: -30px; /* ancre le footer au bord bas du modal (valeur calée visuellement) */
   margin: 16px -30px -30px;
   padding: 12px 30px 14px;
   display: flex;
