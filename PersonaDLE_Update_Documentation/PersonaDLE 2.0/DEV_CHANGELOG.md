@@ -10,6 +10,46 @@
 
 ---
 
+## 2026-07-18 — chore(qa): review de cette PR — tests manquants ajoutés, doc à jour
+
+Hamza a demandé une review complète de cette PR avant merge ("vérifier qu'on a tout bien
+respecté"). Code relu diff par diff (pas juste la description) — tout ce qui était annoncé
+correspondait bien au diff réel, mais deux angles morts trouvés :
+
+1. **Zéro nouveau test** pour `wallpaperConditionText()`, le bouton copie du code ami, et le
+   footer sticky des badges — seul `tests/gameCore.test.js` avait été touché (pour le retrait de
+   `showCommunityStats`). Ajoutés : 3 tests `wallpaperConditionText` (fallback EN sans i18n,
+   fallback EN si clé manquante, traduction utilisée) + 2 tests de rendu de la galerie (overlay
+   hover uniquement sur les débloqués, tooltip nom+condition) dans `tests/wallpapersUi.test.js` ;
+   7 tests `_renderFriendCode` (création, idempotence, mise à jour du code affiché, suppression
+   au logout, copie clipboard + feedback temporisé, fallback `execCommand`) dans
+   `tests/profilePage.test.js` — fonction exportée pour l'occasion (même convention que
+   `_resetTitlesData` dans `titles-ui.js`).
+2. **Changements réels non mentionnés dans la description de la PR** : `musicsMode` a un thème
+   visuel dédié "VELVET" pour les musiques transversales à toute la série (ex: Aria of the Soul)
+   + une bordure tournante mi-bleu/mi-rose pour P3P (Makoto/Kotone), et surtout un vrai fix —
+   `todayKey` utilisait `toISOString()` (UTC) au lieu de `parisDateKey()`, exactement le piège
+   documenté au CLAUDE.md §7. Rien de tout ça n'apparaissait dans le corps de la PR. Documenté a
+   posteriori ici + ajouté au plan de test (§24.7-24.8) pour que Léo/Damien le testent aussi.
+
+Fix mineur au passage : un commentaire CSS (`.badges-modal-footer`) affirmait annuler "le
+padding-bottom (30px) du #badgesModal" — aucune règle CSS de ce nom n'existe nulle part dans le
+fichier (`grep` sur tout `profile-page.css` : 0 résultat en dehors du commentaire lui-même).
+Probablement une justification a posteriori d'une valeur calée à l'œil. Reformulé pour ne plus
+affirmer une origine non vérifiée.
+
+### Angle mort assumé, pas corrigé ici
+PR #32 (stackée sur celle-ci) affichait des ✅ CI (PHPUnit 181/181, Vitest 502/502, lint) dans sa
+description alors que GitHub Actions n'avait tourné **aucune fois** dessus — le workflow ne se
+déclenche que sur PR ciblant `main`/`develop` (`.github/workflows/ci.yml`), pas sur une PR qui en
+cible une autre. Comportement inhérent au stacking, pas un bug : vérifié à la main (checkout de
+la branche, `npm test`/`lint`/`i18n:check`/`docs:check`/`php -l` — tout correspondait aux
+chiffres annoncés), mais la CI réelle ne pourra confirmer qu'une fois cette PR mergée et la base
+de #32 rebasée sur `develop`. Ne pas merger #32 sur la seule foi de sa description tant que sa
+CI n'a pas tourné pour de vrai.
+
+---
+
 ## 2026-07-17 — fix(qa): 2e lot de retours de test manuel (Hamza)
 
 Suite de la session de test manuel. Trois correctifs + deux décisions de design
