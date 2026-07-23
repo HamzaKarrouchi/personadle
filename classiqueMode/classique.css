@@ -303,9 +303,12 @@
    que le contenu démarre toujours sous les deux badges empilés, quelle
    que soit la largeur — ne dépend que de la hauteur des badges (fixe),
    jamais de la largeur du logo (variable). Page Classique uniquement :
-   ne touche pas global.css ni les 5 autres modes qui n'ont qu'un badge. */
+   ne touche pas global.css ni les 5 autres modes qui n'ont qu'un badge.
+   104px : logo remonté (retour Hamza « trop bas ») tout en gardant ~11px de
+   marge sous le bas réel du badge daltonien (≈108px → logo à ~119px avec sa
+   marge globale de 15px). */
 body {
-  padding-top: 120px;
+  padding-top: 104px;
 }
 
 /* Bouton de bascule daltonien (fixe, sous le dark mode toggle) */
