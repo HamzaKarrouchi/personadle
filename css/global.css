@@ -241,14 +241,6 @@ body.modal-open {
   animation: tiltBounce 0.15s ease forwards;
 }
 
-/* PT n'a pas de variante rouge (état actif = image normale) : sans ça le survol
-   ne changeait pas visuellement. On ajoute un halo rouge P5 + léger éclat pour
-   garder un vrai feedback de survol, sans nécessiter d'asset "_Rouge". */
-html[lang="pt"] .link-wrapper:hover .img-wrapper img {
-  filter: drop-shadow(0 0 6px #e63946) drop-shadow(0 0 16px rgba(230, 57, 70, 0.55))
-    brightness(1.06);
-}
-
 /* Conteneur SVG des formes décoratives (rouge + cyan) */
 .shape-wrapper {
   display: none;
