@@ -24,7 +24,7 @@
     "format:check": "prettier --check \"**/*.{js,css,html,json,md}\" --ignore-path .prettierignore"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@vitest/coverage-v8": "^2.0.0",
     "eslint": "^9.39.4",
