@@ -80,6 +80,27 @@ Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de gar
 - Codes HTTP corrects (200, 201, 400, 401, 403, 404, 409, 500)
 - Tout nouveau `.php` dans `api/user/` ou `api/admin/` → ajouter sa `RewriteRule` dans `.htaccess`
 
+### Données de jeu — personas multi-wielders (`personaeMode/database/personaeCharacters.js`)
+*Règle posée le 2026-08-13 suite au lot P4AU 2.1 (Thanatos/Elizabeth) — évite de refaire le
+raisonnement à chaque nouveau perso cross-jeu.*
+- **Un nom de persona = une seule entrée**, même si plusieurs personnages l'utilisent dans des
+  opus différents → fusionner dans le même `user` (array) et combiner les `opus`. Exemple :
+  `Thanatos` → `user: ["Makoto Yuki", "Kotone Shiomi", "Elizabeth"]`, `opus` couvrant P3+P4AU
+  (Elizabeth l'utilise dans P4AU, mais reste la même entrée que Makoto/Kotone en P3) — même
+  principe déjà posé par `Orpheus Telos`, qui combine 3 wielders de sous-continuités différentes.
+- **Scinder en plusieurs entrées SEULEMENT si le nom de persona est réutilisé par deux
+  personnages réellement différents** (coïncidence de nommage, pas le même "titre"). Exemple :
+  `Hermes` (Junpei Iori, P3) et `Hermes` (Jun Kurosu, P2IS) restent 2 entrées séparées — deux
+  personas distinctes qui partagent juste un nom. Idem `Prometheus` (Futaba Sakura, P5R vs
+  Baofu, P2EP).
+- **Pourquoi ça compte** : fusionner à tort 2 personnages différents dans un seul `user`
+  accepterait une mauvaise réponse comme correcte. Scinder à tort la même persona/image en 2
+  entrées peut au contraire refuser une bonne réponse selon quelle entrée a été tirée en
+  interne — perçu comme un bug par le joueur, l'image affichée étant identique des deux côtés.
+- Défis entre amis (`modePersonae.js`) : les noms légitimement dupliqués (2e cas ci-dessus)
+  sont désambiguïsés automatiquement par `challengeKey()`/`findByChallengeKey()` — rien à faire
+  de plus en ajoutant du contenu.
+
 ---
 
 ## 5. i18n
