@@ -89,10 +89,12 @@ raisonnement à chaque nouveau perso cross-jeu.*
   (Elizabeth l'utilise dans P4AU, mais reste la même entrée que Makoto/Kotone en P3) — même
   principe déjà posé par `Orpheus Telos`, qui combine 3 wielders de sous-continuités différentes.
 - **Scinder en plusieurs entrées SEULEMENT si le nom de persona est réutilisé par deux
-  personnages réellement différents** (coïncidence de nommage, pas le même "titre"). Exemple :
-  `Hermes` (Junpei Iori, P3) et `Hermes` (Jun Kurosu, P2IS) restent 2 entrées séparées — deux
-  personas distinctes qui partagent juste un nom. Idem `Prometheus` (Futaba Sakura, P5R vs
-  Baofu, P2EP).
+  personnages réellement différents** (coïncidence de nommage, pas le même "titre"). **Critère
+  concret à vérifier : le champ `image`.** Même `image` (même dessin) → cas 1, fusionner. Deux
+  `image` différentes (deux dessins différents) → cas 2, scinder. Exemple : `Hermes` (Junpei
+  Iori, P3, `image: "Hermes"`) et `Hermes` (Jun Kurosu, P2IS, `image: "Jun_Hermes"`) restent 2
+  entrées séparées — deux dessins différents, deux opus différents, juste le même nom. Idem
+  `Prometheus` (Futaba Sakura, P5R vs Baofu, P2EP — `image` différente aussi).
 - **Pourquoi ça compte** : fusionner à tort 2 personnages différents dans un seul `user`
   accepterait une mauvaise réponse comme correcte. Scinder à tort la même persona/image en 2
   entrées peut au contraire refuser une bonne réponse selon quelle entrée a été tirée en
