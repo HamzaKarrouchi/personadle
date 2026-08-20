@@ -34,11 +34,11 @@ personadle/
 ├── js/                  ← gameCore.js, api.js, auth.js, i18n.js, cloud-sync.js…
 ├── css/                 ← global.css + un CSS par composant
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
-├── lang/                ← en.json (source de vérité, 1042 clés), fr/es/de/it/pt.json
+├── lang/                ← en.json (source de vérité, 1052 clés), fr/es/de/it/pt.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 36 suites Vitest (721 tests) + tests/php/ (PHPUnit)
+├── tests/               ← 37 suites Vitest (725 tests) + tests/php/ (PHPUnit)
 └── sql/                 ← bdd_mysql.sql (23 tables)
 ```
 
@@ -165,7 +165,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **721 tests** (Vitest + jsdom), 36 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+- **725 tests** (Vitest + jsdom), 37 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
   `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
   `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
@@ -209,14 +209,23 @@ un pool de tirage :
 > (corrigé le 2026-07-06 — la version précédente de cette section pointait vers un
 > `PersonaDLE_Update.md` qui n'existe pas pour la v2.0, seulement pour l'archive v1.1) :
 >
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/DEV_CHANGELOG.md` — changelog **dev**
+> **Un dossier par version** — depuis le 2026-08-20, la v2.1 a les siens. Écrire dans le
+> dossier de la version **en cours de développement**, jamais dans celui d'une version déjà
+> livrée (`PersonaDLE 2.0/` ne reçoit plus que des correctifs de la 2.0 en prod) :
+>
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/DEV_CHANGELOG.md` — changelog **dev**
 >   (contributeurs/mainteneurs), détail précis par commit : fichiers touchés, décisions
 >   d'architecture, angles morts connus. Toute modification qui touche au code en a besoin.
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.html` — changelog
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/PersonaDLE_Update.html` — changelog
 >   **joueur** (page HTML bilingue EN/FR, blocs `data-i18n-block`), highlights uniquement,
 >   langage non technique. À alimenter **seulement** si le changement est visible/parlant
 >   pour un joueur (nouvelle feature, fix d'un bug qu'il pouvait remarquer) — jamais l'inverse
->   (ne pas alléger DEV_CHANGELOG.md pour "faire propre").
+>   (ne pas alléger DEV_CHANGELOG.md pour "faire propre"). La page est liée depuis le modal
+>   « Nouveautés » de `index.html`, entrée `version-item` par version.
+>
+> À l'ouverture d'une v2.2 : créer `PersonaDLE 2.2/`, y démarrer les deux fichiers, et
+> mettre à jour cette section — c'est ce point de synchronisation qui a manqué à la 2.1,
+> dont les entrées se sont accumulées dans le dossier de la 2.0 jusqu'au 2026-08-20.
 
 Format d'une entrée `DEV_CHANGELOG.md` :
 
