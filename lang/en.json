@@ -34,7 +34,8 @@
     "cancel": "Cancel",
     "expert_enter": "⚡ Expert mode",
     "expert_leave": "← Normal mode",
-    "expert_lyrics": "⚡ LYRICS"
+    "expert_lyrics": "⚡ LYRICS",
+    "expert_locked": "🔒 {{requirement}}"
   },
   "modes": {
     "classic": {
