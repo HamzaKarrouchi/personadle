@@ -29,6 +29,9 @@
  *   emoji_p2_wins        → victoires en mode emoji (alias de mode_wins emoji) —
  *                          RÉELLEMENT UTILISÉ par le titre `maya_always_be_positive`
  *                          (bdd_mysql.sql), ne pas supprimer sans migrer cette ligne.
+ *   mode_wins_under_attempts → condition_value victoires dans condition_mode, chacune ≤4 essais (Expert normal)
+ *   mode_wins_single_day → condition_value victoires dans condition_mode, toutes le même jour (Expert Emoji)
+ *   mode_consecutive_perfects → condition_value victoires parfaites (1 essai) consécutives dans condition_mode (Expert AOA/Personae/Music)
  *   joker_profile        → condition manuelle — retourne true (vérifié en aval par admin)
  *   manual               → condition manuelle/flag client/redeem — retourne true
  *   NULL ou inconnu      → true (safe fallback)
@@ -64,6 +67,7 @@ function personadle_verify_condition(PDO $pdo, int $userId, ?string $condType, ?
         'wins_total', 'mode_wins', 'classic_p1_wins', 'emoji_p2_wins', 'mode_games',
         'games_total', 'streak_record', 'perfect_wins', 'unique_days', 'giveups_total',
         'friends_count', 'badges_count', 'weekly_clean_modes',
+        'mode_wins_under_attempts', 'mode_wins_single_day', 'mode_consecutive_perfects',
     ];
     if (in_array($condType, $valueRequiredTypes, true) && $condValue === null) {
         return false;
@@ -165,6 +169,52 @@ function personadle_verify_condition(PDO $pdo, int $userId, ?string $condType, ?
             return (int) $s->fetchColumn() >= $val;
         }
 
+        case 'mode_wins_under_attempts': {
+            // N victoires dans le mode, chacune avec <= 4 essais (Expert Classique/Silhouette)
+            if (!$condMode) return false;
+            $s = $pdo->prepare(
+                'SELECT COUNT(*) FROM game_sessions
+                 WHERE user_id = ? AND mode = ? AND result = ? AND attempts <= 4 AND is_expert = 0'
+            );
+            $s->execute([$userId, $condMode, 'win']);
+            return (int) $s->fetchColumn() >= $val;
+        }
+
+        case 'mode_wins_single_day': {
+            // N victoires dans le mode, toutes le même jour (Expert Emoji)
+            if (!$condMode) return false;
+            $today = (new DateTime('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+            $s = $pdo->prepare(
+                'SELECT COUNT(*) FROM game_sessions
+                 WHERE user_id = ? AND mode = ? AND result = ? AND played_date = ? AND is_expert = 0'
+            );
+            $s->execute([$userId, $condMode, 'win', $today]);
+            return (int) $s->fetchColumn() >= $val;
+        }
+
+        case 'mode_consecutive_perfects': {
+            // N victoires parfaites (1 essai) consécutives, peu importe les jours (Expert AOA/Personae/Music)
+            // Récupère les dernières sessions en ordre DESC, compte jusqu'à trouver un giveup/non-perfect
+            if (!$condMode) return false;
+            $s = $pdo->prepare(
+                'SELECT attempts, result FROM game_sessions
+                 WHERE user_id = ? AND mode = ? AND is_expert = 0
+                 ORDER BY played_date DESC, id DESC LIMIT 100'
+            );
+            $s->execute([$userId, $condMode]);
+            $rows = $s->fetchAll(PDO::FETCH_ASSOC);
+
+            $count = 0;
+            foreach ($rows as $row) {
+                if ($row['attempts'] == 1 && $row['result'] === 'win') {
+                    $count++;
+                } else {
+                    break; // Série cassée
+                }
+            }
+            return $count >= $val;
+        }
+
         // Conditions manuelles — flags/narratif client, redeem via code événement,
         // ou vérifiées par un autre endpoint (ex: social-links pour true_confidant,
         // streak-recovery pour reborn_phoenix). Accordées sur déclaration/ailleurs,
@@ -198,6 +248,7 @@ function personadle_known_condition_types(): array
         'perfect_wins', 'unique_days', 'giveups_total', 'friends_count', 'badges_count',
         'social_link_min_rank', 'all_modes_won', 'weekly_clean_modes',
         'classic_p1_wins', 'emoji_p2_wins', 'joker_profile', 'manual',
+        'mode_wins_under_attempts', 'mode_wins_single_day', 'mode_consecutive_perfects',
     ];
 }
 
