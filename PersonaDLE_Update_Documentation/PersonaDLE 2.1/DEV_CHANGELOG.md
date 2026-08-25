@@ -69,6 +69,36 @@ progression. Ce lot ferme la porte pendant que la fenêtre est encore ouverte.
   `true` dans `personadle_verify_condition()` : le badge aurait été décrochable par un simple
   `POST /api/badges/unlock`.
 
+### Récompenses du lot
+
+- **Badge `denial_of_self`** (migration 033, epic) — 10 victoires Expert dans **chacun** des
+  6 modes. Récompense la polyvalence.
+- **Titre `shadows_converge`** (migration 034, legendary) — 50 victoires Expert **au total**,
+  peu importe la répartition. Récompense le volume : un joueur qui n'aime que deux modes
+  décroche le titre sans jamais obtenir le badge. `condition_type = 'expert_wins_total'`,
+  à ne pas confondre avec `wins_total` qui lit `user_stats` — table que l'Expert n'alimente
+  pas, et qui aurait donc compté les parties normales.
+- Image nommée `shadows_converge.webp` en minuscules, et non `Shadow_Converge.webp` :
+  `titles-ui.js` résout le chemin en `titles/${slug}.webp`, et Hostinger tourne sous Linux
+  (casse significative) — l'écart aurait marché en local et donné un 404 en prod.
+- Nom non traduit dans les 5 langues : c'est un titre-visuel, le texte est peint dans
+  l'image (même règle que `junes` ou `joker_looking_cool`).
+
+### Vérifications réellement exécutées (stack Docker)
+
+Le PHP de ce lot a été exercé, pas seulement relu :
+
+| Scénario | Résultat |
+|---|---|
+| `/api/user/expert-status` anonyme | 401 (route résolue, PHP parse) |
+| 9 victoires ≤4 essais + 3 victoires lentes | `current = 9` — le filtre exclut bien les lentes |
+| 10ᵉ victoire rapide | débloqué au seuil exact ; Émoji reste fermé (isolation par mode) |
+| Session Expert sur mode verrouillé | 403 |
+| Session Expert après déblocage | 201 |
+| 49 puis 50 victoires Expert | titre refusé, puis accordé au seuil exact |
+| Contrôle négatif (`memento_mori`) | 403 « Condition not met » |
+| Migrations 033 et 034 rejouées ×2 | idempotentes, une seule ligne chacune |
+
 ### Angles morts connus
 
 - **Le verrou client est optimiste** : hors ligne, backend en erreur ou visiteur non

@@ -36,6 +36,10 @@
  *   mode_consecutive_perfects → série EN COURS de condition_value victoires parfaites (1 essai)
  *                          dans condition_mode, comptée en parties et non en jours
  *                          (porte Expert AOA/Personae/Music)
+ *   expert_wins_total    → condition_value victoires EN EXPERT, tous modes confondus
+ *                          (titre `shadows_converge`). À ne pas confondre avec
+ *                          `wins_total`, qui lit user_stats — table que l'Expert
+ *                          n'alimente pas.
  *   expert_modes_mastered → condition_value victoires EN EXPERT dans chacun des 6 modes
  *                          (badge `denial_of_self`)
  *   joker_profile        → condition manuelle — retourne true (vérifié en aval par admin)
@@ -74,7 +78,7 @@ function personadle_verify_condition(PDO $pdo, int $userId, ?string $condType, ?
         'games_total', 'streak_record', 'perfect_wins', 'unique_days', 'giveups_total',
         'friends_count', 'badges_count', 'weekly_clean_modes',
         'mode_wins_under_attempts', 'mode_wins_single_day', 'mode_consecutive_perfects',
-        'expert_modes_mastered',
+        'expert_modes_mastered', 'expert_wins_total',
     ];
     if (in_array($condType, $valueRequiredTypes, true) && $condValue === null) {
         return false;
@@ -191,6 +195,13 @@ function personadle_verify_condition(PDO $pdo, int $userId, ?string $condType, ?
             if (!$condMode) return false;
             return personadle_count_consecutive_perfects($pdo, $userId, $condMode) >= $val;
 
+        case 'expert_wins_total':
+            // Victoires EN EXPERT, tous modes confondus (titre `shadows_converge`).
+            // Surtout pas `wins_total` : celui-ci lit `user_stats`, que le Mode
+            // Expert n'alimente pas (cf. api/lib/game_session.php) — il compterait
+            // donc uniquement les parties normales.
+            return personadle_count_expert_wins($pdo, $userId) >= $val;
+
         case 'expert_modes_mastered':
             // condition_value victoires EN EXPERT dans chacun des 6 modes (badge Denial of Self).
             // Pas besoin de vérifier en plus que les 6 gates sont franchis : le serveur
@@ -232,7 +243,7 @@ function personadle_known_condition_types(): array
         'social_link_min_rank', 'all_modes_won', 'weekly_clean_modes',
         'classic_p1_wins', 'emoji_p2_wins', 'joker_profile', 'manual',
         'mode_wins_under_attempts', 'mode_wins_single_day', 'mode_consecutive_perfects',
-        'expert_modes_mastered',
+        'expert_modes_mastered', 'expert_wins_total',
     ];
 }
 
@@ -346,6 +357,21 @@ function personadle_count_consecutive_perfects(PDO $pdo, int $userId, string $mo
         }
     }
     return $streak;
+}
+
+/**
+ * Total de victoires EN EXPERT, tous modes confondus. Sert au titre
+ * `shadows_converge`. Lu depuis `game_sessions` et non `user_stats`, que le Mode
+ * Expert n'alimente pas.
+ */
+function personadle_count_expert_wins(PDO $pdo, int $userId): int
+{
+    $s = $pdo->prepare(
+        'SELECT COUNT(*) FROM game_sessions
+         WHERE user_id = ? AND is_expert = 1 AND result = ?'
+    );
+    $s->execute([$userId, 'win']);
+    return (int) $s->fetchColumn();
 }
 
 /**
