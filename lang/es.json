@@ -38,7 +38,9 @@
     "expert_locked": "🔒 Modo Experto",
     "expert_cond_wins_under_attempts": "{{current}}/{{required}} victorias en 4 intentos o menos",
     "expert_cond_wins_single_day": "{{current}}/{{required}} victorias en un solo día",
-    "expert_cond_consecutive_perfects": "{{current}}/{{required}} victorias perfectas seguidas"
+    "expert_cond_consecutive_perfects": "{{current}}/{{required}} victorias perfectas seguidas",
+    "expert_cond_signin": "Inicia sesión para desbloquear el Modo Experto",
+    "expert_cond_unknown": "Vuelve a conectarte para ver tu progreso"
   },
   "modes": {
     "classic": {

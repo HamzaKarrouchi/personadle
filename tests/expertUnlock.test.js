@@ -25,6 +25,7 @@ import {
   setupExpertToggle,
   expertConditionLabel,
   resetExpertStatusCache,
+  expertNavigate,
 } from "../js/gameCore.js";
 
 /** Pose le `<a id="expertToggle">` que les 6 pages de mode contiennent. */
@@ -42,15 +43,24 @@ function stubExpertStatus(expertStatus) {
   };
 }
 
+let originalNavigate;
+
 beforeEach(() => {
   resetExpertStatusCache();
+  localStorage.clear();
   window._personadleApi = undefined;
+  window._currentUser = undefined;
   window.history.replaceState({}, "", "/classiqueMode.html");
+  originalNavigate = expertNavigate.go;
+  expertNavigate.go = vi.fn();
 });
 
 afterEach(() => {
   document.body.innerHTML = "";
   window._personadleApi = undefined;
+  window._currentUser = undefined;
+  localStorage.clear();
+  expertNavigate.go = originalNavigate;
   resetExpertStatusCache();
 });
 
@@ -137,20 +147,44 @@ describe("setupExpertToggle — verrou du bouton ⚡", () => {
     expect(toggle.getAttribute("href")).toBe("classiqueMode.html?expert=1");
   });
 
-  it("laisse le bouton cliquable pour un visiteur non connecté (pas de bridge API)", async () => {
+  it("verrouille pour un visiteur non connecté (401) et invite à se connecter", async () => {
     const toggle = mountToggle();
-    window._personadleApi = undefined;
+    const unauthorized = Object.assign(new Error("Unauthorized"), { status: 401 });
+    window._personadleApi = { user: { expertStatus: vi.fn().mockRejectedValue(unauthorized) } };
 
     const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
     setupExpertToggle(ctx, "classiqueMode.html");
-    await Promise.resolve();
+    await vi.waitFor(() => expect(toggle.classList.contains("expert-locked")).toBe(true));
 
-    expect(toggle.classList.contains("expert-locked")).toBe(false);
-    expect(toggle.getAttribute("href")).toBe("classiqueMode.html?expert=1");
+    // Le déblocage appartient au compte : sans compte, rien n'est débloquable.
+    // L'infobulle doit dire quoi faire, pas afficher une progression 0/10 trompeuse.
+    expect(toggle.title).not.toMatch(/0\s*\/\s*10/);
+    expect(toggle.hasAttribute("href")).toBe(false);
   });
 
-  it("laisse le bouton cliquable si le backend échoue (affichage optimiste)", async () => {
+  it("verrouille par défaut quand le backend est injoignable et qu'on ne sait rien", async () => {
     const toggle = mountToggle();
+    window._personadleApi = {
+      user: { expertStatus: vi.fn().mockRejectedValue(new Error("offline")) },
+    };
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(toggle.classList.contains("expert-locked")).toBe(true));
+  });
+
+  it("garde le mode ouvert hors ligne si le compte l'avait déjà débloqué", async () => {
+    const toggle = mountToggle();
+    window._currentUser = { id: 42 };
+    localStorage.setItem(
+      "expertUnlockStatus",
+      JSON.stringify({
+        userId: 42,
+        modes: {
+          classic: { unlocked: true, condition_type: "mode_wins_under_attempts", required: 10, current: 10 },
+        },
+      }),
+    );
     window._personadleApi = {
       user: { expertStatus: vi.fn().mockRejectedValue(new Error("offline")) },
     };
@@ -162,6 +196,25 @@ describe("setupExpertToggle — verrou du bouton ⚡", () => {
     expect(toggle.classList.contains("expert-locked")).toBe(false);
   });
 
+  it("ignore le cache d'un AUTRE compte sur un appareil partagé", async () => {
+    const toggle = mountToggle();
+    window._currentUser = { id: 7 }; // ce n'est pas le joueur qui avait débloqué
+    localStorage.setItem(
+      "expertUnlockStatus",
+      JSON.stringify({
+        userId: 42,
+        modes: { classic: { unlocked: true, condition_type: "mode_wins_under_attempts", required: 10, current: 10 } },
+      }),
+    );
+    window._personadleApi = {
+      user: { expertStatus: vi.fn().mockRejectedValue(new Error("offline")) },
+    };
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(toggle.classList.contains("expert-locked")).toBe(true));
+  });
+
   it("ne verrouille jamais le bouton de RETOUR depuis une page Expert", async () => {
     window.history.replaceState({}, "", "/classiqueMode.html?expert=1");
     const toggle = mountToggle();
@@ -171,12 +224,55 @@ describe("setupExpertToggle — verrou du bouton ⚡", () => {
 
     const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
     setupExpertToggle(ctx, "classiqueMode.html");
-    await Promise.resolve();
+    await vi.waitFor(() => expect(expertNavigate.go).toHaveBeenCalled());
 
     // Sur une page Expert le bouton signifie « revenir au mode normal » : le
     // verrouiller enfermerait le joueur sur la page.
     expect(toggle.classList.contains("expert-locked")).toBe(false);
     expect(toggle.getAttribute("href")).toBe("classiqueMode.html");
+  });
+
+  it("renvoie vers le mode normal quand ?expert=1 est tapé à la main sur un mode verrouillé", async () => {
+    window.history.replaceState({}, "", "/classiqueMode.html?expert=1");
+    mountToggle();
+    stubExpertStatus({
+      classic: { unlocked: false, condition_type: "mode_wins_under_attempts", required: 10, current: 2 },
+    });
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(expertNavigate.go).toHaveBeenCalledWith("classiqueMode.html"));
+  });
+
+  it("ne redirige PAS depuis une page Expert sur une simple panne réseau", async () => {
+    window.history.replaceState({}, "", "/classiqueMode.html?expert=1");
+    mountToggle();
+    window._personadleApi = {
+      user: { expertStatus: vi.fn().mockRejectedValue(new Error("offline")) },
+    };
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(window._personadleApi.user.expertStatus).toHaveBeenCalled());
+
+    // Éjecter un joueur légitimement débloqué au premier hoquet réseau serait pire
+    // que de le laisser jouer : le serveur refuse de toute façon d'enregistrer la
+    // session de quelqu'un qui ne l'est pas.
+    expect(expertNavigate.go).not.toHaveBeenCalled();
+  });
+
+  it("laisse la page Expert quand le mode est bien débloqué", async () => {
+    window.history.replaceState({}, "", "/classiqueMode.html?expert=1");
+    mountToggle();
+    stubExpertStatus({
+      classic: { unlocked: true, condition_type: "mode_wins_under_attempts", required: 10, current: 12 },
+    });
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(window._personadleApi.user.expertStatus).toHaveBeenCalled());
+
+    expect(expertNavigate.go).not.toHaveBeenCalled();
   });
 
   it("ne redemande pas le statut à chaque appel (une réponse couvre les 6 modes)", async () => {

@@ -38,7 +38,9 @@
     "expert_locked": "🔒 Mode Expert",
     "expert_cond_wins_under_attempts": "{{current}}/{{required}} victoires en 4 essais ou moins",
     "expert_cond_wins_single_day": "{{current}}/{{required}} victoires en une seule journée",
-    "expert_cond_consecutive_perfects": "{{current}}/{{required}} victoires parfaites d'affilée"
+    "expert_cond_consecutive_perfects": "{{current}}/{{required}} victoires parfaites d'affilée",
+    "expert_cond_signin": "Connecte-toi pour débloquer le Mode Expert",
+    "expert_cond_unknown": "Reconnecte-toi pour voir ta progression"
   },
   "modes": {
     "classic": {

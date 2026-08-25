@@ -258,42 +258,104 @@ export function setupExpertToggle(ctx, page) {
   toggle.classList.toggle("active", ctx.isExpert);
   toggle.href = ctx.isExpert ? page : `${page}?expert=1`;
 
-  // Le verrou se pose ensuite, quand le backend a répondu : il n'y a rien à
-  // verrouiller pour un visiteur non connecté (aucune progression à mesurer, et
-  // aucune session enregistrée), et la fonction doit rester synchrone pour ses
-  // appelants. Le bouton part donc déverrouillé et est dégradé si besoin.
-  if (!ctx.isExpert) applyExpertLockWhenNeeded(toggle, ctx.modeKey);
+  // Le verrou se pose ensuite, quand le backend a répondu (la fonction doit
+  // rester synchrone pour ses appelants). Le bouton est donc rendu déverrouillé
+  // puis dégradé — sur une page Expert, c'est une redirection à la place.
+  applyExpertGate(ctx, page, toggle);
 }
 
-// Cache mémoire de /api/user/expert-status : les 6 modes arrivent en une réponse,
-// inutile de la redemander à chaque bascule.
-let _expertStatusCache = null;
+// Le déblocage de l'Expert est une propriété du COMPTE : il se gagne en jouant
+// connecté, et suit alors le joueur sur n'importe quel appareil. Conséquence
+// directe : sans compte, il n'y a rien à débloquer — le bouton reste verrouillé.
+// Le défaut est donc fail-closed (verrouillé sauf réponse serveur contraire), et
+// non l'inverse.
+const EXPERT_STATUS_STORAGE_KEY = "expertUnlockStatus";
+
+let _expertStatus = null; // { state: "ok"|"anonymous"|"unavailable", modes?: object }
+let _expertStatusPromise = null; // dédoublonne les appels concurrents des 6 modes
 
 /**
- * État de déblocage des 6 Modes Expert, ou `null` si indisponible (visiteur non
- * connecté, hors ligne, backend en erreur). `null` = aucun verrou côté client :
- * c'est `api/sessions.php` qui fait foi, un affichage optimiste ne donne donc
- * jamais accès à quoi que ce soit.
+ * État de déblocage des 6 Modes Expert.
+ *
+ * - `ok`          → réponse du serveur, fait autorité
+ * - `anonymous`   → 401 : pas de compte, donc rien de débloquable
+ * - `unavailable` → hors ligne / erreur : on retombe sur le dernier état connu
+ *                   du joueur (localStorage), sinon rien
+ *
+ * @returns {Promise<{state: string, modes?: Record<string, object>|null}>}
  */
 export async function fetchExpertStatus() {
-  if (_expertStatusCache) return _expertStatusCache;
+  if (_expertStatus) return _expertStatus;
+  if (_expertStatusPromise) return _expertStatusPromise;
 
-  const api = window._personadleApi;
-  if (!api?.user?.expertStatus) return null;
+  _expertStatusPromise = (async () => {
+    const api = window._personadleApi;
+    if (!api?.user?.expertStatus) {
+      // Bridge absent : on ne peut rien affirmer → verrouillé par défaut.
+      _expertStatus = { state: "unavailable", modes: readCachedExpertStatus() };
+      return _expertStatus;
+    }
 
+    try {
+      const modes = (await api.user.expertStatus())?.expert_status ?? null;
+      if (modes) {
+        cacheExpertStatus(modes);
+        _expertStatus = { state: "ok", modes };
+      } else {
+        _expertStatus = { state: "unavailable", modes: readCachedExpertStatus() };
+      }
+    } catch (err) {
+      _expertStatus =
+        err?.status === 401
+          ? { state: "anonymous" }
+          : { state: "unavailable", modes: readCachedExpertStatus() };
+    }
+    return _expertStatus;
+  })();
+
+  return _expertStatusPromise;
+}
+
+/**
+ * Mémorise le dernier état connu, pour que le joueur déjà débloqué qui passe
+ * hors ligne ne retrouve pas ses 6 modes fermés. Rattaché à l'id du compte : sur
+ * un appareil partagé, le cache d'un joueur ne doit pas déverrouiller l'autre.
+ */
+function cacheExpertStatus(modes) {
+  const userId = window._currentUser?.id;
+  if (userId == null) return;
   try {
-    const res = await api.user.expertStatus();
-    _expertStatusCache = res?.expert_status ?? null;
+    localStorage.setItem(EXPERT_STATUS_STORAGE_KEY, JSON.stringify({ userId, modes }));
   } catch {
-    _expertStatusCache = null;
+    // Quota plein ou navigation privée : le cache est un confort, pas un prérequis.
   }
-  return _expertStatusCache;
 }
 
-/** Réinitialise le cache — utilisé par les tests. */
-export function resetExpertStatusCache() {
-  _expertStatusCache = null;
+/** Dernier état connu pour le compte courant, ou null. */
+function readCachedExpertStatus() {
+  const userId = window._currentUser?.id;
+  if (userId == null) return null;
+  try {
+    const raw = JSON.parse(localStorage.getItem(EXPERT_STATUS_STORAGE_KEY) || "null");
+    return raw && raw.userId === userId ? raw.modes : null;
+  } catch {
+    return null;
+  }
 }
+
+/** Réinitialise le cache mémoire — utilisé par les tests. */
+export function resetExpertStatusCache() {
+  _expertStatus = null;
+  _expertStatusPromise = null;
+}
+
+/**
+ * Redirection isolée derrière un objet : jsdom n'implémente pas la navigation,
+ * les tests remplacent `go` pour vérifier qu'elle a bien lieu.
+ */
+export const expertNavigate = {
+  go: (url) => window.location.replace(url),
+};
 
 /** Traduction avec repli, cf. CLAUDE.md §5 (t() renvoie la clé si absente). */
 function _t(key, vars, fallback) {
@@ -320,14 +382,8 @@ export function expertConditionLabel(progress) {
   return _t(`ui.expert_cond_${suffix}`, vars, fallbacks[type] ?? `${current}/${required}`);
 }
 
-/** Grise le bouton et y accroche la condition, si le mode n'est pas débloqué. */
-async function applyExpertLockWhenNeeded(toggle, modeKey) {
-  if (!modeKey) return;
-
-  const status = await fetchExpertStatus();
-  const progress = status?.[modeKey];
-  if (!progress || progress.unlocked) return;
-
+/** Grise le bouton et y accroche la raison du verrouillage. */
+function lockExpertToggle(toggle, reason) {
   toggle.classList.add("expert-locked");
   toggle.setAttribute("aria-disabled", "true");
   // Un <a> sans href n'est plus activable ni copiable ; tabindex le garde
@@ -339,10 +395,46 @@ async function applyExpertLockWhenNeeded(toggle, modeKey) {
   const label = _t("ui.expert_locked", undefined, "🔒 Expert mode");
   toggle.setAttribute("data-i18n", "ui.expert_locked");
   toggle.textContent = label;
+  toggle.title = reason;
+  toggle.setAttribute("aria-label", `${label} — ${reason}`);
+}
 
-  const condition = expertConditionLabel(progress);
-  toggle.title = condition;
-  toggle.setAttribute("aria-label", `${label} — ${condition}`);
+/**
+ * Applique la porte d'entrée : bouton grisé sur une page normale, redirection
+ * vers le mode normal sur une page Expert non débloquée (le mode vit dans l'URL,
+ * `?expert=1` se tape à la main).
+ */
+async function applyExpertGate(ctx, page, toggle) {
+  if (!ctx.modeKey) return;
+
+  const status = await fetchExpertStatus();
+  const progress = status.modes?.[ctx.modeKey] ?? null;
+
+  let locked, reason;
+  if (status.state === "anonymous") {
+    locked = true;
+    reason = _t("ui.expert_cond_signin", undefined, "Sign in to unlock Expert mode");
+  } else if (progress) {
+    locked = !progress.unlocked;
+    reason = expertConditionLabel(progress);
+  } else {
+    // Aucune réponse et aucun état connu : verrouillé, jamais ouvert par défaut.
+    locked = true;
+    reason = _t("ui.expert_cond_unknown", undefined, "Reconnect to check your progress");
+  }
+
+  if (!locked) return;
+
+  if (ctx.isExpert) {
+    // Ne ressortir le joueur que sur une réponse FERME (serveur ou 401). Un
+    // simple échec réseau ne doit pas éjecter de sa partie un joueur
+    // légitimement débloqué — de toute façon `api/sessions.php` refuserait
+    // d'enregistrer la session de quelqu'un qui ne l'est pas.
+    if (status.state === "ok" || status.state === "anonymous") expertNavigate.go(page);
+    return;
+  }
+
+  lockExpertToggle(toggle, reason);
 }
 
 /**
