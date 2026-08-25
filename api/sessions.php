@@ -75,6 +75,31 @@ if (strlen($clientSessionId) > 36) {
 if (!in_array($mode, $validModes, true)) {
     jsonError("Invalid mode. Expected one of: " . implode(', ', $validModes));
 }
+
+// ── Expert mode gating (vérification obligatoire côté serveur) ──────────────
+// Un gate purement client serait contournable en tapant ?expert=1 dans l'URL.
+// Cette vérification empêche l'enregistrement d'une session Expert tant que le
+// joueur n'a pas débloqué le mode.
+if ($isExpert) {
+    require_once(__DIR__ . '/lib/condition_check.php');
+    $conditions = [
+        'classic'       => ['type' => 'mode_wins_under_attempts', 'mode' => 'classic', 'value' => 10],
+        'emoji'         => ['type' => 'mode_wins_single_day', 'mode' => 'emoji', 'value' => 10],
+        'silhouette'    => ['type' => 'mode_wins_under_attempts', 'mode' => 'silhouette', 'value' => 10],
+        'alloutattack'  => ['type' => 'mode_consecutive_perfects', 'mode' => 'alloutattack', 'value' => 15],
+        'personae'      => ['type' => 'mode_consecutive_perfects', 'mode' => 'personae', 'value' => 15],
+        'music'         => ['type' => 'mode_consecutive_perfects', 'mode' => 'music', 'value' => 15],
+    ];
+
+    $pdo = pdo();
+    if (isset($conditions[$mode])) {
+        $cond = $conditions[$mode];
+        if (!personadle_verify_condition($pdo, $userId, $cond['type'], $cond['mode'], $cond['value'])) {
+            jsonError("Expert mode not yet unlocked in {$mode}. Check requirements in-game.", 403);
+        }
+    }
+}
+
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $playedDate)) {
     jsonError('Invalid played_date format. Expected YYYY-MM-DD');
 }

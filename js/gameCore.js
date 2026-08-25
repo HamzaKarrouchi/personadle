@@ -234,7 +234,21 @@ export function expertContext({ prefix, statsKey, hashMode }) {
  * @param {{isExpert: boolean}} ctx  contexte rendu par expertContext()
  * @param {string} page             nom de fichier de la page, ex. "silhouette.html"
  */
-export function setupExpertToggle(ctx, page) {
+// Cache global des statuts Expert (préchargé au démarrage)
+let expertStatusCache = null;
+
+export async function preloadExpertStatus() {
+  if (expertStatusCache) return expertStatusCache;
+  try {
+    const res = await fetch('/api/user/expert-status');
+    if (res.ok) expertStatusCache = await res.json();
+  } catch (e) {
+    console.warn('Failed to preload expert status:', e);
+  }
+  return expertStatusCache || {};
+}
+
+export async function setupExpertToggle(ctx, page) {
   document.body.classList.toggle("expert-mode", ctx.isExpert);
 
   const rules = (id, shown) =>
@@ -245,12 +259,37 @@ export function setupExpertToggle(ctx, page) {
   const toggle = document.getElementById("expertToggle");
   if (!toggle) return;
 
+  // Précharger le statut Expert si pas encore en cache
+  if (!expertStatusCache) {
+    await preloadExpertStatus();
+  }
+
+  // Vérifier le statut de déblocage du mode
+  const status = expertStatusCache?.[ctx.hashMode];
+  const isUnlocked = status?.unlocked ?? true; // fallback si cache non dispo
+
+  if (!ctx.isExpert && !isUnlocked) {
+    // Bouton verrouillé : ajouter classe CSS + titre + empêcher navigation
+    toggle.classList.add("expert-locked");
+    toggle.href = "javascript:void(0)";
+    toggle.style.cursor = "not-allowed";
+    toggle.title = `🔒 ${status?.requirement || 'Unlock Expert mode'}`;
+    toggle.textContent = "🔒 Expert mode";
+    toggle.onclick = (e) => e.preventDefault();
+    return;
+  }
+
+  // Bouton déverrouillé : logique normale
   const k = ctx.isExpert ? "ui.expert_leave" : "ui.expert_enter";
   const t = window.i18n?.t?.(k);
   toggle.setAttribute("data-i18n", k);
   toggle.textContent = t != null && t !== k ? t : ctx.isExpert ? "← Normal mode" : "⚡ Expert mode";
+  toggle.classList.remove("expert-locked");
   toggle.classList.toggle("active", ctx.isExpert);
   toggle.href = ctx.isExpert ? page : `${page}?expert=1`;
+  toggle.title = "";
+  toggle.style.cursor = "";
+  toggle.onclick = null;
 }
 
 /**
