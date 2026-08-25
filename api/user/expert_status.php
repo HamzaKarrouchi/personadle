@@ -1,47 +1,35 @@
 <?php
 /**
- * GET /api/user/expert-status — État de déblocage des 6 modes Expert
+ * GET /api/user/expert-status
+ * ────────────────────────────────────────────────────────────────────────────
+ * État de déblocage des 6 Modes Expert pour l'utilisateur connecté.
  *
- * Retourne un objet {classic, emoji, silhouette, alloutattack, personae, music}
- * avec {unlocked: bool, requirement: string descriptif} pour chaque mode.
- * Utilisé par le front pour griser les boutons ⚡ et afficher le tooltip.
+ * Accès : connecté
+ * Succès : 200 { expert_status: { <mode>: { unlocked, condition_type, required, current } } }
+ *
+ * Le serveur ne renvoie AUCUN libellé : seulement `condition_type` et les deux
+ * nombres. Le texte de l'infobulle (« 7 / 10 victoires en 4 essais ou moins »)
+ * est construit côté client via i18n — sinon il serait en anglais pour les
+ * 6 langues du site.
+ *
+ * Les seuils viennent de api/lib/expert_unlocks.php, la même source que le gate
+ * de api/sessions.php : l'écran ne peut pas annoncer une règle différente de
+ * celle réellement appliquée.
  */
 
-header('Content-Type: application/json');
-require_once '../bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../lib/expert_unlocks.php';
 
-$user = requireAuth();
-$userId = $user['id'];
-$pdo = pdo();
-
-// Définitions des conditions de déblocage par mode
-$conditions = [
-    'classic'       => ['type' => 'mode_wins_under_attempts', 'mode' => 'classic', 'value' => 10],
-    'emoji'         => ['type' => 'mode_wins_single_day', 'mode' => 'emoji', 'value' => 10],
-    'silhouette'    => ['type' => 'mode_wins_under_attempts', 'mode' => 'silhouette', 'value' => 10],
-    'alloutattack'  => ['type' => 'mode_consecutive_perfects', 'mode' => 'alloutattack', 'value' => 15],
-    'personae'      => ['type' => 'mode_consecutive_perfects', 'mode' => 'personae', 'value' => 15],
-    'music'         => ['type' => 'mode_consecutive_perfects', 'mode' => 'music', 'value' => 15],
-];
-
-// Descriptions des conditions pour le tooltip
-$descriptions = [
-    'mode_wins_under_attempts'   => '{{count}} wins with ≤4 attempts each',
-    'mode_wins_single_day'       => '{{count}} wins in a single day',
-    'mode_consecutive_perfects'  => '{{count}} perfect wins in a row',
-];
-
-$result = [];
-
-foreach ($conditions as $modeName => $cond) {
-    $unlocked = personadle_verify_condition($pdo, $userId, $cond['type'], $cond['mode'], $cond['value']);
-    $requirement = str_replace('{{count}}', (string) $cond['value'], $descriptions[$cond['type']]);
-
-    $result[$modeName] = [
-        'unlocked' => $unlocked,
-        'requirement' => $requirement,
-    ];
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    jsonError('Method Not Allowed', 405);
 }
 
-http_response_code(200);
-echo json_encode($result);
+$userId = requireAuth();
+$pdo    = pdo();
+
+$status = [];
+foreach (array_keys(personadle_expert_conditions()) as $mode) {
+    $status[$mode] = personadle_expert_progress($pdo, $userId, $mode);
+}
+
+jsonSuccess(['expert_status' => $status]);

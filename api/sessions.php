@@ -15,6 +15,7 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/lib/streak.php';
 require_once __DIR__ . '/lib/game_session.php';
 require_once __DIR__ . '/lib/daily_target.php';
+require_once __DIR__ . '/lib/expert_unlocks.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method Not Allowed', 405);
@@ -76,28 +77,16 @@ if (!in_array($mode, $validModes, true)) {
     jsonError("Invalid mode. Expected one of: " . implode(', ', $validModes));
 }
 
-// ── Expert mode gating (vérification obligatoire côté serveur) ──────────────
-// Un gate purement client serait contournable en tapant ?expert=1 dans l'URL.
-// Cette vérification empêche l'enregistrement d'une session Expert tant que le
-// joueur n'a pas débloqué le mode.
-if ($isExpert) {
-    require_once(__DIR__ . '/lib/condition_check.php');
-    $conditions = [
-        'classic'       => ['type' => 'mode_wins_under_attempts', 'mode' => 'classic', 'value' => 10],
-        'emoji'         => ['type' => 'mode_wins_single_day', 'mode' => 'emoji', 'value' => 10],
-        'silhouette'    => ['type' => 'mode_wins_under_attempts', 'mode' => 'silhouette', 'value' => 10],
-        'alloutattack'  => ['type' => 'mode_consecutive_perfects', 'mode' => 'alloutattack', 'value' => 15],
-        'personae'      => ['type' => 'mode_consecutive_perfects', 'mode' => 'personae', 'value' => 15],
-        'music'         => ['type' => 'mode_consecutive_perfects', 'mode' => 'music', 'value' => 15],
-    ];
-
-    $pdo = pdo();
-    if (isset($conditions[$mode])) {
-        $cond = $conditions[$mode];
-        if (!personadle_verify_condition($pdo, $userId, $cond['type'], $cond['mode'], $cond['value'])) {
-            jsonError("Expert mode not yet unlocked in {$mode}. Check requirements in-game.", 403);
-        }
-    }
+// ── Porte d'entrée du Mode Expert (vérification serveur obligatoire) ─────────
+// Le mode vit dans l'URL : un gate purement client se contourne en tapant
+// `?expert=1` à la main. Sans ce refus, un joueur non débloqué enregistrerait
+// malgré tout des sessions Expert (et décrocherait le badge `denial_of_self`,
+// dont la condition compte justement les victoires Expert par mode).
+// Seuils lus depuis api/lib/expert_unlocks.php — même source que
+// /api/user/expert-status, pour que l'écran ne puisse pas annoncer une règle
+// différente de celle appliquée ici.
+if ($isExpert && !personadle_is_expert_unlocked(pdo(), $userId, $mode)) {
+    jsonError("Expert mode is not unlocked yet for mode '{$mode}'.", 403);
 }
 
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $playedDate)) {

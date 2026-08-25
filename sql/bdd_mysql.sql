@@ -671,6 +671,7 @@ INSERT IGNORE INTO badges (slug, name_en, category, rarity, image_path, conditio
 ('night_owl',           'Phantom of the Night',       'achievement', 'common',    'profile/badges/images/Badge_Night_Owl.webp',             'Play between midnight and 5 AM (Paris time)', 'manual', NULL, NULL, 0),
 ('nyx_hour',            'Nyx Hour',                   'achievement', 'rare',      'profile/badges/images/Badge_Nyx_Hour.webp',              'Play between midnight and 12:30 AM (Paris time)', 'manual', NULL, NULL, 0),
 ('stylist',             'Breathtaking Aesthetics',    'achievement', 'epic',      'profile/badges/images/Badge_stylist.webp',               'Customize your profile: avatar + UI color + profile music + equipped title', 'manual', NULL, NULL, 0),
+('denial_of_self',      'Denial of Self',             'achievement', 'epic',      'profile/badges/images/Badge_Denial_Of_Self.webp',        'Win 10 Expert games in each of the 6 modes', 'expert_modes_mastered', NULL, 10, 0),
 
 -- ── Streak badges ────────────────────────────────────────────────────────────
 ('pyro_spark',          'The Ignition',               'streak',      'common',    'profile/badges/images/Badge_Pyro_Spark.webp',            'Reach a 7-day streak', 'streak_record', NULL, 7, 0),

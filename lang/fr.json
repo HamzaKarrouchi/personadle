@@ -34,7 +34,11 @@
     "cancel": "Annuler",
     "expert_enter": "⚡ Mode Expert",
     "expert_leave": "← Mode normal",
-    "expert_lyrics": "⚡ PAROLES"
+    "expert_lyrics": "⚡ PAROLES",
+    "expert_locked": "🔒 Mode Expert",
+    "expert_cond_wins_under_attempts": "{{current}}/{{required}} victoires en 4 essais ou moins",
+    "expert_cond_wins_single_day": "{{current}}/{{required}} victoires en une seule journée",
+    "expert_cond_consecutive_perfects": "{{current}}/{{required}} victoires parfaites d'affilée"
   },
   "modes": {
     "classic": {
@@ -696,6 +700,11 @@
       "name": "The Priestess's Audit",
       "condition": "???",
       "description": "Puisant dans la sagesse méticuleuse de la Prêtresse, tu as documenté les anomalies."
+    },
+    "denial_of_self": {
+      "name": "Refus de Soi",
+      "condition": "Gagner 10 parties Expert dans chacun des 6 modes",
+      "description": "Tu as affronté chaque épreuve Expert sans rien renier. L'Ombre, c'est toi — et tu l'as maîtrisée."
     }
   },
   "social_link": {

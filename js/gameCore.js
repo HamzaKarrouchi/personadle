@@ -216,6 +216,12 @@ export function expertContext({ prefix, statsKey, hashMode }) {
     statsKey: isExpert ? `${statsKey}Expert` : statsKey,
     hashMode: isExpert ? `${hashMode}Expert` : hashMode,
     /**
+     * Clé de mode canonique du backend ("classic", "music"…), toujours celle du mode
+     * NORMAL. `statsKey`/`hashMode` sont des libellés capitalisés et suffixés en
+     * Expert ("ClassicExpert") : les passer à l'API ne matcherait aucun mode.
+     */
+    modeKey: normalizeModeKey(hashMode),
+    /**
      * Traduit une clé localStorage du mode normal vers sa variante Expert.
      * En mode normal la clé historique est rendue telle quelle — aucune partie en
      * cours ne doit être perdue par ce câblage.
@@ -251,6 +257,92 @@ export function setupExpertToggle(ctx, page) {
   toggle.textContent = t != null && t !== k ? t : ctx.isExpert ? "← Normal mode" : "⚡ Expert mode";
   toggle.classList.toggle("active", ctx.isExpert);
   toggle.href = ctx.isExpert ? page : `${page}?expert=1`;
+
+  // Le verrou se pose ensuite, quand le backend a répondu : il n'y a rien à
+  // verrouiller pour un visiteur non connecté (aucune progression à mesurer, et
+  // aucune session enregistrée), et la fonction doit rester synchrone pour ses
+  // appelants. Le bouton part donc déverrouillé et est dégradé si besoin.
+  if (!ctx.isExpert) applyExpertLockWhenNeeded(toggle, ctx.modeKey);
+}
+
+// Cache mémoire de /api/user/expert-status : les 6 modes arrivent en une réponse,
+// inutile de la redemander à chaque bascule.
+let _expertStatusCache = null;
+
+/**
+ * État de déblocage des 6 Modes Expert, ou `null` si indisponible (visiteur non
+ * connecté, hors ligne, backend en erreur). `null` = aucun verrou côté client :
+ * c'est `api/sessions.php` qui fait foi, un affichage optimiste ne donne donc
+ * jamais accès à quoi que ce soit.
+ */
+export async function fetchExpertStatus() {
+  if (_expertStatusCache) return _expertStatusCache;
+
+  const api = window._personadleApi;
+  if (!api?.user?.expertStatus) return null;
+
+  try {
+    const res = await api.user.expertStatus();
+    _expertStatusCache = res?.expert_status ?? null;
+  } catch {
+    _expertStatusCache = null;
+  }
+  return _expertStatusCache;
+}
+
+/** Réinitialise le cache — utilisé par les tests. */
+export function resetExpertStatusCache() {
+  _expertStatusCache = null;
+}
+
+/** Traduction avec repli, cf. CLAUDE.md §5 (t() renvoie la clé si absente). */
+function _t(key, vars, fallback) {
+  const r = window.i18n?.t?.(key, vars);
+  return r != null && r !== key ? r : fallback;
+}
+
+/**
+ * Libellé de la condition, progression comprise (« 7/10 victoires… »).
+ * Construit côté client : le serveur n'envoie que le type et les deux nombres,
+ * sinon le texte serait en anglais dans les 6 langues.
+ */
+export function expertConditionLabel(progress) {
+  const { condition_type: type, current, required } = progress;
+  const vars = { current, required };
+
+  const fallbacks = {
+    mode_wins_under_attempts: `${current}/${required} wins in 4 attempts or fewer`,
+    mode_wins_single_day: `${current}/${required} wins in a single day`,
+    mode_consecutive_perfects: `${current}/${required} perfect wins in a row`,
+  };
+
+  const suffix = String(type).replace(/^mode_/, "");
+  return _t(`ui.expert_cond_${suffix}`, vars, fallbacks[type] ?? `${current}/${required}`);
+}
+
+/** Grise le bouton et y accroche la condition, si le mode n'est pas débloqué. */
+async function applyExpertLockWhenNeeded(toggle, modeKey) {
+  if (!modeKey) return;
+
+  const status = await fetchExpertStatus();
+  const progress = status?.[modeKey];
+  if (!progress || progress.unlocked) return;
+
+  toggle.classList.add("expert-locked");
+  toggle.setAttribute("aria-disabled", "true");
+  // Un <a> sans href n'est plus activable ni copiable ; tabindex le garde
+  // atteignable au clavier, et aria-label porte la condition pour les lecteurs
+  // d'écran (title étant réservé au survol souris).
+  toggle.removeAttribute("href");
+  toggle.setAttribute("tabindex", "0");
+
+  const label = _t("ui.expert_locked", undefined, "🔒 Expert mode");
+  toggle.setAttribute("data-i18n", "ui.expert_locked");
+  toggle.textContent = label;
+
+  const condition = expertConditionLabel(progress);
+  toggle.title = condition;
+  toggle.setAttribute("aria-label", `${label} — ${condition}`);
 }
 
 /**

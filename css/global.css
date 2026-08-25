@@ -3448,18 +3448,32 @@ body.darkmode #rulesModal em {
   box-shadow: none;
 }
 
-/* Bouton Expert verrouillé (condition de déblocage non remplie) */
+/* Bouton Expert verrouillé — condition de déblocage pas encore remplie.
+   Le rouge vif du bouton actif devient un gris éteint : le cadenas dit « pas
+   encore », pas « cassé ». La condition chiffrée est dans l'infobulle (title) et
+   dans aria-label, posés par setupExpertToggle(). */
 .expert-toggle.expert-locked {
-  opacity: 0.5;
-  color: #999;
-  cursor: not-allowed !important;
-  text-decoration: line-through;
+  color: #8a8a8a;
+  background: #141414;
+  border-color: #4a4a4a;
+  cursor: not-allowed;
 }
 
-.expert-toggle.expert-locked:hover {
-  background: inherit;
-  box-shadow: 0 0 8px rgba(255, 165, 0, 0.4);
-  opacity: 0.7;
+/* Neutralise le survol du bouton actif (fond rouge, halo, tiltBounce) : un
+   verrou qui réagit comme un bouton cliquable laisserait croire qu'il l'est. */
+.expert-toggle.expert-locked:hover,
+.expert-toggle.expert-locked:focus-visible {
+  background: #141414;
+  box-shadow: none;
+  animation: none;
+  transform: none;
+}
+
+/* Le focus clavier doit rester visible : le bouton est atteignable au Tab
+   (tabindex=0) pour que les lecteurs d'écran lisent la condition. */
+.expert-toggle.expert-locked:focus-visible {
+  outline: 2px solid #8a8a8a;
+  outline-offset: 2px;
 }
 
 /* Le halo rouge derrière toute la page signale qu'on n'est plus dans le mode
