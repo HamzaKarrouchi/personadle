@@ -81,15 +81,17 @@ describe("expertContext — clé de mode envoyée au backend", () => {
   });
 });
 
-describe("expertConditionLabel — progression lisible", () => {
-  it("rend la progression pour une condition de victoires rapides", () => {
+describe("expertConditionLabel — objectif lisible", () => {
+  it("énonce l'objectif à atteindre", () => {
     const label = expertConditionLabel({
       condition_type: "mode_wins_under_attempts",
       current: 7,
       required: 10,
     });
-    expect(label).toContain("7");
     expect(label).toContain("10");
+    // L'avancement est rendu par la barre de l'infobulle : le répéter dans la
+    // phrase donnerait « 7/10 … 7 / 10 ».
+    expect(label).not.toMatch(/\b7\s*\/\s*10\b/);
   });
 
   it("distingue les trois types de condition", () => {
@@ -103,6 +105,80 @@ describe("expertConditionLabel — progression lisible", () => {
     const label = expertConditionLabel({ condition_type: "mode_qui_nexiste_pas", current: 1, required: 2 });
     expect(label).not.toContain("ui.expert_cond");
     expect(label).toContain("1");
+  });
+});
+
+describe("infobulle de déblocage", () => {
+  /** Pose le bouton dans sa zone, comme dans les 6 pages de mode. */
+  function mountZone() {
+    document.body.innerHTML = `
+      <div class="expert-toggle-zone">
+        <a href="classiqueMode.html?expert=1" id="expertToggle" class="expert-toggle"
+           data-i18n="ui.expert_enter">⚡ Expert mode</a>
+      </div>`;
+    return document.getElementById("expertToggle");
+  }
+
+  it("affiche l'objectif et une barre de progression proportionnelle", async () => {
+    const toggle = mountZone();
+    stubExpertStatus({
+      classic: { unlocked: false, condition_type: "mode_wins_under_attempts", required: 10, current: 7 },
+    });
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(document.getElementById("expertLockTooltip")).not.toBeNull());
+
+    const tip = document.getElementById("expertLockTooltip");
+    expect(tip.querySelector(".expert-tooltip-count").textContent).toBe("7 / 10");
+    expect(tip.querySelector(".expert-tooltip-bar > i").style.width).toBe("70%");
+    // L'infobulle doit suivre immédiatement le bouton : le CSS l'affiche via le
+    // sélecteur de frère adjacent `.expert-locked:hover + .expert-tooltip`.
+    expect(toggle.nextElementSibling).toBe(tip);
+    // aria-describedby relie les deux pour les lecteurs d'écran…
+    expect(toggle.getAttribute("aria-describedby")).toBe("expertLockTooltip");
+    // …et le title natif doit disparaître, sinon deux bulles se superposent.
+    expect(toggle.hasAttribute("title")).toBe(false);
+  });
+
+  it("n'affiche aucune barre quand il n'y a pas de progression à montrer", async () => {
+    mountZone();
+    const unauthorized = Object.assign(new Error("Unauthorized"), { status: 401 });
+    window._personadleApi = { user: { expertStatus: vi.fn().mockRejectedValue(unauthorized) } };
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(document.getElementById("expertLockTooltip")).not.toBeNull());
+
+    // Une jauge à 0 laisserait croire à une progression réelle qui n'existe pas.
+    expect(document.querySelector(".expert-tooltip-bar")).toBeNull();
+    expect(document.querySelector(".expert-tooltip-cond").textContent).not.toBe("");
+  });
+
+  it("ne dépasse jamais 100 % si la progression a dépassé le seuil", async () => {
+    mountZone();
+    stubExpertStatus({
+      classic: { unlocked: false, condition_type: "mode_consecutive_perfects", required: 15, current: 40 },
+    });
+
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(document.getElementById("expertLockTooltip")).not.toBeNull());
+
+    expect(document.querySelector(".expert-tooltip-bar > i").style.width).toBe("100%");
+  });
+
+  it("n'empile pas deux infobulles si le câblage est rejoué", async () => {
+    mountZone();
+    stubExpertStatus({
+      classic: { unlocked: false, condition_type: "mode_wins_single_day", required: 10, current: 1 },
+    });
+    const ctx = expertContext({ prefix: "classicExpert", statsKey: "Classic", hashMode: "Classic" });
+
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(document.getElementById("expertLockTooltip")).not.toBeNull());
+    setupExpertToggle(ctx, "classiqueMode.html");
+    await vi.waitFor(() => expect(document.querySelectorAll(".expert-tooltip").length).toBe(1));
   });
 });
 
@@ -125,10 +201,11 @@ describe("setupExpertToggle — verrou du bouton ⚡", () => {
     // Plus de href : le lien ne doit être ni activable, ni copiable.
     expect(toggle.hasAttribute("href")).toBe(false);
     expect(toggle.getAttribute("aria-disabled")).toBe("true");
-    // La condition chiffrée doit être lisible au survol ET par un lecteur d'écran.
-    expect(toggle.title).toContain("4");
-    expect(toggle.title).toContain("10");
-    expect(toggle.getAttribute("aria-label")).toContain(toggle.title);
+    // La condition doit être lisible au survol (infobulle) ET par un lecteur
+    // d'écran (aria-label), qui n'a pas accès au rendu visuel.
+    const tip = document.getElementById("expertLockTooltip");
+    expect(tip.querySelector(".expert-tooltip-count").textContent).toBe("4 / 10");
+    expect(toggle.getAttribute("aria-label")).toContain("10");
     // Reste atteignable au clavier, sinon l'aria-label est inaccessible.
     expect(toggle.getAttribute("tabindex")).toBe("0");
   });
@@ -158,7 +235,7 @@ describe("setupExpertToggle — verrou du bouton ⚡", () => {
 
     // Le déblocage appartient au compte : sans compte, rien n'est débloquable.
     // L'infobulle doit dire quoi faire, pas afficher une progression 0/10 trompeuse.
-    expect(toggle.title).not.toMatch(/0\s*\/\s*10/);
+    expect(document.querySelector(".expert-tooltip-count")).toBeNull();
     expect(toggle.hasAttribute("href")).toBe(false);
   });
 

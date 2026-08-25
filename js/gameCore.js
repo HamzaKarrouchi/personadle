@@ -372,31 +372,87 @@ export function expertConditionLabel(progress) {
   const { condition_type: type, current, required } = progress;
   const vars = { current, required };
 
+  // Phrase d'objectif seule : l'avancement chiffré est rendu à part, par la barre
+  // de progression de l'infobulle. Le répéter ici donnerait « 7/10 … 7 / 10 ».
   const fallbacks = {
-    mode_wins_under_attempts: `${current}/${required} wins in 4 attempts or fewer`,
-    mode_wins_single_day: `${current}/${required} wins in a single day`,
-    mode_consecutive_perfects: `${current}/${required} perfect wins in a row`,
+    mode_wins_under_attempts: `Win ${required} games in 4 attempts or fewer`,
+    mode_wins_single_day: `Win ${required} games in a single day`,
+    mode_consecutive_perfects: `Win ${required} games in a row on the first try`,
   };
 
   const suffix = String(type).replace(/^mode_/, "");
-  return _t(`ui.expert_cond_${suffix}`, vars, fallbacks[type] ?? `${current}/${required}`);
+  return _t(`ui.expert_cond_${suffix}`, vars, fallbacks[type] ?? `${current} / ${required}`);
 }
 
-/** Grise le bouton et y accroche la raison du verrouillage. */
-function lockExpertToggle(toggle, reason) {
+/** Identifiant unique de l'infobulle, référencé par aria-describedby. */
+const EXPERT_TOOLTIP_ID = "expertLockTooltip";
+
+/**
+ * Carte d'infobulle : titre, objectif en clair, et barre de progression.
+ * Construite en DOM plutôt qu'en innerHTML — `reason` vient de l'i18n, mais rien
+ * ne justifie d'ouvrir une porte à l'injection pour trois nœuds.
+ */
+function buildExpertTooltip(reason, progress) {
+  const tip = document.createElement("div");
+  tip.className = "expert-tooltip";
+  tip.id = EXPERT_TOOLTIP_ID;
+  tip.setAttribute("role", "tooltip");
+
+  const title = document.createElement("span");
+  title.className = "expert-tooltip-title";
+  title.textContent = _t("ui.expert_locked_title", undefined, "Expert mode locked");
+  tip.append(title);
+
+  const cond = document.createElement("span");
+  cond.className = "expert-tooltip-cond";
+  cond.textContent = reason;
+  tip.append(cond);
+
+  // Pas de barre quand il n'y a rien à mesurer (visiteur non connecté, hors ligne) :
+  // une jauge à 0 laisserait croire à une progression réelle qui n'existe pas.
+  const required = Number(progress?.required) || 0;
+  if (required > 0) {
+    const current = Math.max(0, Number(progress.current) || 0);
+    const pct = Math.min(100, Math.round((current / required) * 100));
+
+    const bar = document.createElement("span");
+    bar.className = "expert-tooltip-bar";
+    const fill = document.createElement("i");
+    fill.style.width = `${pct}%`;
+    bar.append(fill);
+
+    const count = document.createElement("span");
+    count.className = "expert-tooltip-count";
+    count.textContent = `${current} / ${required}`;
+
+    tip.append(bar, count);
+  }
+
+  return tip;
+}
+
+/** Grise le bouton et lui accroche l'infobulle expliquant le verrouillage. */
+function lockExpertToggle(toggle, reason, progress) {
   toggle.classList.add("expert-locked");
   toggle.setAttribute("aria-disabled", "true");
   // Un <a> sans href n'est plus activable ni copiable ; tabindex le garde
-  // atteignable au clavier, et aria-label porte la condition pour les lecteurs
-  // d'écran (title étant réservé au survol souris).
+  // atteignable au clavier — c'est aussi ce qui permet d'ouvrir l'infobulle au
+  // doigt sur mobile, où le survol n'existe pas.
   toggle.removeAttribute("href");
   toggle.setAttribute("tabindex", "0");
+  // L'infobulle maison remplace le title natif : les garder tous les deux
+  // afficherait deux bulles superposées au survol.
+  toggle.removeAttribute("title");
 
   const label = _t("ui.expert_locked", undefined, "🔒 Expert mode");
   toggle.setAttribute("data-i18n", "ui.expert_locked");
   toggle.textContent = label;
-  toggle.title = reason;
   toggle.setAttribute("aria-label", `${label} — ${reason}`);
+
+  // Rejouable : un second appel ne doit pas empiler deux infobulles.
+  document.getElementById(EXPERT_TOOLTIP_ID)?.remove();
+  toggle.insertAdjacentElement("afterend", buildExpertTooltip(reason, progress));
+  toggle.setAttribute("aria-describedby", EXPERT_TOOLTIP_ID);
 }
 
 /**
@@ -434,7 +490,7 @@ async function applyExpertGate(ctx, page, toggle) {
     return;
   }
 
-  lockExpertToggle(toggle, reason);
+  lockExpertToggle(toggle, reason, progress);
 }
 
 /**

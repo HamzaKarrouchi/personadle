@@ -36,11 +36,12 @@
     "expert_leave": "← Normal mode",
     "expert_lyrics": "⚡ LYRICS",
     "expert_locked": "🔒 Expert mode",
-    "expert_cond_wins_under_attempts": "{{current}}/{{required}} wins in 4 attempts or fewer",
-    "expert_cond_wins_single_day": "{{current}}/{{required}} wins in a single day",
-    "expert_cond_consecutive_perfects": "{{current}}/{{required}} perfect wins in a row",
-    "expert_cond_signin": "Sign in to unlock Expert mode",
-    "expert_cond_unknown": "Reconnect to check your progress"
+    "expert_cond_wins_under_attempts": "Win {{required}} games in 4 attempts or fewer",
+    "expert_cond_wins_single_day": "Win {{required}} games in a single day",
+    "expert_cond_consecutive_perfects": "Win {{required}} games in a row on the first try",
+    "expert_cond_signin": "Sign in to unlock Expert mode — your progress follows your account.",
+    "expert_cond_unknown": "Reconnect to check your progress.",
+    "expert_locked_title": "Expert mode locked"
   },
   "modes": {
     "classic": {
