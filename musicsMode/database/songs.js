@@ -837,7 +837,7 @@ export const songs = [
     image: "PQ2.webp",
     vocalist: "Yumi Kawamura , Lotus Juice",
     proprietaire: "ATLUS",
-    lien: ""
+    lien: "https://youtu.be/YlmgojMHJ60"
   },
   {
     titre: "Heartful Cry",
@@ -846,7 +846,7 @@ export const songs = [
     image: "P3FES.webp",
     vocalist: "",
     proprietaire: "ATLUS",
-    lien: ""
+    lien: "https://youtu.be/5ANGcZj4zhM"
   },
   {
     titre: "Kimi no Tonari",
@@ -855,6 +855,6 @@ export const songs = [
     image: "P2IS.webp",
     vocalist: "hitomi",
     proprietaire: "ATLUS",
-    lien: ""
+    lien: "https://youtu.be/aq_jMLavtLM"
   }
 ];

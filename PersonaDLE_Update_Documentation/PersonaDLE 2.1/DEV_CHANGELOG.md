@@ -85,9 +85,9 @@ Résultat : 800×450, 193 frames, 8,36 s, 4,0 Mo.
       `./database/allOutAttack/`, mais en production il lit le CDN (`cdn()` dans
       `modeAllOutAttack.js`, bascule sur le hostname) : sans cet upload le skin se serait
       affiché cassé en prod alors qu'il marche en local.
-- [ ] **Champ `lien` vide** sur les 3 entrées (URL YouTube d'écoute, affichée en fin de partie).
-      Laissé vide faute de source fiable : `modeMusic.js` teste `target.lien` avant de rendre
-      le lien, l'absence est donc sans risque — c'est juste le lien « écouter » qui manque.
+- [x] **Champ `lien`** (URL YouTube d'écoute, affichée en fin de partie) — renseigné pour les
+      3 entrées le 2026-08-26, liens fournis par Hamza. Paramètres `?si=` de partage retirés :
+      ils n'apportent rien et alourdissent le dataset.
 - [ ] **`vocalist` vide sur « Heartful Cry »** — aucune info fournie. 13 entrées sont déjà dans
       ce cas, le champ est toléré.
 - [ ] **Durée de l'animation** : 8,36 s contre ~4,3 s pour toutes les autres AOA. Le `.mp4`
