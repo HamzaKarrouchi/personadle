@@ -80,10 +80,11 @@ Résultat : 800×450, 193 frames, 8,36 s, 4,0 Mo.
       (docblock du fichier). Tant que ce n'est pas fait, `music_expert` reste à 73 et les deux
       titres ne sortent qu'en Music normal. « Heartful Cry » n'a pas de paroles fournies et
       restera hors du pool Expert, comme les instrumentales.
-- [ ] **Upload de `Chord_Summer.webp` (animation) sur le R2 Cloudflare**, sous-dossier
-      `allOutAttack/`. En local le mode lit `./database/allOutAttack/`, mais en production il
-      lit le CDN (`cdn()` dans `modeAllOutAttack.js`, bascule sur le hostname) : sans l'upload
-      le skin s'affichera cassé en prod alors qu'il marche en local.
+- [x] **Upload de `Chord_Summer.webp` (animation) sur le R2 Cloudflare**, sous-dossier
+      `allOutAttack/` — fait par Hamza le 2026-08-26. En local le mode lit
+      `./database/allOutAttack/`, mais en production il lit le CDN (`cdn()` dans
+      `modeAllOutAttack.js`, bascule sur le hostname) : sans cet upload le skin se serait
+      affiché cassé en prod alors qu'il marche en local.
 - [ ] **Champ `lien` vide** sur les 3 entrées (URL YouTube d'écoute, affichée en fin de partie).
       Laissé vide faute de source fiable : `modeMusic.js` teste `target.lien` avant de rendre
       le lien, l'absence est donc sans risque — c'est juste le lien « écouter » qui manque.
