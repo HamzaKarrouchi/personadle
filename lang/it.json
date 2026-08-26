@@ -708,7 +708,12 @@
       "name": "Negazione del Sé",
       "condition": "Vinci 10 partite Esperto in ciascuna delle 6 modalità",
       "description": "Hai affrontato ogni prova Esperta senza negare nulla. L'Ombra sei tu — e l'hai dominata."
-    }
+    },
+    "event_code_empty": "⚠️ Inserisci prima un codice!",
+    "event_code_signin": "🔒 Accedi per riscattare un codice: le medaglie sono legate al tuo account.",
+    "event_code_already": "✅ Hai già riscattato questo codice!",
+    "event_code_expired": "⏰ Questo evento non è ancora attivo o è terminato.",
+    "event_code_failed": "⚠️ Server irraggiungibile. Riprova tra un momento."
   },
   "social_link": {
     "rank_names": {
@@ -1161,8 +1166,6 @@
     "footer_link": "FAQ",
     "q17": "Perché non ci sono personaggi di Persona 4 nella modalità All-Out Attack?",
     "a17": "Non abbiamo ancora illustrazioni All-Out Attack di qualità (stile Golden) per Persona 4. Arriveranno con Persona 4 Revival.",
-    "q18": "Perché non trovo le Persona di Persona 1 nella modalità Personae?",
-    "a18": "Non abbiamo ancora abbastanza illustrazioni di qualità per le Persona di Persona 1.",
     "q19": "Aggiungerete altri giochi Atlus come Metaphor o Shin Megami Tensei?",
     "a19": "Ci stiamo ancora pensando! Per ora PersonaDLE si concentra sulla serie Persona.",
     "q20": "Il gioco sarà aggiornato per Persona 4 Revival e Persona 6?",

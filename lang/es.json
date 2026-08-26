@@ -708,7 +708,12 @@
       "name": "Negación de Uno Mismo",
       "condition": "Gana 10 partidas Experto en cada uno de los 6 modos",
       "description": "Enfrentaste cada prueba Experta sin negar nada. La Sombra eres tú — y la dominaste."
-    }
+    },
+    "event_code_empty": "⚠️ ¡Introduce un código primero!",
+    "event_code_signin": "🔒 Inicia sesión para canjear un código: las insignias se guardan en tu cuenta.",
+    "event_code_already": "✅ ¡Ya canjeaste este código!",
+    "event_code_expired": "⏰ Este evento aún no está activo o ya terminó.",
+    "event_code_failed": "⚠️ No se pudo contactar con el servidor. Inténtalo de nuevo en un momento."
   },
   "social_link": {
     "rank_names": {
@@ -1161,8 +1166,6 @@
     "footer_link": "FAQ",
     "q17": "¿Por qué no hay personajes de Persona 4 en el modo All-Out Attack?",
     "a17": "Aún no tenemos ilustraciones All-Out Attack de calidad (estilo Golden) para Persona 4. Se añadirán con Persona 4 Revival.",
-    "q18": "¿Por qué no encuentro Personas de Persona 1 en el modo Personae?",
-    "a18": "Aún no tenemos suficientes ilustraciones de calidad para las Personas de Persona 1.",
     "q19": "¿Añadiréis otros juegos de Atlus como Metaphor o Shin Megami Tensei?",
     "a19": "¡Todavía lo estamos pensando! Por ahora PersonaDLE se centra en la serie Persona.",
     "q20": "¿Se actualizará el juego para Persona 4 Revival y Persona 6?",

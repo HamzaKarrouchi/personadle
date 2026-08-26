@@ -708,7 +708,12 @@
       "name": "Negação de Si",
       "condition": "Vença 10 partidas Especialista em cada um dos 6 modos",
       "description": "Enfrentaste cada prova Especialista sem negar nada. A Sombra és tu — e dominaste-a."
-    }
+    },
+    "event_code_empty": "⚠️ Introduz primeiro um código!",
+    "event_code_signin": "🔒 Inicia sessão para usar um código — os emblemas ficam ligados à tua conta.",
+    "event_code_already": "✅ Já usaste este código!",
+    "event_code_expired": "⏰ Este evento ainda não está ativo ou já terminou.",
+    "event_code_failed": "⚠️ Servidor inacessível. Tenta novamente daqui a pouco."
   },
   "social_link": {
     "rank_names": {
@@ -1161,8 +1166,6 @@
     "footer_link": "FAQ",
     "q17": "Porque não há personagens de Persona 4 no modo All-Out Attack?",
     "a17": "Ainda não temos arte de All-Out Attack de alta qualidade ao estilo Golden para Persona 4. Serão adicionadas quando chegar Persona 4 Revival.",
-    "q18": "Porque não encontro Personas de Persona 1 no modo Personae?",
-    "a18": "Ainda não temos arte de qualidade suficiente para as Personas de Persona 1 para as incluir de forma justa.",
     "q19": "Vão adicionar outros jogos da Atlus, como Metaphor ou Shin Megami Tensei?",
     "a19": "Ainda estamos a pensar nisso! Por agora, o PersonaDLE foca-se na série Persona.",
     "q20": "O jogo vai ser atualizado para Persona 4 Revival e Persona 6?",
