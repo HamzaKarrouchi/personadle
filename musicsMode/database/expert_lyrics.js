@@ -80,6 +80,16 @@ export const expertLyrics = {
     "Mou bokura wa kodomo janai yo, dakedo otona ni narikirezuite",
     "Sonna bimyouna hazama no naka de mo ikiru",
   ],
+  "Kimi no Tonari": [
+    "Imasugu ni waratte agemashou",
+    "imasugu ni utatte agemashou",
+    "Shoujo kara otona ni naru sono shunkan ni",
+    "Tomoshibi tozasanu you ni",
+    "Susanda kawa de yumemiru minikui AHIRU no ko",
+    "Kitto sugao motomete kokoro no kamen hazushite",
+    "Itsu shika shiroi tsubasa ni tsunagaru you ni",
+    "Hikari hanachi furisosogu hoshi ni",
+  ],
   "Unbreakable Tie": [
     "Really gotta keep it going going",
     "Deep down yeah knowing knowing",
