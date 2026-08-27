@@ -149,9 +149,24 @@
   mutuel normal) pour avoir battu le défi en Expert, à brancher sur `GET /api/user/compare`
   déjà existant (comparaison de stats entre amis, +10/+20 XP, cooldown 72h) plutôt que
   d'inventer un système parallèle.
-- [ ] **Connexion rapide Discord** (lier un compte existant + option à l'inscription, comme
-  "Sign in with Google" sur d'autres sites) — compatible avec le modèle sessions PHP actuel
-  (OAuth vérifie l'identité, puis session normale ouverte comme un login classique, pas de JWT).
+- [ ] **Connexion rapide Discord** — 📅 **reporté en 2.2** (arbitrage Hamza, 2026-08-27).
+  Un temps envisagé dans la 2.1 avec les classements et les défis Expert, puis sorti du lot :
+  c'est le seul des cinq qui touche à l'**authentification**, le plus risqué (flow OAuth,
+  migration, liaison de comptes), et le seul dont la valeur ne dépend pas d'être livré
+  maintenant. Le décaler ne retire rien aux joueurs — les quatre autres lots, eux, sont faits.
+  À grouper avec la **vérification d'e-mail** ci-dessus : les deux touchent le même code
+  d'inscription, les faire ensemble coûte bien moins cher que séparément.
+
+  **Ordre retenu : lier d'abord, inscrire ensuite.** Lier est strictement additif (le compte
+  reste e-mail + mot de passe, Discord devient une identité en plus). L'inscription via
+  Discord, elle, change le modèle de compte — des comptes sans mot de passe, ce qui ruisselle
+  sur la réinitialisation, la suppression RGPD, et laisse le joueur sans accès si Discord
+  tombe ou s'il quitte la plateforme. Faire la liaison d'abord signifie que l'inscription
+  réutilisera ensuite une machinerie déjà éprouvée.
+
+  (lier un compte existant + option à l'inscription, comme "Sign in with Google" sur d'autres
+  sites) — compatible avec le modèle sessions PHP actuel (OAuth vérifie l'identité, puis
+  session normale ouverte comme un login classique, pas de JWT).
   Points à trancher à l'implémentation :
   - Discord ne garantit pas un email vérifié → touche directement l'item "vérification d'email
     à l'inscription" ci-dessous, à voir ensemble
