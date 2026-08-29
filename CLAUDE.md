@@ -38,7 +38,7 @@ personadle/
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 40 suites Vitest (819 tests) + tests/php/ (PHPUnit)
+├── tests/               ← 41 suites Vitest (830 tests) + tests/php/ (PHPUnit)
 └── sql/                 ← bdd_mysql.sql (24 tables)
 ```
 
@@ -165,7 +165,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **819 tests** (Vitest + jsdom), 40 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+- **830 tests** (Vitest + jsdom), 41 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
   `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
   `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
