@@ -95,6 +95,137 @@ est dédoublonné, mais pas ses lecteurs.
   partie franchit le seuil : `fetchExpertStatus()` n'est appelé qu'au câblage du bouton. Un
   joueur qui débloque puis quitte sans changer de page verra l'animation à sa visite suivante.
 
+## 2026-08-26 — fix(seo): l'aperçu des liens partagés pointait vers un domaine inexistant
+
+Remonté par un joueur sur Discord, capture à l'appui : un lien `personadle.net` collé dans
+Discord s'affiche en **lien bleu nu**, sans logo ni description, là où d'autres jeux du même
+genre (cémantix) rendent une carte complète.
+
+### Cause
+
+Les balises Open Graph de `index.html` pointaient vers **`personadle.com`** — un domaine qui
+**ne résout pas du tout** (vérifié : `curl` renvoie `000`, pas même une erreur HTTP). Le site
+est sur `.net` depuis toujours.
+
+| URL | Code |
+| --- | --- |
+| `https://www.personadle.com/img/New_Logo_PersonaDLE.png` | **000** (DNS mort) |
+| `https://www.personadle.net/img/New_Logo_PersonaDLE.png` | 200 |
+
+Discord récupérait donc bien le `og:title` (d'où le titre bleu visible sur la capture), mais
+échouait sur l'image et n'avait aucune description à afficher. Le `<link rel="canonical">`
+était faux de la même façon — il désignait aux moteurs de recherche une URL canonique
+inexistante, ce qui est nettement plus grave que l'aperçu Discord.
+
+**Pourquoi ça a tenu si longtemps sans être vu** : un aperçu de lien cassé est invisible
+depuis le site. Rien dans la CI, les tests ou la navigation normale ne le traverse — il ne se
+manifeste qu'au moment où quelqu'un partage l'URL ailleurs.
+
+### Correctif
+
+- Domaine corrigé sur le `canonical` et l'`og:image`.
+- Balises manquantes ajoutées : `og:type`, `og:site_name`, `og:url`, `og:description`,
+  `og:image:type`, `og:image:alt`, `og:locale`. Sans `og:description`, la carte reste vide
+  même quand l'image charge.
+- `og:image:width` / `height` renseignés aux dimensions réelles (2769×1054, relevées dans
+  l'en-tête IHDR du PNG). Sans elles, Discord doit télécharger l'image pour les déduire et
+  rend souvent une vignette au premier partage.
+- `twitter:card = summary_large_image` + les balises `twitter:*` : Discord les lit aussi, et
+  c'est ce qui donne la bannière pleine largeur au lieu d'une vignette. Le logo est en 2,6:1,
+  format fait pour ça.
+- `theme-color` = `#e63946`, la couleur de la barre latérale de l'embed. Reprise de
+  `css/global.css` (14 occurrences) plutôt que choisie au jugé.
+- Commentaire d'avertissement laissé dans le `<head>` : toute URL absolue ajoutée là doit
+  rester sur `.net`.
+
+### Angle mort connu
+
+**Seul `index.html` porte des balises OG.** Les 6 pages de mode (`classiqueMode.html`,
+`musics.html`…) n'en ont aucune : un lien partagé vers un mode précis n'aura toujours aucun
+aperçu. Non traité ici — c'est la page d'accueil qui circule, et les pages de mode
+mériteraient chacune leur propre `og:title`/`description`, pas une copie de celles-ci.
+
+## 2026-08-26 — feat(content): 3 musiques + Chord Summer en All-Out Attack
+
+Lot de contenu fourni par Hamza : trois chansons et un skin P5X de plus.
+
+### Musiques
+
+| Titre | Opus | Fichier | Pochette |
+| --- | --- | --- | --- |
+| Wait and See | PQ2 | `Wait_and_See.mp3` | `PQ2.webp` |
+| Heartful Cry | P3FES | `Heartful_Cry.mp3` | `P3FES.webp` |
+| Kimi no Tonari | P2IS | `Kimi_no_Tonari.mp3` | `P2IS.webp` |
+
+Fichiers renommés en `snake_case` depuis les originaux téléchargés (`Wait and See (2).mp3`,
+`Heartful Cry (P3R ver (mp3cut.net).mp3`, `Next To You (Kimi no Tonari) - … (mp3cut.net).mp3`)
+et déposés dans `musicsMode/database/music/song/`. Ce sont les **versions découpées** qui ont
+été retenues, pas les originales complètes : c'est le format déjà en place (les 92 pistes
+existantes vont de 370 Ko à 3,4 Mo).
+
+`P3FES.webp` est bien la pochette utilisée par « Don't » et « Disconnected » — vérifié dans
+`songs.js` plutôt que déduit, `P3FES_song.webp` existe aussi et n'est pas celle-là.
+
+Pool quotidien : `music` 92 → **95**.
+
+### Chord Summer (P5X)
+
+- `aoaCharacters.js` — `{ nom: "Chord Summer ( Ayaka Sakai )", gif: "Chord_Summer" }`, placé
+  dans la section « P5X — Skins Summer » existante, à côté de Marian et Puppet.
+- `personas_allOut.js` (pool d'autocomplétion) et `portraitsMap.js` — mêmes conventions que
+  `Closer Summer`, qui sert de modèle pour toute la famille des skins Summer.
+- `database/img/Chord_Summer.webp` (portrait) et `Chord_Summer_Battle.webp` (victoire).
+- `database/allOutAttack/Chord_Summer.webp` — animation convertie depuis le `.mp4` fourni.
+
+Pool quotidien : `alloutattack` 71 → **72**. Aucun pool Expert séparé pour AOA — l'Expert
+rejoue le pool normal avec flou figé + N&B, le skin y entre donc automatiquement.
+
+#### Conversion de l'animation
+
+Le modèle a été **relevé sur les fichiers existants** plutôt que deviné, en parsant les
+chunks `VP8X`/`ANMF` : `Chord.webp` et `Closer_Summer.webp` font tous deux 800×450, ~142
+frames, 4,3 s, ~33 fps, 5,1–5,6 Mo. Commande retenue :
+
+```bash
+ffmpeg -i Chord_Summer.mp4 -map 0:v:0 \
+  -vf "fps=33,scale=800:450:flags=lanczos" \
+  -c:v libwebp_anim -lossless 0 -q:v 72 -compression_level 6 -loop 0 -an -f webp \
+  allOutAttackMode/database/allOutAttack/Chord_Summer.webp
+```
+
+Deux pièges rencontrés, notés ici parce qu'ils reviendront au prochain skin :
+
+- **Le compteur de ffmpeg ment sur ce muxer.** Il affiche `frame= 1` et un `time=` négatif
+  aberrant, alors que le fichier produit contient bien toutes les frames. Ne pas conclure à
+  l'échec sur cette sortie — vérifier le fichier (compter les chunks `ANMF`).
+- **`-fps_mode passthrough` casse l'animation** (une seule frame réellement encodée). À ne
+  pas ajouter « par précaution ».
+
+Résultat : 800×450, 193 frames, 8,36 s, 4,0 Mo.
+
+### Reste à faire sur ce lot
+
+- [ ] **Paroles Expert de « Wait and See » et « Kimi no Tonari »** — à coller par Hamza dans
+      `expert_mode_content.md` (section `== Music ==`, sous l'en-tête d'opus correspondant),
+      puis `npm run lyrics:build && npm run pools:build`. Ce `.md` est la source de vérité
+      curée à la main : `expert_lyrics.js` en est **généré**, ne jamais l'éditer directement
+      (docblock du fichier). Tant que ce n'est pas fait, `music_expert` reste à 73 et les deux
+      titres ne sortent qu'en Music normal. « Heartful Cry » n'a pas de paroles fournies et
+      restera hors du pool Expert, comme les instrumentales.
+- [x] **Upload de `Chord_Summer.webp` (animation) sur le R2 Cloudflare**, sous-dossier
+      `allOutAttack/` — fait par Hamza le 2026-08-26. En local le mode lit
+      `./database/allOutAttack/`, mais en production il lit le CDN (`cdn()` dans
+      `modeAllOutAttack.js`, bascule sur le hostname) : sans cet upload le skin se serait
+      affiché cassé en prod alors qu'il marche en local.
+- [x] **Champ `lien`** (URL YouTube d'écoute, affichée en fin de partie) — renseigné pour les
+      3 entrées le 2026-08-26, liens fournis par Hamza. Paramètres `?si=` de partage retirés :
+      ils n'apportent rien et alourdissent le dataset.
+- [ ] **`vocalist` vide sur « Heartful Cry »** — aucune info fournie. 13 entrées sont déjà dans
+      ce cas, le champ est toléré.
+- [ ] **Durée de l'animation** : 8,36 s contre ~4,3 s pour toutes les autres AOA. Le `.mp4`
+      source est plus long que les clips habituels. À arbitrer — si le rendu traîne en jeu,
+      retrimmer la source et reconvertir.
+
 ## 2026-08-26 — test(expert): couverture automatisée de la porte d'entrée + `make test-php` réparé
 
 Les deux derniers points ouverts du lot « porte d'entrée du Mode Expert » (`TODO.md` §1) :
