@@ -579,11 +579,7 @@ function checkGuess(name, target, forceReveal = false) {
 
       localStorage.setItem("personaUserProfile", JSON.stringify(_pr));
       trackUniqueDay(_pr, () => localStorage.setItem("personaUserProfile", JSON.stringify(_pr)));
-      // Toujours vérifié, même en Expert : deux unlockables (badge `denial_of_self`,
-      // titre `shadows_converge`) ont une condition_type Expert-only (cf. condition_check.php)
-      // et rateraient leur toast "en live" si on sautait l'appel ici. Seul le suivi
-      // hebdomadaire (`modeName`) reste réservé au mode normal.
-      checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName);
+      if (!EXPERT.isExpert) checkUnlocksAfterGame(modeName);
     }
 
     // !forceReveal ici aussi : le handler Give Up gère déjà lui-même revealNextLink/
@@ -785,11 +781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Give Up ne passait jamais par checkBadgesAfterGame() (seul le chemin victoire l'appelait,
       // cf. checkGuess()) — un badge comme ace_defective (10 give-ups) ne se débloquait donc
       // jamais tant qu'on n'allait pas sur le profil, jamais "en live" après l'action elle-même.
-      // Toujours vérifié, même en Expert : deux unlockables (badge `denial_of_self`,
-      // titre `shadows_converge`) ont une condition_type Expert-only (cf. condition_check.php)
-      // et rateraient leur toast "en live" si on sautait l'appel ici. Seul le suivi
-      // hebdomadaire (`modeName`) reste réservé au mode normal.
-      checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName);
+      if (!EXPERT.isExpert) checkUnlocksAfterGame(modeName);
     }
 
     checkChallengeCompletion("classic", attempts, false);

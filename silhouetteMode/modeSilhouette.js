@@ -514,9 +514,7 @@ function showVictory(force = false) {
 
   localStorage.setItem(EXPERT.key("silhouetteGameOver"), "true");
   localStorage.setItem(EXPERT.key("silhouetteForceReveal"), String(force));
-  // Toujours vérifié, même en Expert : cf. modeClassique.js pour le détail
-  // (deux unlockables Expert-only rateraient leur toast "en live" sinon).
-  checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName);
+  if (!EXPERT.isExpert) checkUnlocksAfterGame(modeName);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

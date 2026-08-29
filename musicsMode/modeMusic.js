@@ -608,11 +608,10 @@ function showVictory(force = false) {
     );
   }
 
-  // Toujours vérifié, même en Expert : le badge `denial_of_self` et le titre
-  // `shadows_converge` (migrations 033/034) ont une condition_type Expert-only
-  // (cf. condition_check.php) et rateraient leur toast "en live" sinon. Seul le
-  // suivi hebdomadaire (nom de mode) reste réservé au mode normal.
-  checkUnlocksAfterGame(IS_EXPERT ? undefined : "Music");
+  // Les conditions de déblocage portent sur les stats du mode normal, que
+  // l'Expert ne touche pas — l'appel serait un no-op. Un badge « Expert » viendra
+  // avec sa propre condition (ROADMAP v2.1 : badge une fois les 6 modes battus).
+  if (!IS_EXPERT) checkUnlocksAfterGame("Music");
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   // Fin de partie : la censure tombe, on affiche les paroles entières en clair.

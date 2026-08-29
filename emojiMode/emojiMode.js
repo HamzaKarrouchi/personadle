@@ -452,9 +452,7 @@ function checkEmojiGuess(name, forceReveal = false) {
     setGiveUpEnabled(false);
     gameOver = true;
     localStorage.setItem(EXPERT.key("emojiWin"), "true");
-    // Toujours vérifié, même en Expert : cf. modeClassique.js pour le détail
-    // (deux unlockables Expert-only rateraient leur toast "en live" sinon).
-    checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName);
+    if (!EXPERT.isExpert) checkUnlocksAfterGame(modeName);
   } else {
     // Wrong guess: show mini portrait + increment
     const imageName = portraitsMap[guess.nom] || guess.nom.split(" ")[0];

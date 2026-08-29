@@ -13,31 +13,10 @@
 
 ---
 
-## 2026-08-29 — fix(expert): badges/titres Expert-only jamais annoncés en jeu + redirection de défi morte
+## 2026-08-29 — fix(expert): redirection de défi morte en Music Expert
 
-Trouvé en revue de code sur les 5 PR fraîchement mergées (#74-#78) — bugs déjà présents sur
-`develop` avant ce lot, pas introduits par elles.
-
-### `checkUnlocksAfterGame()` toujours sauté en Expert, y compris pour les unlocks Expert-only
-
-Les 6 modes gardaient `if (!EXPERT.isExpert) checkUnlocksAfterGame(...)` après chaque victoire/
-abandon — hérité de l'époque où **aucune** condition de déblocage ne portait sur l'Expert (l'appel
-était un vrai no-op, cf. l'ancien commentaire dans `modeMusic.js`). Les migrations 033/034 ont
-depuis ajouté le badge `denial_of_self` et le titre `shadows_converge`, tous deux avec un
-`condition_type` Expert-only (`expert_wins_total` etc., cf. `condition_check.php`) — sans jamais
-retirer la garde. Résultat : un joueur qui remplit une de ces conditions **en jouant l'Expert qui
-vient de la déclencher** ne voit son toast qu'au prochain jeu normal ou à la prochaine visite de
-profil — jamais au moment où elle se déclenche vraiment.
-
-Correctif : l'appel reste inconditionnel, seul le paramètre `mode` (qui alimente le suivi
-hebdomadaire `weeklyModeLog` du titre `akechi_pancakes`, lui explicitement mode-normal) est omis
-en Expert — `checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName)`. Les checks badges/
-titres/wallpapers eux-mêmes n'ont aucune garde Expert : les rejouer sans effet en Expert pour les
-conditions non-Expert est un no-op sans risque (mêmes stats, rien de nouveau à détecter).
-
-Fichiers : `classiqueMode/modeClassique.js` (2 sites), `emojiMode/emojiMode.js`,
-`silhouetteMode/modeSilhouette.js`, `allOutAttackMode/modeAllOutAttack.js` (3 sites, dont un qui
-n'avait déjà plus d'argument `mode`), `personaeMode/modePersonae.js`, `musicsMode/modeMusic.js`.
+Trouvé en revue de code sur les 5 PR fraîchement mergées (#74-#78) — bug déjà présent sur
+`develop` avant ce lot, pas introduit par elles.
 
 ### `modeMusic.js` : la redirection défi-en-Expert ne s'est jamais déclenchée
 
@@ -53,12 +32,31 @@ pour cette détection précise.
 
 ### Angle mort connu
 
-Aucun test automatisé n'a été ajouté pour ces deux points : les 6 fichiers de mode ne sont pas
-unitairement testables sans lourde simulation DOM (`DOMContentLoaded`, `localStorage`, flux de
-victoire complet), et le pattern de test existant (`tests/unlockNotify.test.js`) ne couvre que
-`checkUnlocksAfterGame()` elle-même, pas ses appelants. Vérifié manuellement par lecture croisée
-du code (`condition_check.php` ↔ `titles-ui.js`/`badgesData.js` ↔ les 6 fichiers de mode) plutôt
-qu'en jeu.
+Aucun test automatisé n'a été ajouté : `musicsMode/modeMusic.js` n'est pas unitairement testable
+sans lourde simulation DOM (`DOMContentLoaded`, `localStorage`, flux de partie complet). Vérifié
+manuellement par lecture croisée du code (`getActiveChallengeTarget()` / `getPendingActiveChallenge()`
+dans `gameCore.js`) plutôt qu'en jeu.
+
+### Piste explorée puis abandonnée : annoncer `denial_of_self`/`shadows_converge` en direct
+
+En creusant le même problème (checks de déblocage sautés en Expert), premier réflexe : rendre
+`checkUnlocksAfterGame()` inconditionnel dans les 6 modes pour que le badge `denial_of_self` et le
+titre `shadows_converge` (tous deux `condition_type` Expert-only, migrations 033/034) s'annoncent
+au moment réel du déblocage plutôt qu'au prochain jeu normal ou à la prochaine visite de profil.
+
+**Ce changement aurait été un no-op pur** : `badgesData.js` (`denial_of_self.check`) et
+`titles-ui.js` (`case "expert_wins_total"`) renvoient **toujours `false`** côté client, par
+design — seule la sync complète avec le backend (`GET /api/badges` / `GET /api/titles`, qui
+renvoie `is_unlocked`) fait foi pour ces deux unlockables, et cette sync n'est déclenchée que par
+`initBadgesSystem()`/`initTitlesSection()` **sur la page profil**, jamais depuis les 6 fichiers de
+mode. Rendre `checkUnlocksAfterGame()` inconditionnel n'aurait donc rien annoncé de plus — juste
+ajouté de la complexité pour zéro effet observable, avec un commentaire mensonger sur ce qu'il
+accomplit. Non fait ici.
+
+Le vrai correctif demanderait de faire porter aux 6 modes une requête réseau supplémentaire après
+chaque partie Expert (même mécanique que `fetchExpertStatus()`/`diffNewlyUnlocked()` ajoutés en
+#78 pour le déblocage du Mode Expert lui-même) — un choix de conception et de coût réseau qui
+dépasse un correctif de cette taille, à trancher avec Hamza plutôt qu'unilatéralement ici.
 
 ## 2026-08-26 — feat(expert): cadenas qui explose au déblocage + déblocage manuel par un admin
 
