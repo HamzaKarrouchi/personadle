@@ -27,6 +27,7 @@ import {
   showCommunityStats,
   getActiveChallengeTarget,
   isChallengePlay,
+  getPendingActiveChallenge,
   maskTerms,
   expertContext,
   setupExpertToggle,
@@ -221,7 +222,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   // révéler. On renvoie donc le joueur vers le mode normal pour ce défi.
   // Les défis Expert (avec leur propre barème) sont une feature à part entière :
   // ils demandent une colonne dédiée sur `messages`, cf. ROADMAP.md v2.1.
-  if (IS_EXPERT && isChallengePlay("music")) {
+  //
+  // ⚠️ isChallengePlay("music") ne convient PAS ici : getActiveChallengeTarget()
+  // renvoie null dès isExpertPage() (garde documentée dans gameCore.js, pour un
+  // tout autre besoin — empêcher un défi normal de s'imposer comme cible en
+  // Expert), donc `IS_EXPERT && isChallengePlay(...)` ne serait jamais vrai.
+  // getPendingActiveChallenge() n'a pas cette garde : c'est la bonne fonction
+  // pour détecter "il y a un défi actif" indépendamment du mode courant.
+  const _pendingMusicChallenge = getPendingActiveChallenge();
+  if (
+    IS_EXPERT &&
+    _pendingMusicChallenge &&
+    (_pendingMusicChallenge.mode || "").toLowerCase() === "music"
+  ) {
     window.location.replace("musics.html");
     return;
   }
@@ -595,10 +608,11 @@ function showVictory(force = false) {
     );
   }
 
-  // Les conditions de déblocage portent sur les stats du mode normal, que
-  // l'Expert ne touche pas — l'appel serait un no-op. Un badge « Expert » viendra
-  // avec sa propre condition (ROADMAP v2.1 : badge une fois les 6 modes battus).
-  if (!IS_EXPERT) checkUnlocksAfterGame("Music");
+  // Toujours vérifié, même en Expert : le badge `denial_of_self` et le titre
+  // `shadows_converge` (migrations 033/034) ont une condition_type Expert-only
+  // (cf. condition_check.php) et rateraient leur toast "en live" sinon. Seul le
+  // suivi hebdomadaire (nom de mode) reste réservé au mode normal.
+  checkUnlocksAfterGame(IS_EXPERT ? undefined : "Music");
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   // Fin de partie : la censure tombe, on affiche les paroles entières en clair.

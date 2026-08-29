@@ -13,6 +13,53 @@
 
 ---
 
+## 2026-08-29 — fix(expert): badges/titres Expert-only jamais annoncés en jeu + redirection de défi morte
+
+Trouvé en revue de code sur les 5 PR fraîchement mergées (#74-#78) — bugs déjà présents sur
+`develop` avant ce lot, pas introduits par elles.
+
+### `checkUnlocksAfterGame()` toujours sauté en Expert, y compris pour les unlocks Expert-only
+
+Les 6 modes gardaient `if (!EXPERT.isExpert) checkUnlocksAfterGame(...)` après chaque victoire/
+abandon — hérité de l'époque où **aucune** condition de déblocage ne portait sur l'Expert (l'appel
+était un vrai no-op, cf. l'ancien commentaire dans `modeMusic.js`). Les migrations 033/034 ont
+depuis ajouté le badge `denial_of_self` et le titre `shadows_converge`, tous deux avec un
+`condition_type` Expert-only (`expert_wins_total` etc., cf. `condition_check.php`) — sans jamais
+retirer la garde. Résultat : un joueur qui remplit une de ces conditions **en jouant l'Expert qui
+vient de la déclencher** ne voit son toast qu'au prochain jeu normal ou à la prochaine visite de
+profil — jamais au moment où elle se déclenche vraiment.
+
+Correctif : l'appel reste inconditionnel, seul le paramètre `mode` (qui alimente le suivi
+hebdomadaire `weeklyModeLog` du titre `akechi_pancakes`, lui explicitement mode-normal) est omis
+en Expert — `checkUnlocksAfterGame(EXPERT.isExpert ? undefined : modeName)`. Les checks badges/
+titres/wallpapers eux-mêmes n'ont aucune garde Expert : les rejouer sans effet en Expert pour les
+conditions non-Expert est un no-op sans risque (mêmes stats, rien de nouveau à détecter).
+
+Fichiers : `classiqueMode/modeClassique.js` (2 sites), `emojiMode/emojiMode.js`,
+`silhouetteMode/modeSilhouette.js`, `allOutAttackMode/modeAllOutAttack.js` (3 sites, dont un qui
+n'avait déjà plus d'argument `mode`), `personaeMode/modePersonae.js`, `musicsMode/modeMusic.js`.
+
+### `modeMusic.js` : la redirection défi-en-Expert ne s'est jamais déclenchée
+
+`if (IS_EXPERT && isChallengePlay("music"))` ne peut **jamais** être vrai : `isChallengePlay()`
+dérive de `getActiveChallengeTarget()`, qui renvoie `null` dès `isExpertPage()` — une garde
+documentée dans `gameCore.js` mais pour un tout autre besoin (empêcher un défi normal de
+s'imposer comme cible en Expert). Un joueur avec un défi Music actif qui ouvrait
+`musics.html?expert=1` n'était donc jamais renvoyé vers le mode normal comme l'intention l'exigeait
+— le défi restait simplement ignoré en silence (ni complété, ni signalé).
+
+Correctif : `getPendingActiveChallenge()` (sans cette garde Expert) remplace `isChallengePlay()`
+pour cette détection précise.
+
+### Angle mort connu
+
+Aucun test automatisé n'a été ajouté pour ces deux points : les 6 fichiers de mode ne sont pas
+unitairement testables sans lourde simulation DOM (`DOMContentLoaded`, `localStorage`, flux de
+victoire complet), et le pattern de test existant (`tests/unlockNotify.test.js`) ne couvre que
+`checkUnlocksAfterGame()` elle-même, pas ses appelants. Vérifié manuellement par lecture croisée
+du code (`condition_check.php` ↔ `titles-ui.js`/`badgesData.js` ↔ les 6 fichiers de mode) plutôt
+qu'en jeu.
+
 ## 2026-08-26 — feat(expert): cadenas qui explose au déblocage + déblocage manuel par un admin
 
 Deux demandes, **une seule mécanique** : le front compare l'état de déblocage en cache à

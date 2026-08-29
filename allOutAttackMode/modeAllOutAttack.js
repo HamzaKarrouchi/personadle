@@ -535,7 +535,9 @@ function handleGuess() {
     trackUniqueDay(_pAoaWin, () =>
       localStorage.setItem("personaUserProfile", JSON.stringify(_pAoaWin))
     );
-    if (!EXPERT.isExpert) checkUnlocksAfterGame("All Out Attack");
+    // Toujours vérifié, même en Expert : cf. modeClassique.js pour le détail
+    // (deux unlockables Expert-only rateraient leur toast "en live" sinon).
+    checkUnlocksAfterGame(EXPERT.isExpert ? undefined : "All Out Attack");
     disableInputs();
   } else {
     // ── Wrong guess ──────────────────────────────────────────────────────────
@@ -773,7 +775,7 @@ function checkSpecialBadges(characterName) {
     // `window.forceCheckBadges` n'était jamais défini nulle part dans le repo — ce bloc
     // ne s'exécutait jamais (code mort). checkUnlocksAfterGame() relit déjà le profil
     // frais depuis localStorage, pas besoin du setTimeout ni de repasser `profile`.
-    if (!EXPERT.isExpert) checkUnlocksAfterGame();
+    checkUnlocksAfterGame();
   }
 }
 

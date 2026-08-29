@@ -657,7 +657,9 @@ function showVictory(force = false, name = null) {
   trackUniqueDay(_pPersonae, () =>
     localStorage.setItem("personaUserProfile", JSON.stringify(_pPersonae))
   );
-  if (!EXPERT.isExpert) checkUnlocksAfterGame("Personae");
+  // Toujours vérifié, même en Expert : cf. modeClassique.js pour le détail
+  // (deux unlockables Expert-only rateraient leur toast "en live" sinon).
+  checkUnlocksAfterGame(EXPERT.isExpert ? undefined : "Personae");
 }
 
 /**
