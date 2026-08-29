@@ -63,6 +63,180 @@ manifeste qu'au moment où quelqu'un partage l'URL ailleurs.
 aperçu. Non traité ici — c'est la page d'accueil qui circule, et les pages de mode
 mériteraient chacune leur propre `og:title`/`description`, pas une copie de celles-ci.
 
+## 2026-08-26 — feat(content): 3 musiques + Chord Summer en All-Out Attack
+
+Lot de contenu fourni par Hamza : trois chansons et un skin P5X de plus.
+
+### Musiques
+
+| Titre | Opus | Fichier | Pochette |
+| --- | --- | --- | --- |
+| Wait and See | PQ2 | `Wait_and_See.mp3` | `PQ2.webp` |
+| Heartful Cry | P3FES | `Heartful_Cry.mp3` | `P3FES.webp` |
+| Kimi no Tonari | P2IS | `Kimi_no_Tonari.mp3` | `P2IS.webp` |
+
+Fichiers renommés en `snake_case` depuis les originaux téléchargés (`Wait and See (2).mp3`,
+`Heartful Cry (P3R ver (mp3cut.net).mp3`, `Next To You (Kimi no Tonari) - … (mp3cut.net).mp3`)
+et déposés dans `musicsMode/database/music/song/`. Ce sont les **versions découpées** qui ont
+été retenues, pas les originales complètes : c'est le format déjà en place (les 92 pistes
+existantes vont de 370 Ko à 3,4 Mo).
+
+`P3FES.webp` est bien la pochette utilisée par « Don't » et « Disconnected » — vérifié dans
+`songs.js` plutôt que déduit, `P3FES_song.webp` existe aussi et n'est pas celle-là.
+
+Pool quotidien : `music` 92 → **95**.
+
+### Chord Summer (P5X)
+
+- `aoaCharacters.js` — `{ nom: "Chord Summer ( Ayaka Sakai )", gif: "Chord_Summer" }`, placé
+  dans la section « P5X — Skins Summer » existante, à côté de Marian et Puppet.
+- `personas_allOut.js` (pool d'autocomplétion) et `portraitsMap.js` — mêmes conventions que
+  `Closer Summer`, qui sert de modèle pour toute la famille des skins Summer.
+- `database/img/Chord_Summer.webp` (portrait) et `Chord_Summer_Battle.webp` (victoire).
+- `database/allOutAttack/Chord_Summer.webp` — animation convertie depuis le `.mp4` fourni.
+
+Pool quotidien : `alloutattack` 71 → **72**. Aucun pool Expert séparé pour AOA — l'Expert
+rejoue le pool normal avec flou figé + N&B, le skin y entre donc automatiquement.
+
+#### Conversion de l'animation
+
+Le modèle a été **relevé sur les fichiers existants** plutôt que deviné, en parsant les
+chunks `VP8X`/`ANMF` : `Chord.webp` et `Closer_Summer.webp` font tous deux 800×450, ~142
+frames, 4,3 s, ~33 fps, 5,1–5,6 Mo. Commande retenue :
+
+```bash
+ffmpeg -i Chord_Summer.mp4 -map 0:v:0 \
+  -vf "fps=33,scale=800:450:flags=lanczos" \
+  -c:v libwebp_anim -lossless 0 -q:v 72 -compression_level 6 -loop 0 -an -f webp \
+  allOutAttackMode/database/allOutAttack/Chord_Summer.webp
+```
+
+Deux pièges rencontrés, notés ici parce qu'ils reviendront au prochain skin :
+
+- **Le compteur de ffmpeg ment sur ce muxer.** Il affiche `frame= 1` et un `time=` négatif
+  aberrant, alors que le fichier produit contient bien toutes les frames. Ne pas conclure à
+  l'échec sur cette sortie — vérifier le fichier (compter les chunks `ANMF`).
+- **`-fps_mode passthrough` casse l'animation** (une seule frame réellement encodée). À ne
+  pas ajouter « par précaution ».
+
+Résultat : 800×450, 193 frames, 8,36 s, 4,0 Mo.
+
+### Reste à faire sur ce lot
+
+- [ ] **Paroles Expert de « Wait and See » et « Kimi no Tonari »** — à coller par Hamza dans
+      `expert_mode_content.md` (section `== Music ==`, sous l'en-tête d'opus correspondant),
+      puis `npm run lyrics:build && npm run pools:build`. Ce `.md` est la source de vérité
+      curée à la main : `expert_lyrics.js` en est **généré**, ne jamais l'éditer directement
+      (docblock du fichier). Tant que ce n'est pas fait, `music_expert` reste à 73 et les deux
+      titres ne sortent qu'en Music normal. « Heartful Cry » n'a pas de paroles fournies et
+      restera hors du pool Expert, comme les instrumentales.
+- [x] **Upload de `Chord_Summer.webp` (animation) sur le R2 Cloudflare**, sous-dossier
+      `allOutAttack/` — fait par Hamza le 2026-08-26. En local le mode lit
+      `./database/allOutAttack/`, mais en production il lit le CDN (`cdn()` dans
+      `modeAllOutAttack.js`, bascule sur le hostname) : sans cet upload le skin se serait
+      affiché cassé en prod alors qu'il marche en local.
+- [x] **Champ `lien`** (URL YouTube d'écoute, affichée en fin de partie) — renseigné pour les
+      3 entrées le 2026-08-26, liens fournis par Hamza. Paramètres `?si=` de partage retirés :
+      ils n'apportent rien et alourdissent le dataset.
+- [ ] **`vocalist` vide sur « Heartful Cry »** — aucune info fournie. 13 entrées sont déjà dans
+      ce cas, le champ est toléré.
+- [ ] **Durée de l'animation** : 8,36 s contre ~4,3 s pour toutes les autres AOA. Le `.mp4`
+      source est plus long que les clips habituels. À arbitrer — si le rendu traîne en jeu,
+      retrimmer la source et reconvertir.
+
+## 2026-08-26 — test(expert): couverture automatisée de la porte d'entrée + `make test-php` réparé
+
+Les deux derniers points ouverts du lot « porte d'entrée du Mode Expert » (`TODO.md` §1) :
+le gate serveur et sa redirection étaient vérifiés **à la main via curl**, pas automatisés.
+CLAUDE.md §13 l'exige pour toute condition de déblocage — un seuil qui dérive ou un
+`is_expert = 0` oublié dans une requête ouvrirait les 6 modes sans qu'aucun test ne rougisse.
+
+En les écrivant, un trou plus large est apparu : **`make test-php` n'exécutait pas les tests
+qu'il prétendait lancer**.
+
+### `make test-php` sortait vert avec la moitié des tests jamais exécutés
+
+Les tests d'intégration (`ConditionCheckTest`, `DatabaseIntegrationTest`, `StreakTest`,
+`FriendsTest`…) se connectent à `DB_TEST_HOST:DB_TEST_PORT`, avec pour défaut
+`127.0.0.1:3307` — les coordonnées **vues depuis l'hôte**. La cible `test-php` lance PHPUnit
+**dans le conteneur php**, où la base est `db:3306` et où `127.0.0.1:3307` ne répond pas.
+Chaque test se marquait alors `skipped` via son `markTestSkipped()` de garde, et la cible
+sortait `OK`.
+
+Mesure avant/après :
+
+| | Tests | Assertions | Skipped |
+| --- | --- | --- | --- |
+| Avant | 215 | 483 | **106** |
+| Après | 215 | 966 | 0 |
+
+La CI ne voyait rien : le job `lint-php` passe explicitement `DB_TEST_HOST`/`PORT`/`USER`/`PASS`
+(`.github/workflows/ci.yml`), et fait tourner PHP sur le runner, pas dans le conteneur. D'où
+une situation exactement à l'envers de ce qu'on veut — **le local plus permissif que la CI**.
+C'est la cause racine du fait que le gate Expert n'ait jamais été couvert : les tests
+d'intégration existants ne tournaient tout simplement pas sur un poste de dev.
+
+Correctif : variable `PHPUNIT_DB_ENV` dans le `Makefile`, passée en `-e` à `docker compose
+exec`. Valeurs en dur volontairement — l'en-tête du fichier interdit toute syntaxe shell
+POSIX (`$${VAR:-defaut}`) pour que `make` fonctionne aussi sous `cmd.exe`.
+
+### `tests/php/ExpertUnlocksTest.php` — 22 méthodes, 50 assertions
+
+Même pattern que `ConditionCheckTest` : vraie MariaDB, transaction annulée en `tearDown`,
+skip propre si la base est absente. `ConditionCheckTest` ne vérifiait jusqu'ici que la
+**présence** des nouveaux `condition_type` dans `personadle_known_condition_types()` — leur
+comportement n'était couvert nulle part.
+
+- `mode_wins_under_attempts` — borne à 4 essais incluse, abandons exclus, parties Expert
+  exclues, isolation par mode et par compte. Un test verrouille la constante
+  `PERSONADLE_FAST_WIN_MAX_ATTEMPTS` elle-même : le front affiche cette règle au joueur.
+- `mode_wins_single_day` — c'est la **meilleure journée de la vie du compte** qui compte, pas
+  la journée en cours (sinon le déblocage se reperdrait à minuit) ; `COALESCE(MAX(…), 0)`
+  couvert par un compte sans aucune partie.
+- `mode_consecutive_perfects` — série cassée par une victoire en 2 essais et par un abandon
+  en 1 essai, **non** cassée par des journées sautées (la série se compte en parties), et
+  départage à l'`id DESC` pour plusieurs parties le même jour.
+- `personadle_expert_progress()` — déblocage au seuil **exact**, fail-closed sur un compte
+  neuf pour les 6 modes, isolation Classique ⇏ Silhouette (même type, même seuil), mode
+  inconnu ouvert plutôt que bloqué pour toujours, et absence de tout libellé dans la réponse
+  (il serait en anglais pour les 6 langues).
+
+### `tests-e2e/expert-gate.spec.js` — 7 tests
+
+Les 6 specs `expert-*.spec.js` partent d'un compte pré-débloqué et testent le *gameplay* ;
+aucune ne couvrait ce qui arrive à quelqu'un qui n'a pas le droit d'être là. Un test jsdom ne
+peut pas le faire non plus — `tests/expertUnlock.test.js` doit remplacer `expertNavigate.go`,
+jsdom n'implémentant pas la navigation.
+
+- Visiteur anonyme : `?expert=1` tapé à la main renvoie au mode normal ; bouton `expert-locked`
+  avec `aria-disabled` et **sans `href`** (un clic droit « copier le lien » ne doit pas donner
+  une porte d'entrée) ; infobulle reliée par `aria-describedby` ; deux chargements successifs
+  n'ouvrent pas le mode (le cache `localStorage` du statut ne doit pas devenir une dérobade).
+- **Contre-preuve** : le compte débloqué en Classique reste bien sur `?expert=1`. Sans elle,
+  un gate qui redirigerait tout le monde ferait passer les tests anonymes.
+- Isolation par mode côté front : ce même compte est redirigé sur Silhouette Expert.
+
+### Fichiers touchés
+
+- `tests/php/ExpertUnlocksTest.php` (nouveau)
+- `tests-e2e/expert-gate.spec.js` (nouveau)
+- `Makefile` — `PHPUNIT_DB_ENV`, passée à la cible `test-php`
+- `scripts/check-doc-numbers.js` — point de synchronisation pour `TODO.md`, dont la ligne
+  « Vérifié le … » citait des chiffres en dur sans jamais être recalculée (elle annonçait
+  encore 778 tests / 102 E2E, réels 801 et 109)
+- `TODO.md` — §1 soldée ; retrait de l'affirmation périmée « le changelog joueur ne contient
+  aucune entrée Expert », comblée par la PR #71
+- Chiffres de doc resynchronisés par `npm run docs:fix` (193 → 215 PHPUnit, 102 → 109 E2E)
+
+### Angles morts connus
+
+- La correspondance des seuils entre `api/lib/expert_unlocks.php` et
+  `tests-e2e/helpers/expert-unlock.js` reste **recopiée à la main** des deux côtés. Aucun test
+  ne compare les deux tables : changer un seuil en PHP sans toucher le helper ferait échouer
+  les specs Expert de façon opaque (déblocage incomplet → 403), pas avec un message clair.
+- `make test-php` cible la base de **développement**, pas une base jetable : les tests
+  s'appuient sur `ROLLBACK`, ce qui suffit tant qu'aucun test ne fait de DDL.
+
 ## 2026-08-25 — feat(expert): porte d'entrée des 6 Modes Expert + badge Denial of Self
 
 Les 6 Modes Expert étaient ouverts à tout le monde (bouton ⚡ visible et cliquable par
