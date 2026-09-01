@@ -118,6 +118,32 @@ phpMyAdmin** : il ne sait pas les lire et échoue à moitié.
 
 Pour la 2.1 : `029 → 030 → 031 → 032 → 033 → 034 → 035 → 036 → 037 → 038`.
 
+### 4bis. Enregistrer les migrations dans `schema_migrations`
+
+> 🚨 **Les fichiers `.sql` ne s'enregistrent PAS eux-mêmes.** C'est
+> [`scripts/apply_migrations.sh`](scripts/apply_migrations.sh) qui fait le
+> `INSERT INTO schema_migrations` après chaque fichier appliqué. Toute méthode qui
+> contourne ce script — dont le `mysql < fichier` de l'étape 4 — laisse donc la table de
+> suivi en arrière.
+>
+> Conséquence si on l'oublie : à la release suivante, l'étape 2 annoncera comme « en
+> attente » des migrations pourtant appliquées, et le script les rejouera. Sans dégât
+> tant qu'elles sont idempotentes — mais c'est un écart silencieux qui coûte cher à
+> diagnostiquer plus tard.
+
+La version est le **nom du fichier sans `.sql`** (`ver=$(basename "$f" .sql)` dans le
+script), exactement comme les lignes déjà présentes :
+
+```bash
+mysql -u <user> -p <db> -e "INSERT IGNORE INTO schema_migrations (version) VALUES
+  ('0XX_nom_du_fichier'), ('0YY_autre_fichier');"
+```
+
+> 💡 Le mieux reste d'utiliser `scripts/apply_migrations.sh` quand c'est possible : il
+> enchaîne détection du reliquat, backup, application et enregistrement. La procédure
+> manuelle ci-dessus existe parce que le script vit dans `sql/`+`scripts/`, dossiers que
+> le `.htaccess` bloque et qui ne sont pas toujours à jour sur le serveur avant le merge.
+
 ### 5. Vérifier que le schéma a bougé
 
 ```bash
@@ -128,7 +154,9 @@ mysql -u <user> -p <db> -e "
   SHOW COLUMNS FROM game_sessions LIKE 'is_expert';"
 ```
 
-Attendu : 3 badges, 3 titres, et les deux colonnes présentes.
+Attendu : 3 badges, 3 titres, et les deux colonnes présentes. Vérifier aussi que
+`SELECT COUNT(*) FROM schema_migrations` correspond bien au nombre de fichiers dans
+`sql/migrations/` (hors `README.md`) — c'est le contrôle qui attrape un oubli de l'étape 4bis.
 
 ### 6. Merger — c'est le déclencheur du déploiement
 
