@@ -13,6 +13,84 @@
 
 ---
 
+## 2026-09-01 — fix(expert): trois Modes Expert se re-verrouillaient tout seuls
+
+Trouvé en vérifiant, à la demande d'Hamza, si les conditions de déblocage pouvaient « buguer
+en pleine partie » — surtout celle « d'affilée ». Elle le pouvait.
+
+### Le bug
+
+Les trois types de condition ne se comportaient pas pareil :
+
+| Condition | Modes | Se reperdait ? |
+|---|---|---|
+| `mode_wins_under_attempts` | Classique, Silhouette | Non — cumulatif à vie |
+| `mode_wins_single_day` | Émoji | Non — `MAX()` sur toutes les journées |
+| `mode_consecutive_perfects` | **AOA, Personae, Musique** | **Oui — série EN COURS** |
+
+Rien n'est persisté : `personadle_expert_progress()` recalcule la condition à chaque appel.
+Pour les trois modes en `consecutive_perfects`, l'accès disparaissait donc dès la première
+partie normale non parfaite jouée **après** le déblocage — c'est-à-dire presque tout de
+suite, puisqu'on débloque l'Expert précisément pour continuer à jouer.
+
+Et le pire n'est pas le bouton regrisé : le gate de `api/sessions.php` refuse une session
+Expert en **403** si le mode n'est pas débloqué. Un joueur dont la série cassait pendant
+qu'il jouait en Expert **perdait sa partie** à l'enregistrement.
+
+### Ce qui rend le diagnostic net
+
+L'auteur avait explicitement protégé les deux autres conditions, et l'a écrit :
+
+> « On regarde le maximum sur TOUTES les journées, pas la journée en cours — sinon le joueur
+> qui remplit la condition aujourd'hui la reperdrait demain à minuit, **alors qu'un déblocage
+> doit être définitif**. »
+
+Le principe existait donc bien ; c'est son application à `mode_consecutive_perfects` qui
+manquait. Aucun test ne vérifiait la permanence d'un accès — l'angle mort exact.
+
+### Le correctif
+
+`personadle_count_consecutive_perfects()` renvoie désormais la **meilleure série jamais
+atteinte** au lieu de la série en cours. C'est le pattern déjà appliqué à
+`personadle_count_best_single_day_wins()`, donc aucune nouvelle table et aucune migration :
+un correctif purement serveur.
+
+Le `LIMIT 200` est retiré : borner le balayage suffisait pour une série en cours, mais
+tronquerait un maximum historique plus ancien. La requête reste étroite (deux colonnes,
+filtrée sur `user_id` + `mode`).
+
+Vérifié qu'aucun badge ni titre n'utilise `mode_consecutive_perfects` — seul le gate Expert
+en dépend, le changement de sémantique est donc contenu.
+
+### Le symptôme rapporté par un joueur : « bloqué à 9, peu importe les victoires d'affilée »
+
+Cause **différente**, et déjà corrigée par le déploiement de la 2.1 quelques heures plus tôt.
+En 2.0, la contrainte `uq_session_per_day` faisait rejeter en **409** toute seconde partie du
+même mode dans la journée (`win→win`, cf. `game_session.php`). Les rejouages n'étaient donc
+**pas enregistrés du tout** : construire 15 parfaites d'affilée aurait exigé 15 *journées*
+différentes sans aucune partie ratée entre-temps. La migration 032 (`sessions_count_every_game`)
+et `client_session_id` ont levé cette limite.
+
+Les deux problèmes se cumulaient : impossible d'avancer en 2.0, et impossible de conserver
+l'acquis une fois avancé.
+
+### Tests
+
+`tests/php/ExpertUnlocksTest.php` : les cas existants encodaient l'ancienne sémantique
+(« la série retombe à 0 »), ils décrivent maintenant le maximum conservé. Deux tests ajoutés
+sur ce qui n'était pas couvert :
+
+- `testAnUnlockedExpertModeIsNeverLostAgain` — 15 parfaites, puis une victoire en 4 essais et
+  un abandon : le mode doit rester débloqué ;
+- `testProgressNeverGoesBackwards` — corollaire visible du joueur, l'infobulle « 9 / 15 » ne
+  doit pas redescendre.
+
+`testConsecutivePerfectsOrdersWithinTheSameDay` change aussi de valeur attendue : plusieurs
+parties le même jour sont devenues courantes depuis la 032, et une ratée jouée en dernier
+n'annule plus la série qui la précède.
+
+**239 tests PHPUnit, 1016 assertions** — verts.
+
 ## 2026-09-01 — fix(anti-triche + cache): silhouette copiable, et politique de cache absente
 
 ### La silhouette se copiait en clair

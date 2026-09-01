@@ -162,6 +162,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | Une `animation` CSS écrase le style inline | Une animation en cours bat les déclarations normales, **inline compris**. Ne jamais animer une propriété que le JS pilote en inline (`transform`, `opacity`). Vécu en 2.1 : `popInSilhouette` révélait la silhouette avant le premier flash en Expert |
 | `filter: brightness(0)` / `blur()` ne cachent rien | Un filtre CSS est un effet de peinture : « clic droit → Copier l'image » rend l'original. Pour masquer une réponse, cuire l'effet dans les pixels (`js/silhouette_mask.js`) — le filtre CSS ne reste qu'un filet |
 | Assets périmés après un déploiement | Bumper `CACHE_VERSION` dans `sw.js` (sinon `activate` ne purge rien et le cache-first sert l'ancien). Invisible en test : seuls les joueurs **déjà venus** sont touchés |
+| Condition de déblocage non monotone | Un accès **gagné ne doit jamais se reperdre**. Toute condition doit être cumulative (`COUNT` à vie) ou un `MAX` sur l'historique — jamais une valeur « en cours ». Vécu en 2.1 : `mode_consecutive_perfects` renvoyait la série courante, donc 3 Modes Expert se re-verrouillaient à la première partie ratée, et une partie Expert en cours était refusée en 403 |
 | Une migration écrite ≠ une migration jouée | `sql/migrations/` n'est PAS le reflet de la prod — une migration vit sur `develop` jusqu'à la release. Seule source fiable : `SELECT version FROM schema_migrations`. Vécu en 2.1 : 029/030 oubliées de la checklist |
 
 ---
