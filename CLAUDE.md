@@ -34,12 +34,12 @@ personadle/
 ├── js/                  ← gameCore.js, api.js, auth.js, i18n.js, cloud-sync.js…
 ├── css/                 ← global.css + un CSS par composant
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
-├── lang/                ← en.json (source de vérité, 987 clés), fr/es/de/it/pt.json
+├── lang/                ← en.json (source de vérité, 1075 clés), fr/es/de/it/pt.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 32 suites Vitest (621 tests) + tests/php/ (PHPUnit)
-└── sql/                 ← bdd_mysql.sql (23 tables)
+├── tests/               ← 45 suites Vitest (863 tests) + tests/php/ (PHPUnit)
+└── sql/                 ← bdd_mysql.sql (24 tables)
 ```
 
 **Fichiers clés :**
@@ -79,6 +79,29 @@ Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de gar
 - `password_hash($pwd, PASSWORD_BCRYPT)` uniquement
 - Codes HTTP corrects (200, 201, 400, 401, 403, 404, 409, 500)
 - Tout nouveau `.php` dans `api/user/` ou `api/admin/` → ajouter sa `RewriteRule` dans `.htaccess`
+
+### Données de jeu — personas multi-wielders (`personaeMode/database/personaeCharacters.js`)
+*Règle posée le 2026-08-13 suite au lot P4AU 2.1 (Thanatos/Elizabeth) — évite de refaire le
+raisonnement à chaque nouveau perso cross-jeu.*
+- **Un nom de persona = une seule entrée**, même si plusieurs personnages l'utilisent dans des
+  opus différents → fusionner dans le même `user` (array) et combiner les `opus`. Exemple :
+  `Thanatos` → `user: ["Makoto Yuki", "Kotone Shiomi", "Elizabeth"]`, `opus` couvrant P3+P4AU
+  (Elizabeth l'utilise dans P4AU, mais reste la même entrée que Makoto/Kotone en P3) — même
+  principe déjà posé par `Orpheus Telos`, qui combine 3 wielders de sous-continuités différentes.
+- **Scinder en plusieurs entrées SEULEMENT si le nom de persona est réutilisé par deux
+  personnages réellement différents** (coïncidence de nommage, pas le même "titre"). **Critère
+  concret à vérifier : le champ `image`.** Même `image` (même dessin) → cas 1, fusionner. Deux
+  `image` différentes (deux dessins différents) → cas 2, scinder. Exemple : `Hermes` (Junpei
+  Iori, P3, `image: "Hermes"`) et `Hermes` (Jun Kurosu, P2IS, `image: "Jun_Hermes"`) restent 2
+  entrées séparées — deux dessins différents, deux opus différents, juste le même nom. Idem
+  `Prometheus` (Futaba Sakura, P5R vs Baofu, P2EP — `image` différente aussi).
+- **Pourquoi ça compte** : fusionner à tort 2 personnages différents dans un seul `user`
+  accepterait une mauvaise réponse comme correcte. Scinder à tort la même persona/image en 2
+  entrées peut au contraire refuser une bonne réponse selon quelle entrée a été tirée en
+  interne — perçu comme un bug par le joueur, l'image affichée étant identique des deux côtés.
+- Défis entre amis (`modePersonae.js`) : les noms légitimement dupliqués (2e cas ci-dessus)
+  sont désambiguïsés automatiquement par `challengeKey()`/`findByChallengeKey()` — rien à faire
+  de plus en ajoutant du contenu.
 
 ---
 
@@ -136,13 +159,17 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | `isolation: isolate` clippe le burst avatar | Sortir `.tv-burst-wrap` du corps TV → enfant direct de `.tv-wrap`, z-index:20 |
 | `POST`/`PATCH` sur une route dossier (`/api/friends`, `/messages`, `/notifications`…) sans `/` final | Apache (mod_dir) 301 vers l'URL avec slash → la méthode dégrade en GET (body perdu), `res.ok()` reste vrai mais rien n'est écrit. `js/api.js` met déjà le `/` final sur ces routes — faire pareil dans tout nouveau test E2E ou appel direct |
 | `foo.php` + dossier `foo/` coexistants dans `api/` | `api/.htaccess` teste `.php -f` **avant** `-d` (sinon le dossier gagne toujours et le stub `.php` est inatteignable, même avec le slash final) |
+| Une `animation` CSS écrase le style inline | Une animation en cours bat les déclarations normales, **inline compris**. Ne jamais animer une propriété que le JS pilote en inline (`transform`, `opacity`). Vécu en 2.1 : `popInSilhouette` révélait la silhouette avant le premier flash en Expert |
+| `filter: brightness(0)` / `blur()` ne cachent rien | Un filtre CSS est un effet de peinture : « clic droit → Copier l'image » rend l'original. Pour masquer une réponse, cuire l'effet dans les pixels (`js/silhouette_mask.js`) — le filtre CSS ne reste qu'un filet |
+| Assets périmés après un déploiement | Bumper `CACHE_VERSION` dans `sw.js` (sinon `activate` ne purge rien et le cache-first sert l'ancien). Invisible en test : seuls les joueurs **déjà venus** sont touchés |
+| Une migration écrite ≠ une migration jouée | `sql/migrations/` n'est PAS le reflet de la prod — une migration vit sur `develop` jusqu'à la release. Seule source fiable : `SELECT version FROM schema_migrations`. Vécu en 2.1 : 029/030 oubliées de la checklist |
 
 ---
 
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **621 tests** (Vitest + jsdom), 32 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+- **863 tests** (Vitest + jsdom), 45 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
   `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
   `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
@@ -186,14 +213,23 @@ un pool de tirage :
 > (corrigé le 2026-07-06 — la version précédente de cette section pointait vers un
 > `PersonaDLE_Update.md` qui n'existe pas pour la v2.0, seulement pour l'archive v1.1) :
 >
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/DEV_CHANGELOG.md` — changelog **dev**
+> **Un dossier par version** — depuis le 2026-08-20, la v2.1 a les siens. Écrire dans le
+> dossier de la version **en cours de développement**, jamais dans celui d'une version déjà
+> livrée (`PersonaDLE 2.0/` ne reçoit plus que des correctifs de la 2.0 en prod) :
+>
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/DEV_CHANGELOG.md` — changelog **dev**
 >   (contributeurs/mainteneurs), détail précis par commit : fichiers touchés, décisions
 >   d'architecture, angles morts connus. Toute modification qui touche au code en a besoin.
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.0/PersonaDLE_Update.html` — changelog
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/PersonaDLE_Update.html` — changelog
 >   **joueur** (page HTML bilingue EN/FR, blocs `data-i18n-block`), highlights uniquement,
 >   langage non technique. À alimenter **seulement** si le changement est visible/parlant
 >   pour un joueur (nouvelle feature, fix d'un bug qu'il pouvait remarquer) — jamais l'inverse
->   (ne pas alléger DEV_CHANGELOG.md pour "faire propre").
+>   (ne pas alléger DEV_CHANGELOG.md pour "faire propre"). La page est liée depuis le modal
+>   « Nouveautés » de `index.html`, entrée `version-item` par version.
+>
+> À l'ouverture d'une v2.2 : créer `PersonaDLE 2.2/`, y démarrer les deux fichiers, et
+> mettre à jour cette section — c'est ce point de synchronisation qui a manqué à la 2.1,
+> dont les entrées se sont accumulées dans le dossier de la 2.0 jusqu'au 2026-08-20.
 
 Format d'une entrée `DEV_CHANGELOG.md` :
 
