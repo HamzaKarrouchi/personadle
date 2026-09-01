@@ -646,6 +646,19 @@ export const badgesList = [
     check: (stats, profile) => profile?.gaveUpOnOurLight === true,
   },
   {
+    id: "false_spring",
+    name: "A Gentle Reprieve",
+    category: BADGE_CATEGORIES.ACHIEVEMENT,
+    img: BADGE_IMG_BASE + "Badge_False_Spring.webp",
+    // Condition volontairement évocatrice et non mécanique (texte d'Hamza) : dire
+    // « abandonne sur Memories of You » divulguerait la scène du toit de P3.
+    condition: "Refuse the sacrifice and await the end at Ryoji's side",
+    description:
+      "Sitting beside him on the rooftop, you refuse to close your eyes. A beautiful, cruel peace, waiting for an inescapable end where spring will never come.",
+    secret: false,
+    check: (stats, profile) => profile?.gaveUpOnMemoriesOfYou === true,
+  },
+  {
     id: "for_real",
     name: "For Real",
     category: BADGE_CATEGORIES.ACHIEVEMENT,

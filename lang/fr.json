@@ -174,7 +174,8 @@
       "expert_tip_4": "Pas de zoom ici : la silhouette entière est montrée — le temps que dure le flash.",
       "expert_tip_5": "Tu as 5 essais avant que le bouton Abandonner ne se débloque.",
       "expert_tip_6": "L'Expert a son propre personnage du jour et ses propres stats. Il ne compte pas dans ta série Silhouette normale.",
-      "expert_flash": "⚡ FLASH"
+      "expert_flash": "⚡ FLASH",
+      "loading": "Chargement de la silhouette…"
     },
     "alloutattack": {
       "name": "All-Out Attack",
@@ -615,6 +616,11 @@
       "name": "Gentle Illusion",
       "condition": "Abandonner quand la cible est 'Our Light' en mode Musique",
       "description": "Pourquoi lutter pour atteindre la lumière quand le bonheur peut t'être offert ?"
+    },
+    "false_spring": {
+      "name": "Un Doux Sursis",
+      "condition": "Refuser le sacrifice et attendre la fin aux côtés de Ryoji",
+      "description": "Assis à ses côtés sur le toit, vous refusez de fermer les yeux. Une paix magnifique mais cruelle, en attendant une fin inéluctable où le printemps n'arrivera jamais."
     },
     "for_real": {
       "name": "For Real",

@@ -174,7 +174,8 @@
       "expert_tip_4": "Aqui não há zoom: a silhueta inteira é mostrada — enquanto o flash durar.",
       "expert_tip_5": "Tens 5 tentativas antes de o botão Desistir ficar disponível.",
       "expert_tip_6": "O Especialista tem o seu próprio personagem diário e as suas próprias estatísticas. Não conta para a tua sequência normal de Silhueta.",
-      "expert_flash": "⚡ FLASH"
+      "expert_flash": "⚡ FLASH",
+      "loading": "A carregar a silhueta…"
     },
     "alloutattack": {
       "name": "All-Out Attack",
@@ -615,6 +616,11 @@
       "name": "Ilusão Gentil",
       "condition": "Desiste quando o alvo for 'Our Light' no modo Música",
       "description": "Porquê esforçarmo-nos para alcançar a luz quando a felicidade te pode ser oferecida? Depuseste a tua alma rebelde para abraçar um sonho perfeito e sem dor."
+    },
+    "false_spring": {
+      "name": "Um Doce Adiamento",
+      "condition": "Recusar o sacrifício e esperar o fim ao lado de Ryoji",
+      "description": "Sentado ao lado dele no telhado, recusas-te a fechar os olhos. Uma paz belíssima mas cruel, à espera de um fim inevitável onde a primavera nunca chegará."
     },
     "for_real": {
       "name": "For Real",

@@ -174,7 +174,8 @@
       "expert_tip_4": "Qui niente zoom: viene mostrata l'intera silhouette — finché dura il lampo.",
       "expert_tip_5": "Hai 5 tentativi prima che il pulsante Arrenditi si sblocchi.",
       "expert_tip_6": "L'Esperto ha il suo personaggio del giorno e le sue statistiche. Non conta per la tua serie Silhouette normale.",
-      "expert_flash": "⚡ FLASH"
+      "expert_flash": "⚡ FLASH",
+      "loading": "Caricamento della sagoma…"
     },
     "alloutattack": {
       "name": "All-Out Attack",
@@ -615,6 +616,11 @@
       "name": "Gentle Illusion",
       "condition": "Abbandonare quando il bersaglio è 'Our Light' in modalità Musica",
       "description": "Perché lottare per raggiungere la luce quando la felicità può essere donata?"
+    },
+    "false_spring": {
+      "name": "Una Dolce Tregua",
+      "condition": "Rifiutare il sacrificio e attendere la fine accanto a Ryoji",
+      "description": "Seduto al suo fianco sul tetto, ti rifiuti di chiudere gli occhi. Una pace bellissima e crudele, in attesa di una fine inevitabile in cui la primavera non arriverà mai."
     },
     "for_real": {
       "name": "For Real",

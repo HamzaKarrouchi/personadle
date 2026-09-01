@@ -13,6 +13,108 @@
 
 ---
 
+## 2026-09-01 — feat(contenu): variantes P4AU, « Memories of You » et badge A Gentle Reprieve
+
+Dernier lot de contenu de la 2.1. Trois ajouts + deux correctifs trouvés en chemin.
+
+### 8 variantes P4AU au mode Silhouette
+
+Aigis, Akihiko, Fuuka, Junpei, Ken, Koromaru, Mitsuru et Yukari ont désormais leur
+silhouette *Persona 4 Arena Ultimax*, en plus de leur silhouette P3/P3R existante.
+
+Décision structurante : ce sont **8 entrées distinctes**, avec un `nom` suffixé
+`« (P4AU) »`, et non un opus ajouté aux entrées P3. Le suffixe n'est pas décoratif — trois
+mécanismes indexent le dataset par `nom` et cassent sur des homonymes :
+`showWrong()` (portrait de la mauvaise réponse), le drapeau `_guessed` (retrait de
+l'autocomplétion) et `getActiveChallengeTarget()` → `originalCharacters.find()` (cible
+d'un défi). Chacun retiendrait la **première** entrée trouvée, donc parfois la mauvaise
+version. C'est la transposition au mode Silhouette de la règle « une image = une entrée »
+posée pour les personas multi-porteurs (CLAUDE.md §4) : deux dessins ≠ une entrée.
+
+Côté joueur, le suffixe n'est jamais rendu tel quel. `initializeAutocomplete()`
+(`modeSilhouette.js`) sépare désormais deux cas de parenthèses :
+- un **vrai nom** (« Crow (Akechi) ») → `.realname`, sous-titre italique, comportement inchangé ;
+- un **code d'opus** présent dans `ALL_OPUS` (« Junpei Iori (P4AU) ») → nouvelle pastille
+  `.opus-tag` (`css/global.css`), volontairement distincte du sous-titre italique : le joueur
+  choisit une *version* du personnage, pas un autre personnage.
+
+Conséquence assumée : désigner la mauvaise version coûte un essai. C'est le prix de
+l'existence de deux silhouettes réellement différentes dans le même pool.
+
+Fichiers : `silhouetteCharacters.js`, `persona.js`, `portraitsMapSilhouette.js`,
+`modeSilhouette.js`, `css/global.css`, `silhouetteMode/database/img/*_P4AU_silhouette.webp`,
+`database/portraits/*_P4AU.webp`.
+
+### Musique « Memories of You » (P3R)
+
+Thème de fin de *Persona 3 Reload* (Shoji Meguro / Shigeo Komori / Yumi Kawamura). Le titre
+figurait déjà dans `musicTitles.js` comme nom devinable sans exister dans `songs.js` : il est
+maintenant une vraie cible. Paroles ajoutées à `expert_mode_content.md` puis
+`npm run lyrics:build` (76 chansons, 1105 vers) — elle entre donc aussi dans le pool Expert.
+
+Note sur l'asset : `musicsMode/database/music/song/Memories_of_You.mp3` existait déjà dans le
+dépôt (commité en `9b5928a`) mais n'était **référencé par aucune entrée de `songs.js`** —
+un asset orphelin. Il a été remplacé par le fichier fourni pour cette entrée. Le nouveau test
+« tous les fichiers audio référencés par songs.js existent » ne détecte pas l'inverse (un
+`.mp3` présent que plus personne n'utilise) : c'est une dette assumée, pas un oubli.
+
+### Badge `false_spring` — A Gentle Reprieve / Un Doux Sursis
+
+Pendant de `ideal_reality` (« Our Light ») : s'obtient en **abandonnant** face à
+« Memories of You ». Flag `profile.gaveUpOnMemoriesOfYou`, initialisé dans `badgesManager.js`,
+posé dans `showVictory(force)` de `modeMusic.js`. Traduit dans les 6 langues. Sa `condition`
+est volontairement évocatrice (« Refuser le sacrifice et attendre la fin aux côtés de Ryoji »)
+plutôt que mécanique : l'énoncer explicitement divulguerait la scène du toit.
+
+### Correctif — l'alias « memories of you » débloquait le mauvais badge
+
+`modeMusic.js` accordait `foundWhenMotherWasThere` (moitié du badge *Chronological
+Convergence*) sur `titleRaw.includes("kimi no kioku" | "memories of you")`. Ces alias étaient
+des filets de sécurité posés quand aucune chanson de ce nom n'existait — l'ajout ci-dessus les
+transformait en bug d'attribution. Restreint à `"when mother was there"`. Le flag étant
+persisté dans le profil, personne ne perd un badge déjà obtenu.
+
+### Correctif — `Shuji Ikutsuki` était dupliqué dans le dataset silhouette
+
+Deux entrées strictement identiques (même `nom`, même `image`). Effets : probabilité doublée
+de sortir au tirage du jour, et `_guessed` ne marquait que la première — il restait proposé
+dans l'autocomplétion après avoir déjà été deviné. Trouvé par le nouveau test d'unicité des
+`nom`, pas à l'œil. Pool silhouette : 165 → 164.
+
+### Correctif — le dézoom (et la fuite Expert) au premier chargement du mode Silhouette
+
+`#silhouetteImage` portait `animation: popInSilhouette 0.4s`, dont les keyframes animent
+`transform` et `opacity` — précisément les deux propriétés que `modeSilhouette.js` pilote en
+style **inline**. Une animation en cours l'emporte sur l'inline dans la cascade, donc pendant
+400 ms :
+- en mode normal, l'image s'affichait à `scale(1)` au lieu de `scale(1.8)` — le dézoom visible
+  signalé, et seulement au premier chargement puisque l'animation ne rejoue jamais ensuite ;
+- **en Mode Expert, l'animation forçait `opacity` de 0 à 1 par-dessus le masquage de
+  `setFlashVisible(false)` : la silhouette était donnée avant même le premier flash.** C'était
+  une fuite de réponse, pas un défaut cosmétique.
+
+L'animation est retirée (avec un commentaire d'avertissement en place, pour qu'elle ne soit
+pas remise). Le temps de décodage est désormais couvert par un voile `.silhouette-loader` —
+un élément à part, qui ne touche ni `transform` ni `opacity` de l'image — posé dès le HTML
+(`is-loading`) pour couvrir aussi le délai avant l'exécution du module `defer`, et retiré sur
+`onload`/`onerror` (y compris sur le chemin de restauration de session, qui ne gérait aucun
+`onerror` : le voile y aurait tourné indéfiniment).
+
+### Tests
+
+Nouvelle suite `tests/contentP4AU.test.js` (12 tests), orientée liens qui cassent **en
+silence** — un dataset qui pointe une image absente ne lève rien au build, il rend juste une
+partie injouable : unicité des `nom`, existence sur disque de **toutes** les silhouettes et de
+**tous** les `.mp3` de `songs.js`, portrait propre à chaque variante, présence de la musique
+dans les 3 datasets (songs / musicTitles / expertLyrics), et déblocage du badge.
+
+### Angle mort connu
+
+La pastille `.opus-tag` et le voile de chargement ne sont pas couverts par un test :
+`modeSilhouette.js` n'est pas unitairement testable sans simulation DOM complète
+(`DOMContentLoaded`, `localStorage`, cycle de partie). Vérifiés visuellement — à revalider en
+§6 du `TEST_PLAN.md`.
+
 ## 2026-08-29 — fix(expert): redirection de défi morte en Music Expert
 
 Trouvé en revue de code sur les 5 PR fraîchement mergées (#74-#78) — bug déjà présent sur

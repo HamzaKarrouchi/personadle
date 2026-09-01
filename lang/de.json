@@ -174,7 +174,8 @@
       "expert_tip_4": "Kein Zoom hier: Die ganze Silhouette wird gezeigt — solange der Blitz dauert.",
       "expert_tip_5": "Du hast 5 Versuche, bevor der Aufgeben-Knopf freigeschaltet wird.",
       "expert_tip_6": "Der Expertenmodus hat seine eigene Tagesfigur und eigene Statistiken. Er zählt nicht für deine normale Silhouette-Serie.",
-      "expert_flash": "⚡ FLASH"
+      "expert_flash": "⚡ FLASH",
+      "loading": "Silhouette wird geladen…"
     },
     "alloutattack": {
       "name": "All-Out Attack",
@@ -615,6 +616,11 @@
       "name": "Gentle Illusion",
       "condition": "Aufgeben, wenn das Ziel 'Our Light' im Musik-Modus ist",
       "description": "Warum nach dem Licht streben, wenn Glück gegeben werden kann?"
+    },
+    "false_spring": {
+      "name": "Eine Sanfte Gnadenfrist",
+      "condition": "Das Opfer verweigern und das Ende an Ryojis Seite abwarten",
+      "description": "Neben ihm auf dem Dach sitzend weigerst du dich, die Augen zu schließen. Ein wunderschöner, grausamer Frieden — im Warten auf ein unabwendbares Ende, in dem der Frühling niemals kommt."
     },
     "for_real": {
       "name": "For Real",

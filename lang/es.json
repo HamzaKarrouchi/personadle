@@ -174,7 +174,8 @@
       "expert_tip_4": "Aquí no hay zoom: se muestra la silueta entera — mientras dure el destello.",
       "expert_tip_5": "Tienes 5 intentos antes de que se desbloquee el botón Rendirse.",
       "expert_tip_6": "El Experto tiene su propio personaje diario y sus propias estadísticas. No cuenta para tu racha normal de Silueta.",
-      "expert_flash": "⚡ FLASH"
+      "expert_flash": "⚡ FLASH",
+      "loading": "Cargando la silueta…"
     },
     "alloutattack": {
       "name": "All-Out Attack",
@@ -615,6 +616,11 @@
       "name": "Gentle Illusion",
       "condition": "Abandonar cuando el objetivo es 'Our Light' en modo Música",
       "description": "¿Por qué luchar por alcanzar la luz cuando la felicidad puede darte?"
+    },
+    "false_spring": {
+      "name": "Un Dulce Aplazamiento",
+      "condition": "Rechazar el sacrificio y esperar el final junto a Ryoji",
+      "description": "Sentado a su lado en la azotea, te niegas a cerrar los ojos. Una paz hermosa y cruel, a la espera de un final inevitable donde la primavera nunca llegará."
     },
     "for_real": {
       "name": "For Real",
