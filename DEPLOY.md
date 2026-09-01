@@ -80,8 +80,11 @@ Comparer avec `ls sql/migrations/` et ne jouer que ce qui manque.
 ### 3. Sauvegarder
 
 ```bash
-mysqldump -u <user> -p<pass> --routines --triggers <db> > ~/db_backup_$(date +%F_%H%M).sql
+ssh hostinger-personadle   "mysqldump -u <user> -p'<pass>' --routines --triggers <db>"   > db_backup_$(date +%F_%H%M).sql
 ```
+
+En rapatriant le dump **en local** plutôt qu'en le laissant sur le serveur : si le disque
+Hostinger est le problème, un backup qui n'existe que là-bas ne sert à rien.
 
 Obligatoire avant toute migration **non purement additive**. Pour la 2.1, deux le sont :
 
@@ -92,16 +95,26 @@ Obligatoire avant toute migration **non purement additive**. Pour la 2.1, deux l
 
 ### 4. Jouer les migrations, dans l'ordre
 
-```bash
-cd ~/domains/personadle.net/public_html
-mysql --delimiter='$$' -u <user> -p <db> < sql/migrations/0XX_xxx.sql
-```
+> 🚨 **Les fichiers de migration ne sont PAS sur le serveur.** Le webroot est un checkout de
+> `main` : au moment où l'on migre (donc *avant* le merge), il ne contient que les migrations
+> de la version précédente. Un `mysql < sql/migrations/0XX.sql` lancé **depuis** le serveur
+> échouerait en « fichier introuvable ». C'est précisément l'ordre correct qui crée ce piège.
 
-⚠️ **Jamais phpMyAdmin** pour un `.sql` contenant `DELIMITER` (procédures stockées) — il ne
-sait pas le lire et échoue à moitié.
+On les envoie donc **depuis le poste local**, par l'entrée standard de SSH — le fichier est
+lu localement et transmis à `mysql` sur le serveur :
+
+```bash
+# Depuis le dépôt local, sur la branche develop
+ssh hostinger-personadle "mysql -u <user> -p'<pass>' <db>" < sql/migrations/0XX_xxx.sql
+```
 
 ⚠️ **L'ordre compte au moins une fois** : la `032` déclare sa colonne `AFTER is_expert`, que
 la `031` crée. Jouer 032 sans 031 échoue.
+
+⚠️ **`--delimiter='$$'` uniquement si le fichier contient `DELIMITER`** (procédures stockées).
+Vérifier avant : `grep -l DELIMITER sql/migrations/0XX_*.sql`. Aucune des migrations 029→038
+n'en contient — pour elles, le flag est inutile. Pour celles qui en contiennent, **jamais
+phpMyAdmin** : il ne sait pas les lire et échoue à moitié.
 
 Pour la 2.1 : `029 → 030 → 031 → 032 → 033 → 034 → 035 → 036 → 037 → 038`.
 
