@@ -398,8 +398,10 @@ function checkEmojiGuess(name, forceReveal = false) {
     // Capturé AVANT checkChallengeCompletion (qui consomme activeChallenge) :
     // une partie de défi à cible dédiée ne se logge pas en session quotidienne.
     const wasChallengePlay = isChallengePlay("emoji");
+    // Visible AUSSI en Expert : la garde `!EXPERT.isExpert` qui était ici est un
+    // reste d'avant les défis Expert (PR #85), retiré en 2.1 — cf. modeMusic.js.
     if (!forceReveal)
-      if (!EXPERT.isExpert) showChallengeButton(
+      showChallengeButton(
         "emoji",
         attempts,
         // Seuls les persos AVEC données emoji sont jouables comme cible de défi.

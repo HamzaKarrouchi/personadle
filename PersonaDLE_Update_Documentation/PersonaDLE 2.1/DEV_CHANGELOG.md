@@ -74,6 +74,35 @@ et `client_session_id` ont levé cette limite.
 Les deux problèmes se cumulaient : impossible d'avancer en 2.0, et impossible de conserver
 l'acquis une fois avancé.
 
+### Second bug, signalé dans la foulée : pas de « Défier un ami » en Music Expert
+
+Vérifié : la PR #85 a rendu les défis compatibles avec le Mode Expert (colonne
+`challenge_is_expert`, redirection vers `?expert=1`), mais n'a retiré la garde
+`if (!isExpert)` que dans **3 modes sur 6**.
+
+| Mode | Bouton en Expert |
+|---|---|
+| Classique, Silhouette, Personae | affiché |
+| **Émoji, All-Out Attack, Musique** | **caché — garde oubliée** |
+
+Seule la garde de Musique portait un commentaire, devenu faux : « le défi serait joué en mode
+normal par le destinataire (audio donné), donc un score incomparable ». C'était juste **avant**
+la #85 ; depuis, `showChallengeButton()` transmet `challenge_is_expert` (gameCore.js) et
+l'acceptation redirige bien vers la page Expert. Les deux autres gardes n'avaient aucun
+commentaire.
+
+Vérifié avant de les retirer que la plomberie est complète de bout en bout : envoi
+(`gameCore.js`), stockage (migration 037), relecture (`notifications.js`), redirection
+(`challenge-notif.js`). Le `!EXPERT.isExpert` de `showCommunityStats()` en All-Out Attack est
+conservé — celui-là est légitime, ces statistiques portent sur la cible quotidienne du mode
+normal.
+
+`tests/challengeButtonExpert.test.js` (3 tests) verrouille la **cohérence entre les 6 modes**
+plutôt que chaque mode isolément : une garde oubliée ne casse aucun test et ne lève aucune
+erreur, elle fait juste disparaître un bouton. La vérification est structurelle (lecture du
+source, commentaires retirés). Contrôlée dans les deux sens : contre le code d'avant, elle
+désigne précisément `emoji`, `alloutattack` et `music`.
+
 ### Tests
 
 `tests/php/ExpertUnlocksTest.php` : les cas existants encodaient l'ancienne sémantique
