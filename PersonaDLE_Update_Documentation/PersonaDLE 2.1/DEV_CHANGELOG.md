@@ -13,6 +13,51 @@
 
 ---
 
+## 2026-09-01 — i18n: les noms de badges étaient restés en anglais
+
+Signalé par Hamza sur trois cas (*Gentle Illusion*, *Eye of the Navigator*, *Apostles of the
+Fall*) — l'audit en a trouvé **28 à 30 par langue**.
+
+### Pourquoi rien ne l'avait signalé
+
+`scripts/check-i18n.js` vérifie que chaque clé de `en.json` **existe** dans les 5 autres
+fichiers. Une valeur anglaise recopiée telle quelle est une valeur présente : elle passe le
+contrôle sans broncher. `i18n:check-untranslated` les remontait bien, mais noyés parmi 386
+candidats dont l'écrasante majorité sont des faux positifs légitimes (noms de personnages,
+titres de musiques, codes d'opus — CLAUDE.md §5).
+
+### Périmètre réel
+
+Contrairement au premier diagnostic, **seuls les noms** manquaient. Les descriptions étaient
+déjà traduites partout ; les 16 « descriptions identiques » du comptage initial étaient des
+clés d'UI de la section `badges` (`category_achievement`, `event_code_*`…) qui n'ont pas de
+champ `description` du tout — `undefined === undefined`. De même, les 25 « conditions
+identiques » sont les `"???"` des badges secrets, qui doivent évidemment le rester.
+
+121 noms traduits au total (fr 28, es 29, de 30, it 29, pt 5). `pt.json` a servi de référence
+de style : c'est le seul fichier qui traduisait déjà l'essentiel.
+
+### Ce qui reste volontairement en VO
+
+Quatre badges gardent leur nom anglais dans les 6 langues, et c'est délibéré :
+`burn_my_dread` (« Memento Mori », locution latine), `hippocampus_reload` (« Reload » renvoie
+à *Persona 3 Reload*), `golden_week` et `tanabata` (fêtes japonaises). Ils continueront de
+remonter dans `i18n:check-untranslated` — faux positifs attendus.
+
+### Écriture défensive
+
+Le script de migration ne remplaçait un nom que s'il était encore **strictement égal** à
+l'anglais : aucune traduction déjà en place n'a pu être écrasée au passage (le cas s'est
+présenté 29 fois, toutes ignorées).
+
+### Tests
+
+`tests/badgesI18n.test.js` (5 tests) verrouille l'état obtenu : tout badge de `badgesData.js`
+a son entrée `en.json`, aucun nom n'est resté identique à l'anglais hors liste `KEEP_ORIGINAL`,
+les badges de cette liste le sont dans **toutes** les langues (pour que « VO assumée » ne
+devienne pas un fourre-tout à oublis), aucun champ vide, et une condition secrète reste `"???"`
+partout — une seule langue qui l'expliciterait ferait fuiter le secret.
+
 ## 2026-09-01 — feat(contenu): variantes P4AU, « Memories of You » et badge A Gentle Reprieve
 
 Dernier lot de contenu de la 2.1. Trois ajouts + deux correctifs trouvés en chemin.
