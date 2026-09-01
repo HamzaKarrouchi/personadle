@@ -38,10 +38,26 @@ pour un badge dont la condition est réellement recalculable.
 
 ### `TEST_PLAN.md` annonçait la mauvaise plage de migrations
 
-Le plan disait `031 → 037`. `git diff main..develop -- sql/` montre que **029** (badge
-`gyotre`) et **030** (titres `junes` / `investigation_team`) ne sont pas non plus sur `main` :
-elles datent du lot de contenu 2.1, pas de la 2.0. Les jouer manque aurait laissé le code
-2.1 référencer des lignes `badges`/`titles` inexistantes en prod.
+Le plan disait `031 → 037`. **029** (badge `gyotre`) et **030** (titres `junes` /
+`investigation_team`) ne sont pourtant pas non plus sur `main`. Omission vérifiée, pas choix
+délibéré — quatre points concordants :
+
+1. `main` s'arrête à la migration **028** ; 029/030 n'existent que sur `develop`, créées par
+   les commits de contenu 2.1 `6f79abb` et `cdb8941`.
+2. Le `bdd_mysql.sql` de `main` ne contient **aucune** occurrence de `gyotre`, `junes` ou
+   `investigation_team` ; celui de `develop` en contient. Or le README des migrations pose
+   que le seed doit refléter la prod, et `DatabaseIntegrationTest` le vérifie en CI.
+3. Les en-têtes des deux fichiers disent eux-mêmes « Cette migration l'insère **sur la prod
+   déjà peuplée** » : elles ont été écrites pour être jouées, et ne l'ont pas été.
+4. La liste `031 → 037` vient de la section « Bloquant release » de `TODO.md`, rédigée
+   pendant le travail Mode Expert — elle démarre donc à 031 et ne mentionne 029/030 **nulle
+   part** (0 occurrence). Le lot de contenu 2.1 les avait produites plus tôt et personne ne
+   les y a reportées.
+
+Ce qui rend la décision sûre dans tous les cas : les deux sont en `INSERT IGNORE`, donc
+strictement idempotentes. Si elles avaient malgré tout déjà été passées à la main, les
+rejouer ne fait rien. Les omettre, en revanche, laisse le code 2.1 afficher un badge et deux
+titres que personne ne peut décrocher.
 
 Plage corrigée en `029 → 038`, avec la requête `schema_migrations` (table créée par la 026)
 pour vérifier d'abord ce que la prod a réellement, et deux `SELECT` de contrôle après coup.
