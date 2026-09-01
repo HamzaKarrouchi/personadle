@@ -18,8 +18,10 @@
 Depuis `develop`, la 2.1 a livré : les 6 Modes Expert (déblocage par condition, gameplay,
 animation de déblocage), le déblocage manuel par un admin, 3 musiques + un skin AOA,
 la réparation des défis bloqués + leur extension au Mode Expert, la règle « un seul défi
-vivant par expéditeur », la correction du classement (série et ratio), et les métadonnées
-de partage (Discord/X) sur les 6 pages de mode.
+vivant par expéditeur », la correction du classement (série et ratio), les métadonnées
+de partage (Discord/X) sur les 6 pages de mode, puis le dernier lot de contenu
+(8 silhouettes P4AU, la musique « Memories of You », le badge *A Gentle Reprieve*) et la
+traduction des noms de badges.
 
 ### 0.2 Ce que vous ne devez PAS faire
 
@@ -31,7 +33,7 @@ de partage (Discord/X) sur les 6 pages de mode.
 
 ### 0.3 Piège connu (déjà en base) : ne pas jouer la 037 deux fois par erreur
 
-Les migrations 031→037 doivent avoir été jouées sur votre base **locale** avant de
+Les migrations 029→038 doivent avoir été jouées sur votre base **locale** avant de
 commencer (elles le sont déjà si vous suivez `develop` normalement via `make up`, qui
 importe le schéma à jour). Vérifier :
 
@@ -268,6 +270,58 @@ documenté, pas un défaut.
 
 ---
 
+### 6.3 Les 8 silhouettes P4AU
+
+👉 [silhouette](http://localhost:8080/silhouetteMode/silhouette.html)
+
+- [ ] Taper « Junpei » dans le champ de réponse → **deux** suggestions, toutes deux
+  intitulées « Junpei Iori », la seconde portant une **pastille `P4AU`** sous le nom
+  (pastille encadrée, pas le sous-titre italique réservé aux vrais noms type
+  « Crow (Akechi) »). Les deux portraits affichés sont **différents**
+- [ ] Idem pour Aigis, Akihiko, Fuuka, Ken, Koromaru, Mitsuru et Yukari
+- [ ] En pastille sombre (dark mode) : le texte de la pastille reste lisible
+- [ ] Filtrer sur **P4AU seul** → le tirage ne propose plus que Labrys, Sho et les
+  8 variantes ; aucune silhouette P3 ne sort
+- [ ] Répondre « Junpei Iori » alors que la cible est la version P4AU → c'est compté
+  **faux** (comportement voulu : deux dessins différents, deux réponses différentes)
+
+### 6.4 « Memories of You » et le badge *A Gentle Reprieve*
+
+👉 [musics](http://localhost:8080/musicsMode/musics.html)
+
+- [ ] Filtrer sur **P3R** → « Memories of You » apparaît, pochette P3R affichée, l'audio
+  se lance
+- [ ] Rejouer jusqu'à l'avoir comme cible, puis **abandonner** → le badge
+  **Un Doux Sursis / A Gentle Reprieve** se débloque
+- [ ] La **gagner** (au lieu de l'abandonner) ne débloque **pas** de progression sur le badge
+  *Chronological Convergence* — c'est le correctif de l'alias, seule « When Mother Was There »
+  doit y compter
+- [ ] En Music Expert, elle sort bien du tirage avec des paroles comme indice
+
+### 6.5 Le voile de chargement en Silhouette
+
+> Test à faire **cache vidé** (`Ctrl+Shift+R`, ou onglet privé) — c'est le seul cas où
+> le défaut se voyait.
+
+- [ ] Premier chargement de silhouette.html : un **spinner** occupe le cadre, puis la
+  silhouette apparaît directement au bon zoom — elle ne doit **jamais** s'afficher
+  dézoomée un court instant
+- [ ] En **Expert** (`?expert=1`), cache vidé : la silhouette **n'apparaît à aucun moment**
+  avant le premier clic sur ⚡ FLASH. C'était une fuite de réponse, pas un défaut visuel
+
+### 6.6 Noms de badges traduits
+
+👉 [profil](http://localhost:8080/profile/profile.html) → onglet Badges
+
+- [ ] Basculer en FR, ES, DE puis IT → les noms de badges sont dans la langue choisie
+  (*Gentle Illusion* → « Douce Illusion », *Eye of the Navigator* → « Œil du Navigateur »,
+  *Apostles of the Fall* → « Apôtres de la Chute »…)
+- [ ] Restent volontairement en anglais dans toutes les langues : **Memento Mori**,
+  **Hippocampus Reload**, **Golden Week**, **Tanabata** — ce n'est pas un oubli
+- [ ] Un badge secret affiche toujours `???` comme condition, dans toutes les langues
+
+---
+
 ## 7 — Classement (série & ratio corrigés)
 
 👉 [http://localhost:8080/profile/leaderboard/leaderboard.html](http://localhost:8080/profile/leaderboard/leaderboard.html)
@@ -320,25 +374,48 @@ documenté, pas un défaut.
 
 ## 9 — Checklist finale avant `develop → main`
 
-- [ ] §1 — `make check` + E2E passent, migrations 031→037 confirmées en local
+- [ ] §1 — `make check` + E2E passent, migrations 029→038 confirmées en local
 - [ ] §2 — Les 3 types de condition testés (au moins 1 mode chacun), verrou + animation
   + isolation entre modes
 - [ ] §3 — Gameplay Expert isolé du mode normal
 - [ ] §4 — Déblocage/retrait admin, sans jamais pouvoir retirer un accès mérité
 - [ ] §5 — Abandon, remplacement de défi non accepté, coexistence normal/Expert
-- [ ] §6 — Chord Summer + 3 musiques visibles et jouables
+- [ ] §6 — Chord Summer, les musiques, les 8 silhouettes P4AU, le badge A Gentle
+  Reprieve, le voile de chargement Silhouette et les badges traduits
 - [ ] §7 — Ratio et série corrigés, cohérents avec le profil
 - [ ] §8 — Aperçu de lien vérifié une fois en prod (post-déploiement)
 
 ### Migrations à jouer en prod, dans cet ordre
 
 ```
-031 → 032 → 033 → 034 → 035 → 036 → 037
+029 → 030 → 031 → 032 → 033 → 034 → 035 → 036 → 037 → 038
 ```
+
+> ⚠️ **Corrigé le 2026-09-01 — la plage était fausse.** Ce plan annonçait
+> `031 → 037`. Or `git diff main..develop -- sql/` montre que **029** (badge secret
+> `gyotre`) et **030** (titres `junes` / `investigation_team`) ne sont pas non plus
+> sur `main` : elles ont été écrites pendant le lot de contenu 2.1, pas en 2.0.
+> Sans elles, le code 2.1 référence des lignes `badges` / `titles` inexistantes en
+> prod — le badge et les deux titres seraient introuvables. **038** est la nouvelle
+> migration du badge `false_spring`.
+
+**Vérifier d'abord ce que la prod a déjà** (la 026 a créé une table de suivi) :
+
+```bash
+ssh hostinger-personadle
+mysql -u u870779941_Hamza -p u870779941_personadle   -e "SELECT version FROM schema_migrations ORDER BY version;"
+```
+
+Ne rejouer que ce qui manque. Toutes ces migrations sont idempotentes
+(`INSERT IGNORE` / `IF NOT EXISTS`) **sauf** la 032 et la 036 — d'où les deux
+sauvegardes ci-dessous.
 
 - [ ] **Backup pris avant la 032** (supprime une contrainte d'unicité)
 - [ ] **Backup pris avant la 036** (modifie des lignes existantes, sans retour arrière)
 - [ ] Chemin SSH + `mysql --delimiter='$$'` utilisé, **jamais** phpMyAdmin pour ces deux-là
+- [ ] Après la 038 : `SELECT slug FROM badges WHERE slug IN ('gyotre','denial_of_self','false_spring');`
+  renvoie bien **3 lignes**, et `SELECT slug FROM titles WHERE slug IN ('junes','investigation_team','shadows_converge');`
+  en renvoie **3** aussi
 
 ---
 

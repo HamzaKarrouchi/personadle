@@ -13,6 +13,47 @@
 
 ---
 
+## 2026-09-01 — db: migration du badge false_spring + plage de migrations prod corrigée
+
+Deux manques trouvés en préparant le déploiement, tous deux invisibles en local.
+
+### Le badge `false_spring` n'avait pas de migration
+
+Les badges vivent en base (`badges`), pas seulement dans `badgesData.js` — le catalogue
+client sert l'affichage, la table sert la vérification serveur et le comptage. Ajouter le
+badge côté JS sans la ligne SQL le rendait inexistant pour la prod.
+
+`038_badge_false_spring.sql` + ligne ajoutée au seed `bdd_mysql.sql`, et
+`tests/php/BadgeWallpaperCatalogTest.php` passe de 62 à 63 badges attendus — c'est ce test
+qui aurait rougi en CI si la migration avait été oubliée, ce qui est exactement son rôle.
+
+`condition_type = 'manual'`, comme `ideal_reality` dont il est le pendant : le déclencheur
+est un flag narratif posé côté client (`profile.gaveUpOnMemoriesOfYou`), que le serveur ne
+peut pas recalculer — il ne journalise pas quelle chanson a été abandonnée. **Angle mort
+assumé et hérité** (partagé avec ~45 autres badges `manual`) : `personadle_verify_condition()`
+renvoie toujours `true` pour ce type, donc un `POST /api/badges/unlock` forgé suffit à le
+décrocher. Le durcir demanderait de journaliser la cible de chaque partie côté serveur —
+hors périmètre 2.1. Cf. l'avertissement inverse de la migration 033 : ne pas copier `manual`
+pour un badge dont la condition est réellement recalculable.
+
+### `TEST_PLAN.md` annonçait la mauvaise plage de migrations
+
+Le plan disait `031 → 037`. `git diff main..develop -- sql/` montre que **029** (badge
+`gyotre`) et **030** (titres `junes` / `investigation_team`) ne sont pas non plus sur `main` :
+elles datent du lot de contenu 2.1, pas de la 2.0. Les jouer manque aurait laissé le code
+2.1 référencer des lignes `badges`/`titles` inexistantes en prod.
+
+Plage corrigée en `029 → 038`, avec la requête `schema_migrations` (table créée par la 026)
+pour vérifier d'abord ce que la prod a réellement, et deux `SELECT` de contrôle après coup.
+
+### `TEST_PLAN.md` complété pour le lot de contenu
+
+Nouvelles sections §6.3 à §6.6 : les 8 silhouettes P4AU (dont la vérification que la pastille
+d'opus est bien distincte du sous-titre italique, et que répondre la version P3 sur une cible
+P4AU compte faux), « Memories of You » + le badge, le voile de chargement Silhouette
+(**à tester cache vidé** — c'est le seul cas où le défaut se voyait, et en Expert c'est une
+fuite de réponse), et les noms de badges traduits.
+
 ## 2026-09-01 — test(challenge): couvrir le clic « Accepter », le chemin le plus signalé
 
 Aucun test ne couvrait le clic « Accepter » d'une notification de défi — précisément le
