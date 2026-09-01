@@ -14,7 +14,7 @@
   <a href="https://personadle.net"><img src="https://img.shields.io/badge/Play%20Now-personadle.net-red?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTVsLTUtNSAxLjQxLTEuNDFMMTAgMTQuMTdsNy41OS03LjU5TDE5IDhsLTkgOXoiIGZpbGw9IndoaXRlIi8+PC9zdmc+"/></a>
   <a href="LICENSE.txt"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License"></a>
   <a href="https://github.com/HamzaKarrouchi/personadle/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/HamzaKarrouchi/personadle/ci.yml?branch=develop&style=for-the-badge&label=CI" alt="CI Status"></a>
-  <img src="https://img.shields.io/badge/Version-2.0-brightgreen?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Version-2.1-brightgreen?style=for-the-badge" alt="Version">
   <img src="https://img.shields.io/badge/Made%20with-Vanilla%20JS-yellow?style=for-the-badge&logo=javascript" alt="Made with JavaScript">
   <img src="https://img.shields.io/badge/Tests-863%20passing-brightgreen?style=for-the-badge&logo=vitest" alt="Tests">
   <img src="https://img.shields.io/badge/Backend-PHP%208.3%20%2B%20MariaDB-8892BF?style=for-the-badge&logo=php" alt="PHP Backend">
@@ -185,7 +185,58 @@ Listen to short music clips and identify the character or theme. True fans will 
 ## 🆕 What's New
 
 <details open>
-<summary><b>🚀 v2.0 - May 2026 (Latest)</b></summary>
+<summary><b>⚡ v2.1 - September 2026 (Latest)</b></summary>
+
+### ⚡ Expert Mode — a second way to play all six modes
+
+- **One Expert variant per mode**, each with its own degraded clue: a single quote (Classic),
+  one lying emoji (Emoji), a self-triggered flash instead of a permanent image (Silhouette),
+  a frozen black-and-white blur (All-Out Attack), lyrics with no audio (Music), and the real
+  mythological story behind the Persona, with the name masked (Personae)
+- **Earned, not given**: each mode unlocks through its own condition (fast wins, wins in a
+  single day, or a streak of perfect first-try wins), verified server-side
+- A **lock-shattering animation** plays on the next page load once a mode is unlocked
+- Expert games keep **their own state, targets and stats** — playing Expert never touches
+  your daily game
+- Admins can grant a mode manually — but **never revoke an access earned by playing**
+
+### 🎯 New content
+
+- **8 Arena Ultimax silhouettes** for the SEES (Aigis, Akihiko, Fuuka, Junpei, Ken, Koromaru,
+  Mitsuru, Yukari) — separate answers from their P3 versions, tagged `P4AU` in the suggestions
+- **11 more songs**, including *Memories of You* (P3R), *Kimi no Tonari* (P2IS),
+  *Wait and See* (PQ2) and *Heartful Cry* (P3FES)
+- **Chord Summer** joins All-Out Attack, and **Persona 1** joins Personae mode
+- **Persona Trinity Souls** as a filterable title, with the Kanzato brothers
+- Two new badges and three new titles (**Junes**, **Investigation Team**, **Shadows Converge**)
+
+### 🤝 Challenges, fixed and extended
+
+- Accepting a challenge no longer strands it: the destination is resolved **before** anything
+  is written, so a challenge is never marked accepted with nowhere to go
+- **Challenges work in Expert Mode**, and an Expert challenge coexists with a normal one —
+  two different games, two different scores
+- **One live challenge per sender**: a new challenge replaces an unread one instead of
+  stacking up, and an **Abandon** button frees a challenge you accepted but can't finish
+
+### 🏆 Leaderboard
+
+- **Win rate** now uses a Bayesian average — a single 1-for-1 win no longer tops the board
+- **Best streak** counts consecutive *days*, not wins in a day, and finally agrees with the
+  number shown on your profile
+
+### 🌐 Polish
+
+- **Badge names translated** in French, Spanish, German and Italian — about half of them were
+  still in English
+- **Link previews** (Discord, X) on all six mode pages, each with its own title and description
+- Silhouette mode no longer flashes a zoomed-out image on first load, and its picture can no
+  longer be copied in the clear
+
+</details>
+
+<details>
+<summary><b>🚀 v2.0 - May 2026</b></summary>
 
 ### ☁️ Full Backend — PHP 8.3 + MariaDB
 
