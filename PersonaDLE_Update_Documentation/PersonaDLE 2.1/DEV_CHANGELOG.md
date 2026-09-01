@@ -13,6 +13,41 @@
 
 ---
 
+## 2026-09-01 — test(challenge): couvrir le clic « Accepter », le chemin le plus signalé
+
+Aucun test ne couvrait le clic « Accepter » d'une notification de défi — précisément le
+symptôme remonté en prod (« j'accepte, j'arrive sur la page du mode, et il n'y a pas de
+défi »). Les correctifs étaient déjà sur `develop` (PR #83/#85), mais rien ne les verrouillait :
+`challengeExpertScope` et `challengeAbandon` couvrent les helpers de `gameCore`,
+`challenge-notif.js` couvre leur **orchestration**, qui ne l'était pas.
+
+`tests/challengeAccept.test.js` (9 tests). Vérification faite dans les deux sens : avec le
+`js/challenge-notif.js` de `main` (ce qui tourne en prod), **7 des 9 tests échouent** ; avec
+celui de `develop`, les 9 passent. Ils décrivent donc bien les deux bugs, pas juste le
+comportement courant.
+
+### Ce qu'ils verrouillent
+
+- `« All Out Attack »` (avec espaces) atterrit bien sur `/allOutAttackMode/` : l'ancien
+  `.toLowerCase()` nu produisait une clé absente de `MODE_PAGE`/`MODE_STATE_KEYS`/
+  `FILTER_STORAGE_KEYS` — aucune redirection, mais le message était déjà `accepted` côté
+  serveur, donc le défi devenait ni jouable ni annulable.
+- **Aucune écriture** quand le mode n'a pas de page, quand le bridge API est absent, ou quand
+  le serveur refuse : c'est le point clé, `updateStatus(...).catch(() => {})` avalait l'échec
+  et laissait local et serveur diverger (défi fantôme « en cours »).
+- Un défi Expert part sur `?expert=1` et se range dans sa propre case, sans toucher au défi
+  normal en cours — et l'inverse.
+- `originalFilters` reste `null` (et non `"[]"`) quand le joueur n'a jamais touché ses filtres :
+  restaurer `"[]"` en fin de défi rendrait le mode vide de tout opus.
+
+### Détail de mise en œuvre
+
+`challenge-notif.js` garde une file et un drapeau `_busy` au niveau du module, et une
+acceptation redirige sans jamais refermer l'overlay : `_busy` resterait vrai et les tests
+suivants n'afficheraient plus rien. D'où le `vi.resetModules()` + réimport dynamique en
+`beforeEach`. `window.location.href` est remplacé par un accesseur qui enregistre l'URL
+demandée — jsdom lève sinon « Not implemented: navigation ».
+
 ## 2026-09-01 — i18n: les noms de badges étaient restés en anglais
 
 Signalé par Hamza sur trois cas (*Gentle Illusion*, *Eye of the Navigator*, *Apostles of the
