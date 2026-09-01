@@ -92,6 +92,27 @@ venus** sont concernés.
 `updateViaCache: "none"` ajouté aux 13 enregistrements du service worker : garantit
 explicitement que le script du worker n'est jamais servi depuis le cache HTTP.
 
+#### Coût mesuré de cette politique
+
+La CI est passée de 5,2 à 15,4 min sur le job E2E, ce qui a d’abord fait craindre une
+régression grave. Vérification faite en mesurant au lieu de supposer : en local, la même
+sous-suite passe de **8,5 s à 11,8 s (~+39 %)** selon que le bloc est présent ou non. Le
+coût est donc réel mais bien moindre que le ×3 observé en CI — le reste est de la variance
+de runner. À noter aussi : les deux jobs qui traversent Apache ont ralenti, celui qui ne le
+traverse pas (Vitest pur) est resté à 1,9 min, ce qui désignait bien la bonne cause.
+
+Conservé malgré ce coût :
+
+- en prod, les clients contrôlés par le service worker n’en paient **rien** — il fait déjà
+  `fetch(request, { cache: reload })` sur JS/CSS/HTML/lang, donc il court-circuite le cache
+  HTTP quoi qu’il arrive ;
+- un `max-age` court sur JS/CSS supprimerait les round-trips, mais aucun nom de fichier ne
+  porte de hash : le HTML pourrait être frais pendant que son JS ne l’est pas. Une page
+  cassée est pire qu’une page lente.
+
+Si la CI devient gênante, la bonne réponse est de **hasher les noms d’assets** (chantier
+séparé), pas d’affaiblir ces en-têtes.
+
 ### Point volontairement NON modifié
 
 `sw.js` envoie `SW_UPDATED` à tous les onglets via `clients.claim()`, et chaque page répond

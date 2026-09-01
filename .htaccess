@@ -33,6 +33,18 @@ ErrorDocument 404 /pages/404.html
 # `no-cache` ne veut pas dire « ne pas stocker » : le fichier est gardé, mais
 # revalidé auprès du serveur à chaque usage. Avec ETag/Last-Modified, un fichier
 # inchangé coûte un 304 vide — la fraîcheur sans le re-téléchargement.
+#
+# COÛT MESURÉ (2026-09-01, pour ne pas le redécouvrir en s'inquiétant) : la suite
+# E2E locale passe de 8,5 s à 11,8 s sur 13 tests, soit ~+39 %. C'est le prix des
+# revalidations, une par asset et par chargement de page. Assumé :
+#   - en PROD, les clients contrôlés par le service worker n'en paient rien — il
+#     fait déjà `fetch(request, { cache: "reload" })` sur JS/CSS/HTML/lang, donc
+#     il court-circuite le cache HTTP de toute façon ;
+#   - un `max-age` court sur JS/CSS supprimerait ces round-trips, mais aucun nom
+#     de fichier ne porte de hash : le HTML pourrait alors être frais pendant que
+#     son JS ne l'est pas encore. Une page cassée est pire qu'une page lente.
+# Si la CI devient vraiment gênante, la bonne réponse est de hasher les noms
+# d'assets (chantier séparé), pas d'affaiblir ces en-têtes.
 <IfModule mod_headers.c>
     # sw.js — le plus critique. Un service worker périmé impose sa propre
     # stratégie de cache à tout le reste : s'il est lui-même bloqué en cache, il
