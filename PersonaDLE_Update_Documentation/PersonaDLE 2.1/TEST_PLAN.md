@@ -446,6 +446,10 @@ documenté, pas un défaut.
 - [ ] §8 — Aperçu de lien vérifié une fois en prod (post-déploiement)
 - [ ] §8bis — Cache navigateur vérifié en prod sur un navigateur déjà venu
 
+> 📖 **La procédure de déploiement elle-même** (ordre des opérations, sauvegarde, vérification
+> du schéma réel, retour arrière) vit dans [`DEPLOY.md`](../../DEPLOY.md), section
+> « Release majeure ». Ce qui suit n'est que la liste des migrations propres à la 2.1.
+
 ### Migrations à jouer en prod, dans cet ordre
 
 ```

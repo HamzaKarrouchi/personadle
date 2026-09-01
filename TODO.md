@@ -18,6 +18,10 @@
 Le merge dans `develop` ne déploie rien. C'est la PR `develop → main` qui déclenche le
 `git pull` Hostinger : **le code arrive avant le schéma**.
 
+> 📖 Procédure complète (ordre, sauvegarde, vérification, **retour arrière**) :
+> [`DEPLOY.md`](DEPLOY.md) § « Release majeure ». Cette liste-ci ne suit que l'état
+> d'avancement.
+
 - [ ] Jouer `sql/migrations/029_badge_gyotre.sql` et `030_titles_junes_investigation.sql`.
       **Oubliées de cette liste jusqu'au 2026-09-01** : elles datent du lot de contenu 2.1
       (commits `6f79abb` / `cdb8941`), alors que cette section a été rédigée pendant le
