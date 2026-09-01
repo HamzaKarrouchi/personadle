@@ -418,7 +418,7 @@ export const badgesList = [
 
   {
     id: "gyotre",
-    name: "Gyotre",
+    name: "Gyotre's Love",
     category: BADGE_CATEGORIES.SECRET,
     img: BADGE_IMG_BASE + "Badge_Gyotre.webp",
     condition: "???",
