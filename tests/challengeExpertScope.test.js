@@ -21,6 +21,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import {
   activeChallengeKey,
   getActiveChallengeTarget,
@@ -28,6 +31,8 @@ import {
   isChallengePlay,
   parisDateKey,
 } from "../js/gameCore.js";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Place la page en Normal ou en Expert (le mode vit dans l'URL). */
 function goTo({ expert }) {
@@ -167,5 +172,42 @@ describe("getPendingActiveChallenge — les deux dimensions coexistent", () => {
   it("considère toujours périmé un défi d'un jour précédent", () => {
     storeChallenge(activeChallengeKey(true), { date: "2020-01-01" });
     expect(getPendingActiveChallenge(true)).toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUCUNE LECTURE BRUTE DE LA CASE DÉFI
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Le bug du 2026-09-02 vient d'une DIVERGENCE : deux lecteurs de la même case,
+ * avec deux règles. Les tests ci-dessus verrouillent le comportement des helpers,
+ * mais rien n'empêchait un mode de relire `localStorage.activeChallenge` à la
+ * main — donc de recréer la divergence ailleurs.
+ *
+ * C'était exactement le cas de Classic : sa remise à zéro quotidienne testait la
+ * PRÉSENCE brute de la case, sans date ni dimension. Un défi de la veille
+ * empêchait le plateau de se réinitialiser, et depuis que l'expiration existe,
+ * la partie d'hier partait au serveur avec la mauvaise cible.
+ *
+ * Vérification STRUCTURELLE assumée : le risque n'est pas qu'un helper se casse,
+ * c'est qu'on court-circuite les helpers.
+ */
+describe("Les modes ne lisent jamais la case défi en direct", () => {
+  const MODES = [
+    "classiqueMode/modeClassique.js",
+    "emojiMode/emojiMode.js",
+    "silhouetteMode/modeSilhouette.js",
+    "allOutAttackMode/modeAllOutAttack.js",
+    "personaeMode/modePersonae.js",
+    "musicsMode/modeMusic.js",
+  ];
+
+  it.each(MODES)("%s passe par les helpers, pas par localStorage", (relative) => {
+    const src = readFileSync(join(ROOT, relative), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^[ \t]*\/\/.*$/gm, "");
+
+    expect(src).not.toMatch(/localStorage\.(getItem\(\s*["']activeChallenge|activeChallenge)/);
   });
 });
