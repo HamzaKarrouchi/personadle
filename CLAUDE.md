@@ -34,11 +34,11 @@ personadle/
 ├── js/                  ← gameCore.js, api.js, auth.js, i18n.js, cloud-sync.js…
 ├── css/                 ← global.css + un CSS par composant
 ├── database/            ← characters_clean.js, personas.js, quotes.js, portraits/
-├── lang/                ← en.json (source de vérité, 1075 clés), fr/es/de/it/pt.json
+├── lang/                ← en.json (source de vérité, 1097 clés), fr/es/de/it/pt.json
 ├── classiqueMode/  emojiMode/  allOutAttackMode/  silhouetteMode/  personaeMode/  musicsMode/
 ├── profile/             ← profile-page.js, badges/, friends/, leaderboard/
 ├── api/                 ← PHP REST (auth/, user/, messages/, social-links/, leaderboard/…)
-├── tests/               ← 47 suites Vitest (874 tests) + tests/php/ (PHPUnit)
+├── tests/               ← 49 suites Vitest (885 tests) + tests/php/ (PHPUnit)
 └── sql/                 ← bdd_mysql.sql (24 tables)
 ```
 
@@ -163,8 +163,6 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | `filter: brightness(0)` / `blur()` ne cachent rien | Un filtre CSS est un effet de peinture : « clic droit → Copier l'image » rend l'original. Pour masquer une réponse, cuire l'effet dans les pixels (`js/silhouette_mask.js`) — le filtre CSS ne reste qu'un filet |
 | Assets périmés après un déploiement | Bumper `CACHE_VERSION` dans `sw.js` (sinon `activate` ne purge rien et le cache-first sert l'ancien). Invisible en test : seuls les joueurs **déjà venus** sont touchés |
 | Condition de déblocage non monotone | Un accès **gagné ne doit jamais se reperdre**. Toute condition doit être cumulative (`COUNT` à vie) ou un `MAX` sur l'historique — jamais une valeur « en cours ». Vécu en 2.1 : `mode_consecutive_perfects` renvoyait la série courante, donc 3 Modes Expert se re-verrouillaient à la première partie ratée, et une partie Expert en cours était refusée en 403 |
-| Migration de contenu ciblant un `id` | Cibler une **clé métier stable** (`slug`, `code`…), jamais un id auto-incrémenté : sa valeur dépend de l'ordre d'insertion propre à chaque environnement. Vécu : la 006 faisait `UPDATE titles SET slug=… WHERE id=11..21`, les ids de prod différaient, elle a manqué sa cible et laissé 7 titres en double pendant des mois |
-| Table temporaire jointe à une table du schéma | Déclarer `CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci` explicitement : sans ça elle hérite du défaut de connexion (`utf8mb4_general_ci` sur MariaDB 10.6) et la jointure meurt en « Illegal mix of collations », faisant avorter toute la migration |
 | Une migration écrite ≠ une migration jouée | `sql/migrations/` n'est PAS le reflet de la prod — une migration vit sur `develop` jusqu'à la release. Seule source fiable : `SELECT version FROM schema_migrations`. Vécu en 2.1 : 029/030 oubliées de la checklist |
 
 ---
@@ -172,7 +170,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 ## 8. Tests & qualité
 
 - `npm test` · `npm run test:watch` · `npm run test:coverage`
-- **874 tests** (Vitest + jsdom), 47 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
+- **885 tests** (Vitest + jsdom), 49 suites dans `tests/` (`gameCore`, `backend`, `auth`, `i18n`,
   `social-link`, `profilePage`, `badgesManager`, `badgesConditions`, `streakFlow.integration`,
   `streakRecovery`, `validateCharacters`, `formatPlayTime`… — cf. `tests/` pour la liste à jour)
 - `npm run lint` (ESLint flat config) · `npm run data:check` (schéma personnages) · `npm run i18n:check`
