@@ -25,6 +25,7 @@ import {
   activeChallengeKey,
   getActiveChallengeTarget,
   getPendingActiveChallenge,
+  isChallengePlay,
   parisDateKey,
 } from "../js/gameCore.js";
 
@@ -100,6 +101,43 @@ describe("getActiveChallengeTarget — une partie ne voit que son propre défi",
     storeChallenge(activeChallengeKey(false), { mode: "classic" });
     goTo({ expert: false });
     expect(getActiveChallengeTarget("personae")).toBeNull();
+  });
+});
+
+describe("getActiveChallengeTarget — un défi périmé ne gèle plus la progression", () => {
+  // LE bug de production du 2026-09-02. `isChallengePlay()` dérive de cette
+  // fonction, et les 6 modes s'en servent pour décider s'ils enregistrent la
+  // partie : tant qu'elle renvoyait la cible d'un défi jamais terminé, plus
+  // aucune partie de ce mode n'était enregistrée. Sans le moindre signal — ni
+  // message, ni erreur en console, puisque rien n'était même envoyé au serveur.
+  //
+  // Le joueur voyait ses compteurs figés et ne pouvait rien y faire.
+
+  it("ignore un défi d'un jour précédent", () => {
+    storeChallenge(activeChallengeKey(false), { date: "2020-01-01", target: "Orpheus" });
+    expect(getActiveChallengeTarget("personae")).toBeNull();
+    expect(isChallengePlay("personae")).toBe(false);
+  });
+
+  it("rend toujours la cible d'un défi du jour", () => {
+    storeChallenge(activeChallengeKey(false), { target: "Orpheus" });
+    expect(getActiveChallengeTarget("personae")).toBe("Orpheus");
+    expect(isChallengePlay("personae")).toBe(true);
+  });
+
+  it("applique la même règle d'expiration que getPendingActiveChallenge", () => {
+    // Les deux fonctions lisent la même case : elles doivent s'accorder sur ce
+    // qui est encore valide. C'est leur divergence qui a créé le bug — l'une
+    // considérait le défi périmé, l'autre non.
+    storeChallenge(activeChallengeKey(false), { date: "2020-01-01", target: "Orpheus" });
+    expect(getPendingActiveChallenge(false)).toBeNull();
+    expect(getActiveChallengeTarget("personae")).toBeNull();
+  });
+
+  it("un défi périmé en Expert ne gèle pas non plus", () => {
+    goTo({ expert: true });
+    storeChallenge(activeChallengeKey(true), { date: "2020-01-01", target: "Orpheus" });
+    expect(isChallengePlay("personae")).toBe(false);
   });
 });
 
