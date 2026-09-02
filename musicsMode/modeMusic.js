@@ -557,7 +557,10 @@ function showVictory(force = false) {
   }
 
   // 🎯 ONE SHOT — first-try win
-  if (!force && attempts === 0 && !profile.hasWonFirstTry) {
+  // `attempts` vaut 1 sur une victoire au premier essai : les modes incrementent
+  // AVANT de tester la victoire. Le test portait sur 0, donc ce badge n'etait
+  // jamais decerne (corrige en 2.1).
+  if (!force && attempts === 1 && !profile.hasWonFirstTry) {
     profile.hasWonFirstTry = true;
     hasChanges = true;
   }
