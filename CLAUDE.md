@@ -58,6 +58,27 @@ personadle/
 
 ## 4. Conventions
 
+### Branches — RÈGLE ABSOLUE : on ne merge JAMAIS sur `main`
+
+Le flux est **`feature/*` → `develop` → `main`**, sans exception.
+
+- **Toute PR de travail vise `develop`.** Correctif, contenu, doc, contribution externe
+  reprise : la base est `develop`, jamais `main`.
+- **`main` = ce qui tourne en prod.** Hostinger fait un `git pull` automatique en ~10-30 s
+  sur chaque push. Merger une branche de travail directement dessus met en prod du code
+  dont la migration SQL n'a pas encore été jouée (cf. §13 et `DEPLOY.md`).
+- **Le SEUL merge légitime sur `main` est `develop` → `main`, au moment de sortir une
+  version.** C'est un acte de release, décidé explicitement — jamais une étape de fin de
+  tâche, jamais « pendant qu'on y est ».
+- Ne jamais ouvrir, rebaser ou re-cibler une PR vers `main` de sa propre initiative. Si
+  une PR se retrouve sur la mauvaise base : `gh pr edit <numéro> --base develop`.
+
+Le job CI **« PR base guard »** (`.github/workflows/pr-base-guard.yml`) refuse toute PR
+vers `main` dont la source n'est pas `develop`, `hotfix/*` ou `dependabot/*` — `hotfix/*`
+pour un correctif urgent en prod qui ne peut pas attendre `develop`, `dependabot/*` parce
+que Dependabot cible la branche par défaut. Ce garde-fou est un filet, pas la règle : la
+règle est ci-dessus, et elle vaut même quand le garde-fou laisserait passer.
+
 ### Nommage des fichiers — RÈGLE ABSOLUE
 **Tous les nouveaux fichiers utilisent le `snake_case` avec underscores** (ex: `badge_manager.js`, `user_stats.php`).
 Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de garantir la stabilité de l'arborescence sur tous les OS.
