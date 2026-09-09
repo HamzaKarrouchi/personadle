@@ -1,0 +1,42 @@
+name: Annonce Discord
+
+# Poste les notes de la release GitHub dans #announcements via le webhook "Igor".
+# Le texte reste ecrit a la main dans la release : seul l'envoi est automatise.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de la release a re-annoncer"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recuperer la release (cas workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ inputs.tag }}" \
+            --json name,body,htmlUrl,tagName > release.json
+
+      - name: Recuperer la release (cas automatique)
+        if: github.event_name == 'release'
+        env:
+          PAYLOAD: ${{ toJSON(github.event.release) }}
+        run: printf '%s' "$PAYLOAD" > release.json
+
+      - name: Poster sur Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MENTION_ROLE_ID: ${{ vars.DISCORD_MENTION_ROLE_ID }}
+        run: python3 .github/scripts/discord_announce.py release.json
