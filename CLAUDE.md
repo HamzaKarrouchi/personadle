@@ -79,6 +79,30 @@ pour un correctif urgent en prod qui ne peut pas attendre `develop`, `dependabot
 que Dependabot cible la branche par défaut. Ce garde-fou est un filet, pas la règle : la
 règle est ci-dessus, et elle vaut même quand le garde-fou laisserait passer.
 
+### Messages de commit et corps de PR — RÈGLE ABSOLUE : aucune signature d'outil
+
+**Rien dans le dépôt ne mentionne Claude, Anthropic, ou un assistant d'IA quel qu'il soit.**
+Ni message de commit, ni titre/corps de PR, ni commentaire de code, ni entrée de changelog.
+
+Interdits, sans exception tacite :
+
+- les *trailers* `Co-Authored-By: Claude …`, `Claude-Session: …`, `Generated-by: …`
+- les mentions de fin de PR type « 🤖 Generated with Claude Code », liens de session inclus
+- toute formule « écrit/assisté par … » dans le corps d'un commit ou d'une PR
+
+**Seule exception : une demande explicite de Hamza sur ce commit ou cette PR précis.**
+« On l'avait mis la dernière fois » n'en est pas une : la demande doit être formulée pour
+le lot en cours.
+
+Pourquoi : l'historique du dépôt est celui de l'équipe (cf. §1). Le crédit va aux humains
+qui décident, et un dépôt public de fan-game n'a pas à se lire comme une sortie de machine.
+Le message de commit doit expliquer **le pourquoi du changement**, pas par quel outil il a
+été tapé.
+
+⚠️ Ces signatures sont ajoutées **par défaut** par certains outils (Claude Code notamment) :
+il faut donc les retirer activement à chaque commit et à chaque PR, pas seulement « ne pas
+les écrire ». Vérifier avec `git log -1 --format=%B` avant de pousser.
+
 ### Nommage des fichiers — RÈGLE ABSOLUE
 **Tous les nouveaux fichiers utilisent le `snake_case` avec underscores** (ex: `badge_manager.js`, `user_stats.php`).
 Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de garantir la stabilité de l'arborescence sur tous les OS.
