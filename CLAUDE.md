@@ -58,6 +58,27 @@ personadle/
 
 ## 4. Conventions
 
+### Branches — RÈGLE ABSOLUE : on ne merge JAMAIS sur `main`
+
+Le flux est **`feature/*` → `develop` → `main`**, sans exception.
+
+- **Toute PR de travail vise `develop`.** Correctif, contenu, doc, contribution externe
+  reprise : la base est `develop`, jamais `main`.
+- **`main` = ce qui tourne en prod.** Hostinger fait un `git pull` automatique en ~10-30 s
+  sur chaque push. Merger une branche de travail directement dessus met en prod du code
+  dont la migration SQL n'a pas encore été jouée (cf. §13 et `DEPLOY.md`).
+- **Le SEUL merge légitime sur `main` est `develop` → `main`, au moment de sortir une
+  version.** C'est un acte de release, décidé explicitement — jamais une étape de fin de
+  tâche, jamais « pendant qu'on y est ».
+- Ne jamais ouvrir, rebaser ou re-cibler une PR vers `main` de sa propre initiative. Si
+  une PR se retrouve sur la mauvaise base : `gh pr edit <numéro> --base develop`.
+
+Le job CI **« PR base guard »** (`.github/workflows/pr-base-guard.yml`) refuse toute PR
+vers `main` dont la source n'est pas `develop`, `hotfix/*` ou `dependabot/*` — `hotfix/*`
+pour un correctif urgent en prod qui ne peut pas attendre `develop`, `dependabot/*` parce
+que Dependabot cible la branche par défaut. Ce garde-fou est un filet, pas la règle : la
+règle est ci-dessus, et elle vaut même quand le garde-fou laisserait passer.
+
 ### Nommage des fichiers — RÈGLE ABSOLUE
 **Tous les nouveaux fichiers utilisent le `snake_case` avec underscores** (ex: `badge_manager.js`, `user_stats.php`).
 Ne jamais utiliser camelCase ou kebab-case pour les noms de fichiers afin de garantir la stabilité de l'arborescence sur tous les OS.
@@ -214,23 +235,27 @@ un pool de tirage :
 > (corrigé le 2026-07-06 — la version précédente de cette section pointait vers un
 > `PersonaDLE_Update.md` qui n'existe pas pour la v2.0, seulement pour l'archive v1.1) :
 >
-> **Un dossier par version** — depuis le 2026-08-20, la v2.1 a les siens. Écrire dans le
-> dossier de la version **en cours de développement**, jamais dans celui d'une version déjà
-> livrée (`PersonaDLE 2.0/` ne reçoit plus que des correctifs de la 2.0 en prod) :
+> **Un dossier par version.** Version en cours de développement : **v2.2**
+> (`PersonaDLE 2.2/`, ouvert le 2026-09-09). Écrire dans le dossier de la version **en
+> cours de développement**, jamais dans celui d'une version déjà livrée — `PersonaDLE 2.0/`
+> et `PersonaDLE 2.1/` ne reçoivent plus que des correctifs de leur propre version en prod :
 >
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/DEV_CHANGELOG.md` — changelog **dev**
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.2/DEV_CHANGELOG.md` — changelog **dev**
 >   (contributeurs/mainteneurs), détail précis par commit : fichiers touchés, décisions
 >   d'architecture, angles morts connus. Toute modification qui touche au code en a besoin.
-> - `PersonaDLE_Update_Documentation/PersonaDLE 2.1/PersonaDLE_Update.html` — changelog
+> - `PersonaDLE_Update_Documentation/PersonaDLE 2.2/PersonaDLE_Update.html` — changelog
 >   **joueur** (page HTML bilingue EN/FR, blocs `data-i18n-block`), highlights uniquement,
 >   langage non technique. À alimenter **seulement** si le changement est visible/parlant
 >   pour un joueur (nouvelle feature, fix d'un bug qu'il pouvait remarquer) — jamais l'inverse
 >   (ne pas alléger DEV_CHANGELOG.md pour "faire propre"). La page est liée depuis le modal
->   « Nouveautés » de `index.html`, entrée `version-item` par version.
+>   « Nouveautés » de `index.html`, entrée `version-item` par version — **entrée 2.2 à
+>   ajouter à la sortie de la version**, pas avant.
 >
-> À l'ouverture d'une v2.2 : créer `PersonaDLE 2.2/`, y démarrer les deux fichiers, et
-> mettre à jour cette section — c'est ce point de synchronisation qui a manqué à la 2.1,
-> dont les entrées se sont accumulées dans le dossier de la 2.0 jusqu'au 2026-08-20.
+> À l'ouverture d'une v2.3 : créer `PersonaDLE 2.3/`, y démarrer les deux fichiers, ajouter
+> son bloc de 3 lignes dans `.gitignore` (sinon les fichiers sont ignorés en silence — voir
+> le piège documenté dans `.gitignore`), et mettre à jour cette section. C'est ce point de
+> synchronisation qui a manqué à la 2.1, dont les entrées se sont accumulées dans le dossier
+> de la 2.0 jusqu'au 2026-08-20.
 
 Format d'une entrée `DEV_CHANGELOG.md` :
 
