@@ -209,6 +209,7 @@ Utiliser `min()`, `clamp()`, `vw`/`vh`. Éviter les largeurs fixes en `px` sur l
 | Assets périmés après un déploiement | Bumper `CACHE_VERSION` dans `sw.js` (sinon `activate` ne purge rien et le cache-first sert l'ancien). Invisible en test : seuls les joueurs **déjà venus** sont touchés |
 | Condition de déblocage non monotone | Un accès **gagné ne doit jamais se reperdre**. Toute condition doit être cumulative (`COUNT` à vie) ou un `MAX` sur l'historique — jamais une valeur « en cours ». Vécu en 2.1 : `mode_consecutive_perfects` renvoyait la série courante, donc 3 Modes Expert se re-verrouillaient à la première partie ratée, et une partie Expert en cours était refusée en 403 |
 | Une migration écrite ≠ une migration jouée | `sql/migrations/` n'est PAS le reflet de la prod — une migration vit sur `develop` jusqu'à la release. Seule source fiable : `SELECT version FROM schema_migrations`. Vécu en 2.1 : 029/030 oubliées de la checklist |
+| Bouton rond/carré rendu ovale | `css/global.css` §18 impose `min-height: 48px; padding: 12px 20px` à **tout** `<button>` (cible tactile). Un bouton-icône avec `width`/`height` propres (pastille 28px, play 34px, ✕ de modale) sort en 28×48. Tout nouveau bouton-icône pose `min-height: 0` dans sa propre règle. Vécu en 2.2 : pastilles de bordure, lecteur de musique, ⚙ Settings, boutons amis |
 
 ---
 
